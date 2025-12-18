@@ -3,125 +3,461 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>📝 じゆうメモ — ポップ版</title>
+<title>✨ じゆうメモ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
 <style>
+:root {
+    --primary: #FF85A2; /* ポップなピンク */
+    --bg-color: #FFF9FB; /* ほんのりピンクな白 */
+    --sidebar-bg: #FFFFFF;
+    --text: #444;
+}
+
+* { box-sizing: border-box; }
 body {
-    font-family: "Hiragino Maru Gothic Pro","Yu Gothic",sans-serif;
-    margin:0; padding:0;
-    background: #fffbe6;
-    color:#333;
+    font-family: "M PLUS Rounded 1c", sans-serif;
+    margin: 0; padding: 0;
+    background: var(--bg-color);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
-.container { display:flex; max-width:1100px; margin:0 auto; padding:20px; gap:20px; flex-wrap:wrap; }
-h1 { width:100%; text-align:center; margin-bottom:20px; color:#ff6f91; }
 
-.editor {
-    flex:1; display:flex; flex-direction:column; gap:12px; min-width:300px;
+/* --- ヘッダー --- */
+header {
+    background: #fff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px dashed #ffcdd2;
+    z-index: 10;
 }
-.editor input, .editor textarea, .editor select {
-    width:100%; padding:12px; font-size:16px; border-radius:12px; border:none;
-    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
+
+.btn-home {
+    text-decoration: none;
+    background: #bde4ff;
+    color: #444;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 3px 0 #90caf9;
+    transition: .2s;
 }
-.editor textarea { height:180px; resize:vertical; }
+.btn-home:active { transform: translateY(3px); box-shadow: none; }
 
-.btn-row { display:flex; gap:8px; }
-.btn { padding:8px 12px; border:none; border-radius:16px; cursor:pointer; font-weight:bold; transition:.2s; background:#ffd6e0; color:#333; }
-.btn:hover { transform:scale(1.05); }
-.btn-delete { background:#ff9aa2; color:#fff; }
-
-.status { font-size:13px; color:#666; }
-
-.note-calendar {
-    flex:1; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column; gap:14px; min-width:300px;
+/* --- レイアウト --- */
+.container {
+    display: flex;
+    flex: 1;
+    overflow: hidden; 
 }
-.date-group { border-radius:16px; background:#fff; padding:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
-.date-header { font-weight:bold; font-size:16px; margin-bottom:6px; color:#ff6f91; }
 
+/* --- 左サイドバー（リスト＆検索） --- */
+.sidebar {
+    width: 340px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+/* 新規作成ボタン */
+.btn-new {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255, 133, 162, 0.4);
+    transition: .2s;
+}
+.btn-new:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(255, 133, 162, 0.5); }
+
+/* 検索エリア */
+.search-area {
+    background: #f8f8f8;
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 2px solid #eee;
+}
+.search-label { font-size: 12px; font-weight: bold; color: #888; }
+.search-input {
+    width: 100%; padding: 8px 12px;
+    border-radius: 8px; border: 1px solid #ddd;
+    font-family: inherit;
+}
+.search-input:focus { border-color: var(--primary); outline: none; }
+
+/* メモリスト */
+.note-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 .note-card {
-    padding:8px 12px; border-radius:12px; margin-top:6px; cursor:pointer;
-    background: linear-gradient(120deg, #ffd6e0,#ffe6f2); 
-    box-shadow:0 2px 4px rgba(0,0,0,0.1);
-    transition:.2s;
+    padding: 12px;
+    border-radius: 12px;
+    background: white;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: .2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
-.note-card:hover { transform:scale(1.02); box-shadow:0 4px 8px rgba(0,0,0,0.15); }
-.note-time { font-size:12px; color:#888; margin-top:4px; }
+.note-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.note-card.active { border-color: var(--primary); background: #fff0f5; }
 
-.search { padding:8px 10px; border-radius:12px; border:none; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-bottom:10px; }
+.note-card-title { font-weight: bold; margin-bottom: 5px; font-size: 15px; }
+.note-card-meta { font-size: 11px; color: #999; display: flex; justify-content: space-between; }
+.mood-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 
+/* --- 右エディタエリア --- */
+.main-editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 40px;
+    gap: 15px;
+    overflow-y: auto;
+    background-image: radial-gradient(#ffeef2 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* タイトル入力 */
+.input-title {
+    width: 100%; font-size: 24px; font-weight: bold;
+    border: none; background: transparent;
+    border-bottom: 2px dashed #ddd; padding: 10px 0;
+    outline: none; color: var(--primary);
+}
+.input-title::placeholder { color: #ccc; }
+
+/* ツールバー（日付・色） */
+.toolbar {
+    display: flex; align-items: center; gap: 15px; flex-wrap: wrap;
+}
+.date-editor {
+    padding: 6px 10px; border-radius: 8px; border: 1px solid #ddd;
+    font-family: inherit; color: #666; background: rgba(255,255,255,0.8);
+}
+
+.mood-selector { display: flex; gap: 5px; background: #fff; padding: 5px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.mood-btn { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: .2s; }
+.mood-btn:hover { transform: scale(1.2); }
+.mood-btn.selected { border-color: #555; transform: scale(1.1); }
+
+/* 本文入力 */
+.input-body {
+    flex: 1; width: 100%; min-height: 300px;
+    border: none; background: rgba(255,255,255,0.9);
+    border-radius: 16px; padding: 20px;
+    font-size: 16px; line-height: 1.8;
+    resize: none; outline: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+/* フッター */
+.editor-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    background: white; padding: 10px 20px; border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.status { font-size: 12px; color: #888; }
+
+.btn-delete {
+    padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer;
+    background: #ffe0e0; color: #d32f2f; font-weight: bold;
+    transition: .2s; display: flex; align-items: center; gap: 5px;
+}
+.btn-delete:hover { background: #ffcdd2; }
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+    .container { flex-direction: column; }
+    .sidebar { width: 100%; height: 40vh; border-right: none; border-bottom: 2px dashed #ffcdd2; }
+    .main-editor { padding: 15px; }
+    header h1 { font-size: 1.2rem; }
+}
 </style>
 </head>
 <body>
-<div class="container">
+
+<header>
     <h1>📝 じゆうメモ</h1>
-    <div class="editor">
-        <input id="memo-title" placeholder="タイトル（任意）">
-        <textarea id="memo-body" placeholder="ここにメモを書いてね（自動保存）"></textarea>
-        <div class="btn-row">
-            <select id="memo-date"></select>
-            <button class="btn" id="btn-save">💾 保存</button>
-            <button class="btn btn-delete" id="btn-delete">🗑 削除</button>
+    <a href="logs.html" class="btn-home">🏠 ホームへ</a>
+</header>
+
+<div class="container">
+    <div class="sidebar">
+        <button class="btn-new" id="btn-new">＋ 新しいメモ</button>
+        
+        <div class="search-area">
+            <span class="search-label">🔍 メモをさがす</span>
+            <input type="text" class="search-input" id="search-keyword" placeholder="ことば (例: うれしい)">
+            <input type="date" class="search-input" id="search-date">
         </div>
-        <div class="status" id="save-status">保存状況: 未保存</div>
+
+        <div class="note-list" id="note-list">
+            </div>
     </div>
-    <div class="note-calendar">
-        <input type="text" class="search" id="search" placeholder="検索">
-        <div id="note-list"></div>
+
+    <div class="main-editor">
+        <input type="text" class="input-title" id="memo-title" placeholder="無題のメモ">
+        
+        <div class="toolbar">
+            <input type="datetime-local" class="date-editor" id="memo-date">
+            <div class="mood-selector" id="mood-selector"></div>
+        </div>
+
+        <textarea class="input-body" id="memo-body" placeholder="ここに自由に書いてね...（自動で保存されるよ）"></textarea>
+
+        <div class="editor-footer">
+            <span class="status" id="save-status">準備完了</span>
+            <button class="btn-delete" id="btn-delete" title="このメモを削除">🗑 削除</button>
+        </div>
     </div>
 </div>
 
 <script>
-// 基本は前回のスクリプトを流用
-// 自動保存・保存・削除・日付別表示・検索は同様
 (function(){
-const KEY='memo_notes_pop';
-let notes=[], currentId=null;
-const el={
-title:document.getElementById('memo-title'),
-body:document.getElementById('memo-body'),
-saveStatus:document.getElementById('save-status'),
-dateSelect:document.getElementById('memo-date'),
-noteList:document.getElementById('note-list'),
-btnSave:document.getElementById('btn-save'),
-btnDelete:document.getElementById('btn-delete'),
-search:document.getElementById('search')
-};
-const nowISO=d=>d.toISOString();
-const toDateKey=iso=>(new Date(iso)).toISOString().slice(0,10);
-const formatLocal=iso=>{const d=new Date(iso);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;};
+    const KEY = 'memo_app_pro_v2';
+    let notes = [], currentId = null;
 
-function loadNotes(){ try{notes=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){notes=[];} renderNotes();}
-function saveNotes(){ localStorage.setItem(KEY,JSON.stringify(notes)); }
+    const MOODS = [
+        { color: '#FF85A2', name: 'ピンク' },
+        { color: '#FFD93D', name: 'イエロー' },
+        { color: '#6BCB77', name: 'グリーン' },
+        { color: '#4D96FF', name: 'ブルー' },
+        { color: '#A29BFE', name: 'パープル' },
+        { color: '#B2B2B2', name: 'グレー' }
+    ];
+    let currentMood = MOODS[0].color;
 
-function createNote(title,content,dateIso){const id=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);const created_at=dateIso||nowISO();const n={id,title,content,created_at,updated_at:created_at}; notes.unshift(n); saveNotes(); return n;}
-function updateNote(id,title,content,dateIso){const idx=notes.findIndex(n=>n.id===id); if(idx===-1)return null; notes[idx].title=title; notes[idx].content=content; if(dateIso)notes[idx].created_at=dateIso; notes[idx].updated_at=nowISO(); const item=notes.splice(idx,1)[0]; notes.unshift(item); saveNotes(); return item;}
-function deleteNote(id){ notes=notes.filter(n=>n.id!==id); saveNotes(); }
+    const el = {
+        title: document.getElementById('memo-title'),
+        body: document.getElementById('memo-body'),
+        dateInput: document.getElementById('memo-date'),
+        noteList: document.getElementById('note-list'),
+        searchKw: document.getElementById('search-keyword'),
+        searchDt: document.getElementById('search-date'),
+        saveStatus: document.getElementById('save-status'),
+        moodSelector: document.getElementById('mood-selector'),
+        btnNew: document.getElementById('btn-new'),
+        btnDelete: document.getElementById('btn-delete')
+    };
 
-function renderNotes(filterText=''){
-    const list=el.noteList; list.innerHTML=''; const grouped={}; const f=filterText.toLowerCase();
-    notes.forEach(n=>{if(f && !(n.title.toLowerCase().includes(f)||n.content.toLowerCase().includes(f)||n.created_at.startsWith(f))) return; const key=toDateKey(n.created_at); grouped[key]=grouped[key]||[]; grouped[key].push(n);});
-    const keys=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
-    if(keys.length===0){ list.innerHTML='<div class="note-card">メモがありません</div>'; return; }
-    keys.forEach(dateKey=>{const group=document.createElement('div'); group.className='date-group'; const header=document.createElement('div'); header.className='date-header'; header.innerText=`${dateKey} (${grouped[dateKey].length})`; group.appendChild(header);
-        grouped[dateKey].forEach(n=>{const card=document.createElement('div'); card.className='note-card'; card.innerHTML=`<strong>${n.title||'(無題)'}</strong><div class="note-time">${formatLocal(n.created_at)}</div>`; card.onclick=()=>openNote(n.id); group.appendChild(card);});
-        list.appendChild(group);});
-}
+    const nowISO = () => new Date().toISOString();
+    const toLocalISO = (isoString) => {
+        const d = new Date(isoString);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 16);
+    };
+    const formatDateFriendly = (iso) => {
+        const d = new Date(iso);
+        return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    };
 
-function newMemo(){ currentId=null; el.title.value=''; el.body.value=''; el.saveStatus.innerText='保存状況: 新規'; populateDateSelect();}
-function openNote(id){const n=notes.find(x=>x.id===id); if(!n)return; currentId=n.id; el.title.value=n.title; el.body.value=n.content; el.saveStatus.innerText='保存状況: 編集中'; populateDateSelect(n.created_at);}
-function populateDateSelect(selectedIso){ el.dateSelect.innerHTML=''; const today=new Date(); for(let i=0;i<14;i++){ const d=new Date(); d.setDate(today.getDate()-i); const iso=d.toISOString().slice(0,10); const opt=document.createElement('option'); opt.value=iso; opt.innerText=iso; if(selectedIso && selectedIso.startsWith(iso)) opt.selected=true; el.dateSelect.appendChild(opt); } }
+    // --- データ読み込み・保存 ---
+    function loadNotes() {
+        try {
+            notes = JSON.parse(localStorage.getItem(KEY) || '[]');
+            notes = notes.map(n => ({...n, mood: n.mood || MOODS[0].color}));
+        } catch(e) { notes = []; }
+        renderList();
+    }
+    function saveToStorage() {
+        localStorage.setItem(KEY, JSON.stringify(notes));
+    }
 
-let timer=null;
-function scheduleAutoSave(){ el.saveStatus.innerText='保存中...'; if(timer) clearTimeout(timer); timer=setTimeout(doSave,1500); }
-function doSave(){ const title=el.title.value.trim(), content=el.body.value.trim(), dateIso=(new Date(el.dateSelect.value)).toISOString(); if(!title&&!content){ el.saveStatus.innerText='空のため保存しません'; return;} if(currentId){ updateNote(currentId,title,content,dateIso); el.saveStatus.innerText='更新 ' + formatLocal(nowISO()); } else { const n=createNote(title,content,dateIso); currentId=n.id; el.saveStatus.innerText='新規保存 ' + formatLocal(n.created_at); } renderNotes(el.search.value); }
+    // --- メモ操作 ---
+    function createNote() {
+        const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+        const now = nowISO();
+        const n = {
+            id,
+            title: '',
+            content: '',
+            created_at: now,
+            updated_at: now,
+            mood: MOODS[0].color
+        };
+        notes.unshift(n);
+        saveToStorage();
+        return n;
+    }
 
-el.btnSave.addEventListener('click',()=>{ if(timer) clearTimeout(timer); doSave(); });
-el.btnDelete.addEventListener('click',()=>{ if(!currentId){ alert('編集中のメモがありません'); return; } if(confirm('削除しますか？')){ deleteNote(currentId); newMemo(); renderNotes(); }});
-el.search.addEventListener('input',()=>{ renderNotes(el.search.value); });
-el.title.addEventListener('input', scheduleAutoSave);
-el.body.addEventListener('input', scheduleAutoSave);
-el.dateSelect.addEventListener('change', scheduleAutoSave);
-window.addEventListener('keydown',(e)=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); if(timer) clearTimeout(timer); doSave(); } });
+    function updateNote(id, changes) {
+        const idx = notes.findIndex(n => n.id === id);
+        if (idx === -1) return;
+        
+        notes[idx] = { ...notes[idx], ...changes, updated_at: nowISO() };
+        // 先頭に移動
+        const item = notes.splice(idx, 1)[0];
+        notes.unshift(item);
+        
+        saveToStorage();
+    }
 
-loadNotes(); newMemo();
+    function deleteNote(id) {
+        notes = notes.filter(n => n.id !== id);
+        saveToStorage();
+    }
+
+    // --- 画面表示 ---
+    function renderList() {
+        const kw = el.searchKw.value.toLowerCase();
+        const dt = el.searchDt.value; // YYYY-MM-DD
+        const list = el.noteList;
+        list.innerHTML = '';
+
+        // 検索フィルター
+        const targets = notes.filter(n => {
+            const matchKw = (n.title && n.title.toLowerCase().includes(kw)) || 
+                            (n.content && n.content.toLowerCase().includes(kw));
+            
+            // 日付検索: メモの作成日時(の先頭10文字)と一致するか
+            const noteDate = toLocalISO(n.created_at).slice(0, 10);
+            const matchDt = dt ? (noteDate === dt) : true;
+
+            return matchKw && matchDt;
+        });
+
+        if (targets.length === 0) {
+            list.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px;">みつかりません<br>条件をかえてみてね</div>';
+            return;
+        }
+
+        targets.forEach(n => {
+            const card = document.createElement('div');
+            card.className = `note-card ${n.id === currentId ? 'active' : ''}`;
+            card.onclick = () => openNote(n.id);
+
+            const titleText = n.title.trim() || '(無題)';
+            
+            card.innerHTML = `
+                <div class="note-card-title">
+                    <span class="mood-dot" style="background:${n.mood}"></span>${titleText}
+                </div>
+                <div class="note-card-meta">
+                    <span>${formatDateFriendly(n.created_at)}</span>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function initMoodSelector() {
+        el.moodSelector.innerHTML = '';
+        MOODS.forEach(m => {
+            const btn = document.createElement('div');
+            btn.className = 'mood-btn';
+            btn.style.backgroundColor = m.color;
+            btn.title = m.name;
+            btn.onclick = () => changeMood(m.color);
+            if (m.color === currentMood) btn.classList.add('selected');
+            el.moodSelector.appendChild(btn);
+        });
+    }
+
+    // --- アクション ---
+    function openNote(id) {
+        const n = notes.find(x => x.id === id);
+        if (!n) return;
+
+        currentId = n.id;
+        el.title.value = n.title;
+        el.body.value = n.content;
+        el.dateInput.value = toLocalISO(n.created_at);
+        currentMood = n.mood;
+        
+        el.saveStatus.innerText = '編集中';
+        initMoodSelector(); 
+        renderList(); 
+    }
+
+    function startNew() {
+        const n = createNote();
+        openNote(n.id);
+        el.title.focus();
+        el.saveStatus.innerText = '新規作成';
+    }
+
+    function changeMood(color) {
+        currentMood = color;
+        initMoodSelector();
+        if (currentId) {
+            updateNote(currentId, { mood: color });
+            renderList();
+        }
+    }
+
+    // --- 自動保存 ---
+    let timer = null;
+    function scheduleSave() {
+        el.saveStatus.innerText = '入力中...';
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(doSave, 800);
+    }
+
+    function doSave() {
+        if (!currentId) return;
+
+        const title = el.title.value;
+        const content = el.body.value;
+        const dateVal = el.dateInput.value; 
+        const created_at = dateVal ? new Date(dateVal).toISOString() : nowISO();
+
+        updateNote(currentId, {
+            title, content, created_at, mood: currentMood
+        });
+        
+        el.saveStatus.innerText = '保存しました ✅';
+        renderList(); 
+    }
+
+    // --- イベント設定 ---
+    el.title.addEventListener('input', scheduleSave);
+    el.body.addEventListener('input', scheduleSave);
+    el.dateInput.addEventListener('change', scheduleSave);
+    
+    // 検索窓に入力があったらすぐ絞り込み
+    el.searchKw.addEventListener('input', renderList);
+    el.searchDt.addEventListener('change', renderList);
+
+    el.btnNew.addEventListener('click', startNew);
+
+    el.btnDelete.addEventListener('click', () => {
+        if (!currentId) return;
+        if (confirm('本当にこのメモを消してもいいですか？')) {
+            deleteNote(currentId);
+            if (notes.length > 0) openNote(notes[0].id);
+            else startNew();
+        }
+    });
+
+    // 初期化
+    initMoodSelector();
+    loadNotes();
+    
+    if (notes.length > 0) openNote(notes[0].id);
+    else startNew();
+
 })();
 </script>
 </body>
