@@ -232,6 +232,7 @@
         <button id="submit-btn" class="btn">
             おくる <span class="send-icon">💌</span>
         </button>
+        <button id="debug-send-log" class="btn" style="margin-left:8px;">送信ログ</button>
         <br>
         <a href="index.html" class="btn-home">もどる</a>
     </div>
@@ -241,6 +242,7 @@
         // 🌍 設定（あなたのGASのURL）
         // ============================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec"; 
+        const GAS_CONTENT_TYPE = 'text/plain;charset=utf-8'; // use text/plain to avoid CORS preflight on GAS
         // ============================================
 
         const SETTINGS = {
@@ -829,6 +831,14 @@
             // GAS送信（タイムアウト付き）
             const postData = { color: colorKey, emotion: theme.label, text: finalInput || "（テキストなし）" };
 
+            function addSendHistory(entry) {
+                try {
+                    const arr = JSON.parse(localStorage.getItem('send_history') || '[]');
+                    arr.unshift(entry);
+                    localStorage.setItem('send_history', JSON.stringify(arr.slice(0, 200))); // keep recent 200
+                } catch(e) { console.error('addSendHistory error', e); }
+            }
+
             function fetchWithTimeout(url, options = {}, timeout = 6000) {
                 const controller = new AbortController();
                 const signal = controller.signal;
@@ -840,20 +850,28 @@
             let sendPromise = Promise.resolve();
             if (typeof GAS_URL !== 'undefined' && GAS_URL && GAS_URL.startsWith('http')) {
                 // try send with retries; if fails, enqueue for later
-                const trySendOnce = () => {
+                const trySendOnce = (asContentType = GAS_CONTENT_TYPE) => {
+                    const headers = { 'Content-Type': asContentType };
+                    const payload = asContentType.includes('json') ? JSON.stringify(postData) : JSON.stringify(postData);
+                    const attemptTs = new Date().toISOString();
                     return fetchWithTimeout(GAS_URL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(postData)
+                        headers,
+                        body: payload
                     }, 6000)
                     .then(response => response.text().then(text => ({ status: response.status, text })))
                     .then(({status, text}) => {
-                        try { const parsed = text ? JSON.parse(text) : null; console.log('GAS body:', parsed); } catch(e) { console.log('GAS raw:', text); }
+                        let parsed = null;
+                        try { parsed = text ? JSON.parse(text) : null; } catch(e) { parsed = { raw: text }; }
+                        addSendHistory({ ts: attemptTs, success: true, status: status, response: parsed, contentType: asContentType });
+                        console.log('GAS body:', parsed);
                         return true;
                     })
                     .catch(err => {
+                        const reason = (err && err.name === 'AbortError') ? 'timeout' : (err && err.message ? err.message : String(err));
+                        addSendHistory({ ts: attemptTs, success: false, reason, contentType: asContentType });
                         if (err && err.name === 'AbortError') console.warn('GAS fetch aborted: timeout');
-                        else console.warn('GAS send failed:', err && err.message ? err.message : err);
+                        else console.warn('GAS send failed:', reason);
                         return false;
                     });
                 };
@@ -868,12 +886,13 @@
                     return false;
                 };
 
-                const enqueuePending = (payload) => {
+                const enqueuePending = (payload, note) => {
                     try {
                         const list = JSON.parse(localStorage.getItem('pending_sends') || '[]');
-                        list.push({ payload, ts: new Date().toISOString() });
+                        list.push({ payload, ts: new Date().toISOString(), note: note || '' });
                         localStorage.setItem('pending_sends', JSON.stringify(list));
                         console.log('Enqueued pending send (total):', list.length);
+                        addSendHistory({ ts: new Date().toISOString(), enqueued: true, note: note || '' });
                     } catch(e) { console.error('enqueuePending error', e); }
                 };
 
@@ -918,17 +937,35 @@
                     try {
                         const ok = await (async () => {
                             try {
-                                const res = await fetchWithTimeout(GAS_URL, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(item.payload)
-                                }, 6000);
-                                const text = await res.text();
-                                try { JSON.parse(text); } catch(e) { /* ignore */ }
-                                console.log('Flushed pending item');
-                                return true;
+                                // try original content type first
+                                let ok1 = false;
+                                try {
+                                    const res = await fetchWithTimeout(GAS_URL, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': GAS_CONTENT_TYPE },
+                                        body: GAS_CONTENT_TYPE.includes('json') ? JSON.stringify(item.payload) : JSON.stringify(item.payload)
+                                    }, 6000);
+                                    const text = await res.text();
+                                    try { JSON.parse(text); } catch(e) { /* ignore */ }
+                                    console.log('Flushed pending item (first try)');
+                                    ok1 = true;
+                                } catch(e) { console.warn('flush first try failed', e); }
+                                if (ok1) return true;
+                                // try as text/plain
+                                try {
+                                    const res2 = await fetchWithTimeout(GAS_URL, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                        body: JSON.stringify(item.payload)
+                                    }, 6000);
+                                    const text2 = await res2.text();
+                                    try { JSON.parse(text2); } catch(e) { /* ignore */ }
+                                    console.log('Flushed pending item (second try as text/plain)');
+                                    return true;
+                                } catch(e) { console.warn('flush second try failed', e); }
+                                return false;
                             } catch(e) {
-                                console.warn('Flush attempt failed', e && e.message ? e.message : e);
+                                console.warn('Flush attempt inner failed', e && e.message ? e.message : e);
                                 return false;
                             }
                         })();
@@ -958,6 +995,22 @@
                 }
             } catch(e) { /* ignore */ }
         });
+
+        // 送信ログを表示する (新しいウィンドウ)
+        function openSendHistoryWindow() {
+            try {
+                const list = JSON.parse(localStorage.getItem('send_history') || '[]');
+                const w = window.open('', '_blank');
+                if (!w) { alert('新しいウィンドウを開けませんでした。ポップアップブロックを確認してください。'); return; }
+                w.document.title = '送信ログ';
+                const pre = w.document.createElement('pre');
+                pre.style.whiteSpace = 'pre-wrap';
+                pre.textContent = JSON.stringify(list.slice(0,200), null, 2);
+                w.document.body.appendChild(pre);
+            } catch(e) { alert('送信ログを読み取れませんでした'); }
+        }
+
+        document.getElementById('debug-send-log').addEventListener('click', () => openSendHistoryWindow());
     </script>
 </body>
 </html>
