@@ -1,245 +1,164 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>じゆうメモ — きもちにっき</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .memo-container { max-width:900px; margin:20px auto; padding:20px; }
-        .editor { display:flex; gap:16px; align-items:flex-start; }
-        .editor-left { flex:1; }
-        .editor-right { width:320px; }
-        textarea#memo-body { width:100%; height:240px; padding:12px; font-size:16px; border-radius:12px; border:1px solid #ddd; resize:vertical; }
-        .btn-row { display:flex; gap:8px; margin-top:8px; }
-        .small { padding:8px 12px; font-size:13px; border-radius:10px; }
-        .status { margin-top:8px; color:#666; font-size:13px; }
-        .note-list { margin-top:20px; }
-        .date-group { margin-bottom:14px; }
-        .date-header { display:flex; justify-content:space-between; align-items:center; background:#fafafa; padding:8px 12px; border-radius:10px; border:1px solid #eee; }
-        .note-item { padding:8px 12px; border-radius:8px; margin-top:8px; background:white; border:1px solid #f0f0f0; cursor:pointer; }
-        .note-meta { font-size:12px; color:#888; margin-top:6px; }
-        .controls { display:flex; gap:8px; margin-bottom:8px; }
-        .search { width:100%; padding:8px 10px; border-radius:10px; border:1px solid #ddd; }
-        .muted { color:#999; font-size:13px; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📝 じゆうメモ — きもちにっき</title>
+<style>
+    body {
+        font-family: "Hiragino Maru Gothic Pro", "Yu Gothic", sans-serif;
+        margin:0; padding:0;
+        background: linear-gradient(135deg,#fff7e6,#ffeefd);
+        color:#333;
+    }
+    .container { max-width:1100px; margin:0 auto; padding:20px; display:flex; gap:20px; flex-wrap:wrap; }
+    h1 { width:100%; text-align:center; margin-bottom:20px; }
+
+    /* 左側入力 */
+    .editor { flex:1; display:flex; flex-direction:column; gap:12px; }
+    .editor input, .editor textarea, .editor select { width:100%; padding:10px; font-size:16px; border-radius:10px; border:1px solid #ddd; }
+    .editor textarea { height:200px; resize:vertical; }
+
+    .btn-row { display:flex; gap:8px; margin-top:8px; }
+    .btn { padding:8px 12px; border:none; border-radius:10px; cursor:pointer; background:#ffecb3; color:#444; transition:.2s; }
+    .btn:hover { transform:scale(1.05); }
+
+    .status { font-size:13px; color:#666; }
+
+    /* 右側カレンダー風一覧 */
+    .note-calendar { width:350px; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column; gap:14px; }
+    .date-group { border-radius:12px; background:#fff; box-shadow:0 3px 6px rgba(0,0,0,0.1); padding:10px; }
+    .date-header { font-weight:bold; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+    .note-card { background:#fefefe; border-radius:8px; padding:8px; margin-top:6px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:.15s; }
+    .note-card:hover { transform:scale(1.02); box-shadow:0 3px 6px rgba(0,0,0,0.15); }
+    .note-time { font-size:12px; color:#888; margin-top:4px; }
+
+    /* 検索 */
+    .search { margin-bottom:10px; padding:8px 10px; border-radius:10px; border:1px solid #ddd; width:100%; }
+
+    /* 上に戻るボタン */
+    .floating-btn { position:fixed; right:20px; bottom:20px; width:48px; height:48px; border-radius:50%; background:#fff7e6; display:flex; justify-content:center; align-items:center; box-shadow:0 2px 6px rgba(0,0,0,0.2); cursor:pointer; }
+</style>
 </head>
 <body>
-    <div class="container memo-container">
-        <a href="index.html" class="btn-home">🏠 ホーム</a>
-        <h1>📝 じゆうメモ</h1>
-
-        <div class="controls">
-            <button id="btn-new" class="btn small">🆕 新しいメモ</button>
-            <button id="btn-save" class="btn small">💾 保存 (Ctrl+S)</button>
-            <button id="btn-delete" class="btn small" style="background:#ff6f6f;">🗑 削除</button>
-            <button id="btn-export" class="btn small">⬇︎ エクスポート</button>
-            <label class="btn small" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><input id="file-import" type="file" accept="application/json" style="display:none;">⬆︎ インポート</label>
+<div class="container">
+    <h1>📝 じゆうメモ</h1>
+    <div class="editor">
+        <input id="memo-title" placeholder="タイトル（任意）">
+        <textarea id="memo-body" placeholder="ここにメモを書いてね（自動保存）"></textarea>
+        <div class="btn-row">
+            <select id="memo-date"></select>
+            <button class="btn" id="btn-save">💾 保存</button>
+            <button class="btn" style="background:#ff6f6f;" id="btn-delete">🗑 削除</button>
         </div>
-
-        <div class="editor">
-            <div class="editor-left">
-                <input id="memo-title" placeholder="タイトル（任意）" style="width:100%; padding:10px; font-size:16px; border-radius:10px; border:1px solid #ddd;">
-                <textarea id="memo-body" placeholder="ここにメモを書いてね（自動保存されます）"></textarea>
-                <div class="btn-row">
-                    <select id="memo-date" class="small">
-                        <!-- date choices -->
-                    </select>
-                    <span id="save-status" class="status muted">保存状況: 未保存</span>
-                </div>
-            </div>
-            <div class="editor-right">
-                <input id="search" class="search" placeholder="検索（日付・本文から）">
-                <div style="height:12px"></div>
-                <div style="display:flex; gap:8px; margin-bottom:8px;">
-                    <button id="filter-today" class="btn small">今日</button>
-                    <button id="filter-week" class="btn small">今週</button>
-                    <button id="clear-all" class="btn small" style="background:#eee; color:#333;">全消去</button>
-                </div>
-
-                <div style="font-size:13px; color:#666;">メモ数: <span id="notes-count">0</span></div>
-                <div style="height:12px"></div>
-                <div class="muted">自動保存: 2秒の入力停止で自動保存されます。<br>日付でまとめられ、編集・削除・エクスポート可能。</div>
-            </div>
-        </div>
-
-        <div class="note-list" id="note-list"></div>
+        <div class="status" id="save-status">保存状況: 未保存</div>
     </div>
+    <div class="note-calendar">
+        <input type="text" class="search" id="search" placeholder="検索">
+        <div id="note-list"></div>
+    </div>
+</div>
+<div class="floating-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">⬆</div>
 
 <script>
 (function(){
-    const KEY = 'memo_notes_v1';
-    let notes = []; // {id, title, content, created_at, updated_at}
-    let currentId = null; // editing id
-    const el = {
-        title: document.getElementById('memo-title'),
-        body: document.getElementById('memo-body'),
-        saveStatus: document.getElementById('save-status'),
-        dateSelect: document.getElementById('memo-date'),
-        noteList: document.getElementById('note-list'),
-        btnNew: document.getElementById('btn-new'),
-        btnSave: document.getElementById('btn-save'),
-        btnDelete: document.getElementById('btn-delete'),
-        btnExport: document.getElementById('btn-export'),
-        fileImport: document.getElementById('file-import'),
-        search: document.getElementById('search'),
-        filterToday: document.getElementById('filter-today'),
-        filterWeek: document.getElementById('filter-week'),
-        clearAll: document.getElementById('clear-all'),
-        notesCount: document.getElementById('notes-count')
-    };
+const KEY = 'memo_notes_v2';
+let notes = [], currentId = null;
+const el = {
+    title: document.getElementById('memo-title'),
+    body: document.getElementById('memo-body'),
+    saveStatus: document.getElementById('save-status'),
+    dateSelect: document.getElementById('memo-date'),
+    noteList: document.getElementById('note-list'),
+    btnSave: document.getElementById('btn-save'),
+    btnDelete: document.getElementById('btn-delete'),
+    search: document.getElementById('search')
+};
+const nowISO = d=>d.toISOString();
+const toDateKey = iso=>(new Date(iso)).toISOString().slice(0,10);
+const formatLocal = iso=>{
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+};
 
-    // utils
-    const nowISO = (d=new Date()) => d.toISOString();
-    const toDateKey = iso => (new Date(iso)).toISOString().slice(0,10);
-    const formatLocal = iso => {
-        const d = new Date(iso);
-        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-    };
+function loadNotes(){ try{ notes=JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ notes=[]; } renderNotes(); }
+function saveNotes(){ localStorage.setItem(KEY, JSON.stringify(notes)); }
 
-    // load
-    function loadNotes(){
-        try{ notes = JSON.parse(localStorage.getItem(KEY) || '[]'); }catch(e){ notes = []; }
-        renderNotes();
-    }
+function createNote(title, content, dateIso){
+    const id = Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
+    const created_at = dateIso || nowISO();
+    const n={id,title,content,created_at,updated_at:created_at};
+    notes.unshift(n); saveNotes(); return n;
+}
+function updateNote(id,title,content,dateIso){
+    const idx = notes.findIndex(n=>n.id===id); if(idx===-1) return null;
+    notes[idx].title=title; notes[idx].content=content; if(dateIso) notes[idx].created_at=dateIso; notes[idx].updated_at=nowISO();
+    const item = notes.splice(idx,1)[0]; notes.unshift(item); saveNotes(); return item;
+}
+function deleteNote(id){ notes = notes.filter(n=>n.id!==id); saveNotes(); }
 
-    function saveNotes(){
-        try{ localStorage.setItem(KEY, JSON.stringify(notes)); }catch(e){ console.error('save error', e); }
-        el.notesCount.innerText = notes.length;
-    }
-
-    function createNote(title, content, dateIso){
-        const id = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
-        const created_at = dateIso || nowISO();
-        const n = { id, title: title||'', content: content||'', created_at, updated_at: created_at };
-        notes.unshift(n);
-        saveNotes();
-        return n;
-    }
-
-    function updateNote(id, title, content, dateIso){
-        const idx = notes.findIndex(n=>n.id===id);
-        if(idx===-1) return null;
-        notes[idx].title = title||'';
-        notes[idx].content = content||'';
-        if(dateIso) notes[idx].created_at = dateIso;
-        notes[idx].updated_at = nowISO();
-        // move to front
-        const item = notes.splice(idx,1)[0]; notes.unshift(item);
-        saveNotes();
-        return item;
-    }
-
-    function deleteNote(id){
-        notes = notes.filter(n=>n.id!==id);
-        saveNotes();
-    }
-
-    function clearAll(){ if(confirm('本当に全てのメモを消しますか？ この操作は取り消せません。')){ notes=[]; saveNotes(); renderNotes(); newMemo(); }}
-
-    // render grouped
-    function renderNotes(filterText){
-        const list = el.noteList; list.innerHTML='';
-        const grouped = {};
-        const f = (filterText||'').toLowerCase();
-        notes.forEach(n=>{
-            if(f){ if(!(n.content.toLowerCase().includes(f) || (n.title||'').toLowerCase().includes(f) || n.created_at.startsWith(f))) return; }
-            const key = toDateKey(n.created_at);
-            grouped[key] = grouped[key] || [];
-            grouped[key].push(n);
+function renderNotes(filterText=''){
+    const list = el.noteList; list.innerHTML='';
+    const grouped={};
+    const f=filterText.toLowerCase();
+    notes.forEach(n=>{
+        if(f && !(n.title.toLowerCase().includes(f)||n.content.toLowerCase().includes(f)||n.created_at.startsWith(f))) return;
+        const key = toDateKey(n.created_at);
+        grouped[key]=grouped[key]||[]; grouped[key].push(n);
+    });
+    const keys=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+    if(keys.length===0){ list.innerHTML='<div class="note-card">メモがありません</div>'; return; }
+    keys.forEach(dateKey=>{
+        const group = document.createElement('div'); group.className='date-group';
+        const header = document.createElement('div'); header.className='date-header';
+        header.innerText=`${dateKey} (${grouped[dateKey].length})`;
+        group.appendChild(header);
+        grouped[dateKey].forEach(n=>{
+            const card = document.createElement('div'); card.className='note-card';
+            card.innerHTML=`<strong>${n.title||'(無題)'}</strong><div class="note-time">${formatLocal(n.created_at)}</div>`;
+            card.onclick=()=>openNote(n.id);
+            group.appendChild(card);
         });
-        const keys = Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
-        if(keys.length===0){ list.innerHTML = '<div class="muted">メモがありません</div>'; return; }
-        keys.forEach(dateKey=>{
-            const wrap = document.createElement('div'); wrap.className='date-group';
-            const header = document.createElement('div'); header.className='date-header';
-            const left = document.createElement('div'); left.innerHTML = `<strong>${dateKey}</strong> <span class="muted">(${grouped[dateKey].length})</span>`;
-            const right = document.createElement('div');
-            const btnToggle = document.createElement('button'); btnToggle.className='small'; btnToggle.innerText='折りたたむ';
-            let collapsed = false;
-            btnToggle.onclick = ()=>{ collapsed = !collapsed; btnToggle.innerText = collapsed ? '開く' : '折りたたむ'; items.style.display = collapsed ? 'none' : 'block'; };
-            right.appendChild(btnToggle);
-            header.appendChild(left); header.appendChild(right);
-            const items = document.createElement('div');
-            grouped[dateKey].forEach(n=>{
-                const it = document.createElement('div'); it.className='note-item';
-                it.innerHTML = `<div><strong>${n.title||'(無題)'}</strong></div><div class="note-meta">${formatLocal(n.created_at)}</div>`;
-                it.onclick = ()=>{ openNote(n.id); };
-                items.appendChild(it);
-            });
-            wrap.appendChild(header); wrap.appendChild(items);
-            list.appendChild(wrap);
-        });
-    }
-
-    // editor
-    function newMemo(){ currentId = null; el.title.value=''; el.body.value=''; el.saveStatus.innerText='保存状況: 新規（自動保存または保存ボタンで保存）'; populateDateSelect(); }
-
-    function openNote(id){ const n = notes.find(x=>x.id===id); if(!n) return; currentId = n.id; el.title.value = n.title; el.body.value = n.content; el.saveStatus.innerText = '保存状況: 編集中（自動保存または保存ボタンで反映）'; populateDateSelect(n.created_at); }
-
-    function populateDateSelect(selectedIso){ el.dateSelect.innerHTML=''; const today = new Date(); for(let i=0;i<14;i++){ const d = new Date(); d.setDate(today.getDate()-i); const iso = d.toISOString().slice(0,10); const opt = document.createElement('option'); opt.value = iso; opt.innerText = iso; if(selectedIso && selectedIso.startsWith(iso)) opt.selected=true; el.dateSelect.appendChild(opt); }
-    }
-
-    // auto save debounce
-    let timer = null; let lastSavedContent = '';
-    function scheduleAutoSave(){
-        el.saveStatus.innerText = '保存状況: 入力中...';
-        if(timer) clearTimeout(timer);
-        timer = setTimeout(()=>{
-            doSave();
-        }, 2000);
-    }
-
-    function doSave(){
-        const title = el.title.value.trim();
-        const content = el.body.value.trim();
-        const selectedDate = el.dateSelect.value ? (new Date(el.dateSelect.value)).toISOString() : nowISO();
-        if(!content && !title){ el.saveStatus.innerText='保存状況: 空のため保存しません'; return; }
-        if(currentId){ updateNote(currentId, title, content, selectedDate); el.saveStatus.innerText='保存状況: 更新しました ' + formatLocal(nowISO()); }
-        else { const n = createNote(title, content, selectedDate); currentId = n.id; el.saveStatus.innerText='保存状況: 新規保存しました ' + formatLocal(n.created_at); }
-        renderNotes(el.search.value);
-    }
-
-    // manual save
-    el.btnSave.addEventListener('click', ()=>{ if(timer) clearTimeout(timer); doSave(); });
-    el.btnNew.addEventListener('click', ()=>{ newMemo(); });
-    el.btnDelete.addEventListener('click', ()=>{ if(!currentId){ alert('編集中のメモがありません'); return; } if(confirm('このメモを削除しますか？')){ deleteNote(currentId); newMemo(); renderNotes(); } });
-    el.clearAll.addEventListener('click', clearAll);
-
-    // export/import
-    el.btnExport.addEventListener('click', ()=>{
-        const data = JSON.stringify(notes, null, 2);
-        const blob = new Blob([data], {type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'memo_export_' + (new Date()).toISOString().slice(0,10) + '.json'; a.click();
-        URL.revokeObjectURL(url);
+        list.appendChild(group);
     });
-    el.fileImport.addEventListener('change', (ev)=>{
-        const f = ev.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ()=>{
-            try{ const imported = JSON.parse(r.result); if(Array.isArray(imported)){ // merge
-                imported.forEach(it=>{ if(!it.id) it.id = (Date.now()+Math.random()).toString(36); notes.push(it); }); saveNotes(); renderNotes(); alert('インポート完了'); }
-                else alert('JSON配列を選んでください'); } catch(e){ alert('読み込み失敗'); }
-        }; r.readAsText(f);
-    });
+}
 
-    // search & filters
-    el.search.addEventListener('input', ()=>{ renderNotes(el.search.value); });
-    el.filterToday.addEventListener('click', ()=>{ el.search.value = (new Date()).toISOString().slice(0,10); renderNotes(el.search.value); });
-    el.filterWeek.addEventListener('click', ()=>{ const now=new Date(); const start = new Date(now); start.setDate(now.getDate()-7); el.search.value = ''; renderNotes(); // client can see weekly by scanning
-        // highlight by week: quick filter by ISO date range
-        const keys = notes.filter(n=>{ const d=new Date(n.created_at); return d>=start; }).map(n=>n.id);
-    });
+function newMemo(){ currentId=null; el.title.value=''; el.body.value=''; el.saveStatus.innerText='保存状況: 新規'; populateDateSelect(); }
+function openNote(id){ const n=notes.find(x=>x.id===id); if(!n) return; currentId=n.id; el.title.value=n.title; el.body.value=n.content; el.saveStatus.innerText='保存状況: 編集中'; populateDateSelect(n.created_at); }
 
-    // keyboard shortcuts
-    window.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); if(timer) clearTimeout(timer); doSave(); } });
+function populateDateSelect(selectedIso){
+    el.dateSelect.innerHTML='';
+    const today=new Date();
+    for(let i=0;i<14;i++){
+        const d=new Date(); d.setDate(today.getDate()-i);
+        const iso=d.toISOString().slice(0,10);
+        const opt=document.createElement('option'); opt.value=iso; opt.innerText=iso;
+        if(selectedIso && selectedIso.startsWith(iso)) opt.selected=true;
+        el.dateSelect.appendChild(opt);
+    }
+}
 
-    // input events
-    el.title.addEventListener('input', scheduleAutoSave);
-    el.body.addEventListener('input', scheduleAutoSave);
-    el.dateSelect.addEventListener('change', scheduleAutoSave);
+// auto save
+let timer=null;
+function scheduleAutoSave(){ el.saveStatus.innerText='保存状況: 入力中...'; if(timer) clearTimeout(timer); timer=setTimeout(doSave,1500); }
+function doSave(){
+    const title=el.title.value.trim(), content=el.body.value.trim(), dateIso=(new Date(el.dateSelect.value)).toISOString();
+    if(!title&&!content){ el.saveStatus.innerText='保存状況: 空のため保存しません'; return; }
+    if(currentId){ updateNote(currentId,title,content,dateIso); el.saveStatus.innerText='保存状況: 更新 ' + formatLocal(nowISO()); }
+    else { const n=createNote(title,content,dateIso); currentId=n.id; el.saveStatus.innerText='保存状況: 新規保存 ' + formatLocal(n.created_at); }
+    renderNotes(el.search.value);
+}
 
-    // initial
-    loadNotes(); newMemo();
+// events
+el.btnSave.addEventListener('click',()=>{ if(timer) clearTimeout(timer); doSave(); });
+el.btnDelete.addEventListener('click',()=>{ if(!currentId){ alert('編集中のメモがありません'); return; } if(confirm('削除しますか？')){ deleteNote(currentId); newMemo(); renderNotes(); }});
+el.search.addEventListener('input',()=>{ renderNotes(el.search.value); });
+el.title.addEventListener('input', scheduleAutoSave);
+el.body.addEventListener('input', scheduleAutoSave);
+el.dateSelect.addEventListener('change', scheduleAutoSave);
+window.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); if(timer) clearTimeout(timer); doSave(); } });
+
+loadNotes(); newMemo();
 })();
 </script>
 </body>
