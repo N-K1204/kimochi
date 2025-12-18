@@ -791,7 +791,7 @@
 
         window.onload = startGame;
 
-        // ★★★ 修正箇所：ボタンクリック処理（GAS連携対応版） ★★★
+        // ★★★ 修正箇所：ボタンクリック処理（GAS連携対応版・タイムアウト対応） ★★★
         submitBtn.addEventListener('click', function() {
             let finalInput = "";
             if (currentMode === 'free') {
@@ -800,76 +800,72 @@
                 finalInput = document.getElementById('game-final-text').value;
                 if(!finalInput) finalInput = "（おはなしの とちゅう）";
             }
-            
-            // 1. ボタンを連打できないようにする
+
+            // ボタン連打防止
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'おくってるよ... 🚀';
 
-            // 2. ローカル保存用データ
-            const now = new Date();
-            const dateStr = now.getFullYear() + "-" + 
-                           String(now.getMonth()+1).padStart(2, '0') + "-" + 
-                           String(now.getDate()).padStart(2, '0') + " " + 
-                           String(now.getHours()).padStart(2, '0') + ":" + 
-                           String(now.getMinutes()).padStart(2, '0') + ":" + 
-                           String(now.getSeconds()).padStart(2, '0');
-
-            const newLog = {
-                created_at: dateStr,
-                color: colorKey,
-                emotion_label: theme.label,
-                user_input: finalInput || "-"
-            };
-
             // ローカル保存
             try {
+                const now = new Date();
+                const dateStr = now.getFullYear() + "-" +
+                               String(now.getMonth()+1).padStart(2, '0') + "-" +
+                               String(now.getDate()).padStart(2, '0') + " " +
+                               String(now.getHours()).padStart(2, '0') + ":" +
+                               String(now.getMinutes()).padStart(2, '0') + ":" +
+                               String(now.getSeconds()).padStart(2, '0');
+
+                const newLog = {
+                    created_at: dateStr,
+                    color: colorKey,
+                    emotion_label: theme.label,
+                    user_input: finalInput || "-"
+                };
                 const logs = JSON.parse(localStorage.getItem('emotion_logs') || "[]");
                 logs.unshift(newLog);
                 localStorage.setItem('emotion_logs', JSON.stringify(logs));
             } catch(e) { console.error(e); }
 
-            // 3. GASへの送信処理（GAS仕様: { color, emotion, text }）
-            let sendPromise = Promise.resolve(); 
+            // GAS送信（タイムアウト付き）
+            const postData = { color: colorKey, emotion: theme.label, text: finalInput || "（テキストなし）" };
 
-            if (typeof GAS_URL !== 'undefined' && GAS_URL.startsWith("http")) {
-                // GAS仕様に合わせたデータ形式
-                const postData = {
-                    color: colorKey,
-                    emotion: theme.label,
-                    text: finalInput || "（テキストなし）"
-                };
-                
-                // 送信処理をセット
-                sendPromise = fetch(GAS_URL, {
-                    method: 'POST',
-                    redirect: "follow",
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(postData)
-                })
-                .then(response => {
-                    console.log("✅ GAS response status:", response.status);
-                    if (!response.ok) throw new Error("Response not ok");
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("✅ GAS response:", data);
-                    if (data.result === "success") {
-                        console.log("✅ データ記録成功");
-                    } else {
-                        console.warn("⚠️ GAS: " + data.message);
-                    }
-                    return Promise.resolve();
-                })
-                .catch(e => {
-                    console.error("❌ GAS送信失敗:", e.message);
-                    // エラーが起きても画面遷移する（ローカル保存は成功）
-                    return Promise.resolve();
+            function fetchWithTimeout(url, options = {}, timeout = 6000) {
+                const controller = new AbortController();
+                const signal = controller.signal;
+                const fetchPromise = fetch(url, Object.assign({}, options, { signal }));
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+                return fetchPromise.finally(() => clearTimeout(timeoutId));
+            }
+
+            let sendPromise = Promise.resolve();
+            if (typeof GAS_URL !== 'undefined' && GAS_URL && GAS_URL.startsWith('http')) {
+                sendPromise = new Promise((resolve) => {
+                    fetchWithTimeout(GAS_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(postData)
+                    }, 6000)
+                    .then(response => {
+                        console.log('GAS status:', response.status);
+                        return response.text();
+                    })
+                    .then(text => {
+                        let parsed = null;
+                        try { parsed = text ? JSON.parse(text) : null; } catch(e) { parsed = { raw: text }; }
+                        console.log('GAS body:', parsed);
+                        resolve();
+                    })
+                    .catch(err => {
+                        if (err.name === 'AbortError') console.warn('GAS fetch aborted: timeout');
+                        else console.error('GAS send failed:', err);
+                        resolve();
+                    });
                 });
             }
 
-            // 4. 送信完了または失敗したら、画面遷移する
+            // タイムアウトやエラーでも必ず画面遷移させる
             sendPromise.finally(() => {
-                // ここで必ず画面移動する
+                // 画面遷移
                 window.location.href = `result.html?color=${colorKey}&input=${encodeURIComponent(finalInput)}`;
             });
         });
