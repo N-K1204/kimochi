@@ -839,28 +839,65 @@
 
             let sendPromise = Promise.resolve();
             if (typeof GAS_URL !== 'undefined' && GAS_URL && GAS_URL.startsWith('http')) {
-                sendPromise = new Promise((resolve) => {
-                    fetchWithTimeout(GAS_URL, {
+                // try send with retries; if fails, enqueue for later
+                const trySendOnce = () => {
+                    return fetchWithTimeout(GAS_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(postData)
                     }, 6000)
-                    .then(response => {
-                        console.log('GAS status:', response.status);
-                        return response.text();
-                    })
-                    .then(text => {
-                        let parsed = null;
-                        try { parsed = text ? JSON.parse(text) : null; } catch(e) { parsed = { raw: text }; }
-                        console.log('GAS body:', parsed);
-                        resolve();
+                    .then(response => response.text().then(text => ({ status: response.status, text })))
+                    .then(({status, text}) => {
+                        try { const parsed = text ? JSON.parse(text) : null; console.log('GAS body:', parsed); } catch(e) { console.log('GAS raw:', text); }
+                        return true;
                     })
                     .catch(err => {
-                        if (err.name === 'AbortError') console.warn('GAS fetch aborted: timeout');
-                        else console.error('GAS send failed:', err);
-                        resolve();
+                        if (err && err.name === 'AbortError') console.warn('GAS fetch aborted: timeout');
+                        else console.warn('GAS send failed:', err && err.message ? err.message : err);
+                        return false;
                     });
-                });
+                };
+
+                const trySendWithRetries = async (maxAttempts = 3) => {
+                    for (let i = 0; i < maxAttempts; i++) {
+                        const ok = await trySendOnce();
+                        if (ok) return true;
+                        // backoff
+                        await new Promise(r => setTimeout(r, 500 * Math.pow(2, i)));
+                    }
+                    return false;
+                };
+
+                const enqueuePending = (payload) => {
+                    try {
+                        const list = JSON.parse(localStorage.getItem('pending_sends') || '[]');
+                        list.push({ payload, ts: new Date().toISOString() });
+                        localStorage.setItem('pending_sends', JSON.stringify(list));
+                        console.log('Enqueued pending send (total):', list.length);
+                    } catch(e) { console.error('enqueuePending error', e); }
+                };
+
+                const trySendBeacon = (payload) => {
+                    try {
+                        if (navigator.sendBeacon) {
+                            const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                            const ok = navigator.sendBeacon(GAS_URL, blob);
+                            console.log('sendBeacon used, returned:', ok);
+                            return ok;
+                        }
+                    } catch(e) { console.warn('sendBeacon failed', e); }
+                    return false;
+                };
+
+                // perform send, and enqueue if failed
+                sendPromise = (async () => {
+                    const ok = await trySendWithRetries(2);
+                    if (!ok) {
+                        // try sendBeacon as last ditch
+                        const beaconOk = trySendBeacon(postData);
+                        if (!beaconOk) enqueuePending(postData);
+                    }
+                })();
             }
 
             // タイムアウトやエラーでも必ず画面遷移させる
@@ -868,6 +905,58 @@
                 // 画面遷移
                 window.location.href = `result.html?color=${colorKey}&input=${encodeURIComponent(finalInput)}`;
             });
+        });
+
+        // 再送処理：ページ読み込み時に未送信キューをフラッシュする
+        async function flushPendingSends() {
+            try {
+                const list = JSON.parse(localStorage.getItem('pending_sends') || '[]');
+                if (!Array.isArray(list) || list.length === 0) return;
+                console.log('flushPendingSends: found', list.length);
+                const remaining = [];
+                for (const item of list) {
+                    try {
+                        const ok = await (async () => {
+                            try {
+                                const res = await fetchWithTimeout(GAS_URL, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(item.payload)
+                                }, 6000);
+                                const text = await res.text();
+                                try { JSON.parse(text); } catch(e) { /* ignore */ }
+                                console.log('Flushed pending item');
+                                return true;
+                            } catch(e) {
+                                console.warn('Flush attempt failed', e && e.message ? e.message : e);
+                                return false;
+                            }
+                        })();
+                        if (!ok) remaining.push(item);
+                    } catch(e) { remaining.push(item); }
+                }
+                localStorage.setItem('pending_sends', JSON.stringify(remaining));
+                console.log('flushPendingSends: remaining', remaining.length);
+            } catch(e) { console.error('flushPendingSends error', e); }
+        }
+
+        // 画面が読み込まれたら未送信キューを試す
+        window.addEventListener('load', () => {
+            setTimeout(() => flushPendingSends(), 2000);
+        });
+
+        // ページ離脱時に sendBeacon を試す（直前送信がある場合）
+        window.addEventListener('beforeunload', () => {
+            try {
+                const list = JSON.parse(localStorage.getItem('pending_sends') || '[]');
+                if (Array.isArray(list) && list.length > 0 && navigator.sendBeacon) {
+                    // まとめて送る
+                    try {
+                        const blob = new Blob([JSON.stringify(list.map(i => i.payload))], { type: 'application/json' });
+                        navigator.sendBeacon(GAS_URL, blob);
+                    } catch(e) { /* ignore */ }
+                }
+            } catch(e) { /* ignore */ }
         });
     </script>
 </body>
