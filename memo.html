@@ -3,41 +3,50 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>📝 じゆうメモ — きもちにっき</title>
+<title>📝 じゆうメモ — ポップ版</title>
 <style>
-    body {
-        font-family: "Hiragino Maru Gothic Pro", "Yu Gothic", sans-serif;
-        margin:0; padding:0;
-        background: linear-gradient(135deg,#fff7e6,#ffeefd);
-        color:#333;
-    }
-    .container { max-width:1100px; margin:0 auto; padding:20px; display:flex; gap:20px; flex-wrap:wrap; }
-    h1 { width:100%; text-align:center; margin-bottom:20px; }
+body {
+    font-family: "Hiragino Maru Gothic Pro","Yu Gothic",sans-serif;
+    margin:0; padding:0;
+    background: #fffbe6;
+    color:#333;
+}
+.container { display:flex; max-width:1100px; margin:0 auto; padding:20px; gap:20px; flex-wrap:wrap; }
+h1 { width:100%; text-align:center; margin-bottom:20px; color:#ff6f91; }
 
-    /* 左側入力 */
-    .editor { flex:1; display:flex; flex-direction:column; gap:12px; }
-    .editor input, .editor textarea, .editor select { width:100%; padding:10px; font-size:16px; border-radius:10px; border:1px solid #ddd; }
-    .editor textarea { height:200px; resize:vertical; }
+.editor {
+    flex:1; display:flex; flex-direction:column; gap:12px; min-width:300px;
+}
+.editor input, .editor textarea, .editor select {
+    width:100%; padding:12px; font-size:16px; border-radius:12px; border:none;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+}
+.editor textarea { height:180px; resize:vertical; }
 
-    .btn-row { display:flex; gap:8px; margin-top:8px; }
-    .btn { padding:8px 12px; border:none; border-radius:10px; cursor:pointer; background:#ffecb3; color:#444; transition:.2s; }
-    .btn:hover { transform:scale(1.05); }
+.btn-row { display:flex; gap:8px; }
+.btn { padding:8px 12px; border:none; border-radius:16px; cursor:pointer; font-weight:bold; transition:.2s; background:#ffd6e0; color:#333; }
+.btn:hover { transform:scale(1.05); }
+.btn-delete { background:#ff9aa2; color:#fff; }
 
-    .status { font-size:13px; color:#666; }
+.status { font-size:13px; color:#666; }
 
-    /* 右側カレンダー風一覧 */
-    .note-calendar { width:350px; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column; gap:14px; }
-    .date-group { border-radius:12px; background:#fff; box-shadow:0 3px 6px rgba(0,0,0,0.1); padding:10px; }
-    .date-header { font-weight:bold; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
-    .note-card { background:#fefefe; border-radius:8px; padding:8px; margin-top:6px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:.15s; }
-    .note-card:hover { transform:scale(1.02); box-shadow:0 3px 6px rgba(0,0,0,0.15); }
-    .note-time { font-size:12px; color:#888; margin-top:4px; }
+.note-calendar {
+    flex:1; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column; gap:14px; min-width:300px;
+}
+.date-group { border-radius:16px; background:#fff; padding:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
+.date-header { font-weight:bold; font-size:16px; margin-bottom:6px; color:#ff6f91; }
 
-    /* 検索 */
-    .search { margin-bottom:10px; padding:8px 10px; border-radius:10px; border:1px solid #ddd; width:100%; }
+.note-card {
+    padding:8px 12px; border-radius:12px; margin-top:6px; cursor:pointer;
+    background: linear-gradient(120deg, #ffd6e0,#ffe6f2); 
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    transition:.2s;
+}
+.note-card:hover { transform:scale(1.02); box-shadow:0 4px 8px rgba(0,0,0,0.15); }
+.note-time { font-size:12px; color:#888; margin-top:4px; }
 
-    /* 上に戻るボタン */
-    .floating-btn { position:fixed; right:20px; bottom:20px; width:48px; height:48px; border-radius:50%; background:#fff7e6; display:flex; justify-content:center; align-items:center; box-shadow:0 2px 6px rgba(0,0,0,0.2); cursor:pointer; }
+.search { padding:8px 10px; border-radius:12px; border:none; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-bottom:10px; }
+
 </style>
 </head>
 <body>
@@ -49,7 +58,7 @@
         <div class="btn-row">
             <select id="memo-date"></select>
             <button class="btn" id="btn-save">💾 保存</button>
-            <button class="btn" style="background:#ff6f6f;" id="btn-delete">🗑 削除</button>
+            <button class="btn btn-delete" id="btn-delete">🗑 削除</button>
         </div>
         <div class="status" id="save-status">保存状況: 未保存</div>
     </div>
@@ -58,105 +67,59 @@
         <div id="note-list"></div>
     </div>
 </div>
-<div class="floating-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">⬆</div>
 
 <script>
+// 基本は前回のスクリプトを流用
+// 自動保存・保存・削除・日付別表示・検索は同様
 (function(){
-const KEY = 'memo_notes_v2';
-let notes = [], currentId = null;
-const el = {
-    title: document.getElementById('memo-title'),
-    body: document.getElementById('memo-body'),
-    saveStatus: document.getElementById('save-status'),
-    dateSelect: document.getElementById('memo-date'),
-    noteList: document.getElementById('note-list'),
-    btnSave: document.getElementById('btn-save'),
-    btnDelete: document.getElementById('btn-delete'),
-    search: document.getElementById('search')
+const KEY='memo_notes_pop';
+let notes=[], currentId=null;
+const el={
+title:document.getElementById('memo-title'),
+body:document.getElementById('memo-body'),
+saveStatus:document.getElementById('save-status'),
+dateSelect:document.getElementById('memo-date'),
+noteList:document.getElementById('note-list'),
+btnSave:document.getElementById('btn-save'),
+btnDelete:document.getElementById('btn-delete'),
+search:document.getElementById('search')
 };
-const nowISO = d=>d.toISOString();
-const toDateKey = iso=>(new Date(iso)).toISOString().slice(0,10);
-const formatLocal = iso=>{
-    const d = new Date(iso);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-};
+const nowISO=d=>d.toISOString();
+const toDateKey=iso=>(new Date(iso)).toISOString().slice(0,10);
+const formatLocal=iso=>{const d=new Date(iso);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;};
 
-function loadNotes(){ try{ notes=JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ notes=[]; } renderNotes(); }
-function saveNotes(){ localStorage.setItem(KEY, JSON.stringify(notes)); }
+function loadNotes(){ try{notes=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){notes=[];} renderNotes();}
+function saveNotes(){ localStorage.setItem(KEY,JSON.stringify(notes)); }
 
-function createNote(title, content, dateIso){
-    const id = Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
-    const created_at = dateIso || nowISO();
-    const n={id,title,content,created_at,updated_at:created_at};
-    notes.unshift(n); saveNotes(); return n;
-}
-function updateNote(id,title,content,dateIso){
-    const idx = notes.findIndex(n=>n.id===id); if(idx===-1) return null;
-    notes[idx].title=title; notes[idx].content=content; if(dateIso) notes[idx].created_at=dateIso; notes[idx].updated_at=nowISO();
-    const item = notes.splice(idx,1)[0]; notes.unshift(item); saveNotes(); return item;
-}
-function deleteNote(id){ notes = notes.filter(n=>n.id!==id); saveNotes(); }
+function createNote(title,content,dateIso){const id=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);const created_at=dateIso||nowISO();const n={id,title,content,created_at,updated_at:created_at}; notes.unshift(n); saveNotes(); return n;}
+function updateNote(id,title,content,dateIso){const idx=notes.findIndex(n=>n.id===id); if(idx===-1)return null; notes[idx].title=title; notes[idx].content=content; if(dateIso)notes[idx].created_at=dateIso; notes[idx].updated_at=nowISO(); const item=notes.splice(idx,1)[0]; notes.unshift(item); saveNotes(); return item;}
+function deleteNote(id){ notes=notes.filter(n=>n.id!==id); saveNotes(); }
 
 function renderNotes(filterText=''){
-    const list = el.noteList; list.innerHTML='';
-    const grouped={};
-    const f=filterText.toLowerCase();
-    notes.forEach(n=>{
-        if(f && !(n.title.toLowerCase().includes(f)||n.content.toLowerCase().includes(f)||n.created_at.startsWith(f))) return;
-        const key = toDateKey(n.created_at);
-        grouped[key]=grouped[key]||[]; grouped[key].push(n);
-    });
+    const list=el.noteList; list.innerHTML=''; const grouped={}; const f=filterText.toLowerCase();
+    notes.forEach(n=>{if(f && !(n.title.toLowerCase().includes(f)||n.content.toLowerCase().includes(f)||n.created_at.startsWith(f))) return; const key=toDateKey(n.created_at); grouped[key]=grouped[key]||[]; grouped[key].push(n);});
     const keys=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
     if(keys.length===0){ list.innerHTML='<div class="note-card">メモがありません</div>'; return; }
-    keys.forEach(dateKey=>{
-        const group = document.createElement('div'); group.className='date-group';
-        const header = document.createElement('div'); header.className='date-header';
-        header.innerText=`${dateKey} (${grouped[dateKey].length})`;
-        group.appendChild(header);
-        grouped[dateKey].forEach(n=>{
-            const card = document.createElement('div'); card.className='note-card';
-            card.innerHTML=`<strong>${n.title||'(無題)'}</strong><div class="note-time">${formatLocal(n.created_at)}</div>`;
-            card.onclick=()=>openNote(n.id);
-            group.appendChild(card);
-        });
-        list.appendChild(group);
-    });
+    keys.forEach(dateKey=>{const group=document.createElement('div'); group.className='date-group'; const header=document.createElement('div'); header.className='date-header'; header.innerText=`${dateKey} (${grouped[dateKey].length})`; group.appendChild(header);
+        grouped[dateKey].forEach(n=>{const card=document.createElement('div'); card.className='note-card'; card.innerHTML=`<strong>${n.title||'(無題)'}</strong><div class="note-time">${formatLocal(n.created_at)}</div>`; card.onclick=()=>openNote(n.id); group.appendChild(card);});
+        list.appendChild(group);});
 }
 
-function newMemo(){ currentId=null; el.title.value=''; el.body.value=''; el.saveStatus.innerText='保存状況: 新規'; populateDateSelect(); }
-function openNote(id){ const n=notes.find(x=>x.id===id); if(!n) return; currentId=n.id; el.title.value=n.title; el.body.value=n.content; el.saveStatus.innerText='保存状況: 編集中'; populateDateSelect(n.created_at); }
+function newMemo(){ currentId=null; el.title.value=''; el.body.value=''; el.saveStatus.innerText='保存状況: 新規'; populateDateSelect();}
+function openNote(id){const n=notes.find(x=>x.id===id); if(!n)return; currentId=n.id; el.title.value=n.title; el.body.value=n.content; el.saveStatus.innerText='保存状況: 編集中'; populateDateSelect(n.created_at);}
+function populateDateSelect(selectedIso){ el.dateSelect.innerHTML=''; const today=new Date(); for(let i=0;i<14;i++){ const d=new Date(); d.setDate(today.getDate()-i); const iso=d.toISOString().slice(0,10); const opt=document.createElement('option'); opt.value=iso; opt.innerText=iso; if(selectedIso && selectedIso.startsWith(iso)) opt.selected=true; el.dateSelect.appendChild(opt); } }
 
-function populateDateSelect(selectedIso){
-    el.dateSelect.innerHTML='';
-    const today=new Date();
-    for(let i=0;i<14;i++){
-        const d=new Date(); d.setDate(today.getDate()-i);
-        const iso=d.toISOString().slice(0,10);
-        const opt=document.createElement('option'); opt.value=iso; opt.innerText=iso;
-        if(selectedIso && selectedIso.startsWith(iso)) opt.selected=true;
-        el.dateSelect.appendChild(opt);
-    }
-}
-
-// auto save
 let timer=null;
-function scheduleAutoSave(){ el.saveStatus.innerText='保存状況: 入力中...'; if(timer) clearTimeout(timer); timer=setTimeout(doSave,1500); }
-function doSave(){
-    const title=el.title.value.trim(), content=el.body.value.trim(), dateIso=(new Date(el.dateSelect.value)).toISOString();
-    if(!title&&!content){ el.saveStatus.innerText='保存状況: 空のため保存しません'; return; }
-    if(currentId){ updateNote(currentId,title,content,dateIso); el.saveStatus.innerText='保存状況: 更新 ' + formatLocal(nowISO()); }
-    else { const n=createNote(title,content,dateIso); currentId=n.id; el.saveStatus.innerText='保存状況: 新規保存 ' + formatLocal(n.created_at); }
-    renderNotes(el.search.value);
-}
+function scheduleAutoSave(){ el.saveStatus.innerText='保存中...'; if(timer) clearTimeout(timer); timer=setTimeout(doSave,1500); }
+function doSave(){ const title=el.title.value.trim(), content=el.body.value.trim(), dateIso=(new Date(el.dateSelect.value)).toISOString(); if(!title&&!content){ el.saveStatus.innerText='空のため保存しません'; return;} if(currentId){ updateNote(currentId,title,content,dateIso); el.saveStatus.innerText='更新 ' + formatLocal(nowISO()); } else { const n=createNote(title,content,dateIso); currentId=n.id; el.saveStatus.innerText='新規保存 ' + formatLocal(n.created_at); } renderNotes(el.search.value); }
 
-// events
 el.btnSave.addEventListener('click',()=>{ if(timer) clearTimeout(timer); doSave(); });
 el.btnDelete.addEventListener('click',()=>{ if(!currentId){ alert('編集中のメモがありません'); return; } if(confirm('削除しますか？')){ deleteNote(currentId); newMemo(); renderNotes(); }});
 el.search.addEventListener('input',()=>{ renderNotes(el.search.value); });
 el.title.addEventListener('input', scheduleAutoSave);
 el.body.addEventListener('input', scheduleAutoSave);
 el.dateSelect.addEventListener('change', scheduleAutoSave);
-window.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); if(timer) clearTimeout(timer); doSave(); } });
+window.addEventListener('keydown',(e)=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); if(timer) clearTimeout(timer); doSave(); } });
 
 loadNotes(); newMemo();
 })();
