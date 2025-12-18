@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>きもちにっき</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ------------------------------------------------
+           パスワード画面のスタイル
+        ------------------------------------------------ */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #fff7e6, #ffeefd);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .login-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .pass-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: sans-serif; /* パスワードの●を見やすく */
+        }
+
+        .login-btn {
+            background-color: #ff8bb0;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #ff6f9e;
+            transition: 0.1s;
+        }
+        .login-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .error-msg {
+            color: #ff6f6f;
+            font-size: 14px;
+            margin-top: 15px;
+            display: none; /* 最初は隠す */
+            font-weight: bold;
+        }
+
+        /* ------------------------------------------------
+           既存のスタイル
+        ------------------------------------------------ */
+        /* タイトル（h1）のサイズ調整 */
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #444;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* きろくボタン専用のスタイル */
+        .btn-logs {
+            display: block;
+            width: 100%;
+            padding: 15px 0;
+            margin-top: 30px;
+            background-color: #ffffff;
+            border: 2px solid #ccc;
+            border-radius: 15px;
+            color: #666;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 0 #ddd;
+            transition: 0.1s;
+            box-sizing: border-box;
+        }
+        .btn-logs:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        
+        /* コンテンツエリア（最初は隠す） */
+        #app-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="login-title">🔑 あいことば を いれてね</div>
+            <input type="password" id="password" class="pass-input" placeholder="ここに入力">
+            <br>
+            <button class="login-btn" onclick="checkPassword()">あける</button>
+            <div id="error-message" class="error-msg">ちがうみたい...💦</div>
+        </div>
+    </div>
+    <div id="app-content" class="container">
+        <h1>🌈 きもちにっき 🌈</h1>
+        
+        <div class="color-grid">
+            <a href="input.html?color=pink" class="color-btn" style="background-color: #fff0f7; border-color: #ff8bb0;">
+                <span class="emoji">😄</span><span>うれしい</span>
+            </a>
+            <a href="input.html?color=green" class="color-btn" style="background-color: #f0fff3; border-color: #6ecb63;">
+                <span class="emoji">😌</span><span>おちつく</span>
+            </a>
+            <a href="input.html?color=yellow" class="color-btn" style="background-color: #fffbe0; border-color: #f1c232;">
+                <span class="emoji">😮</span><span>びっくり</span>
+            </a>
+            <a href="input.html?color=purple" class="color-btn" style="background-color: #f9f5ff; border-color: #b49cff;">
+                <span class="emoji">😕</span><span>もやもや</span>
+            </a>
+            <a href="input.html?color=blue" class="color-btn" style="background-color: #f0f6ff; border-color: #7da6ff;">
+                <span class="emoji">😢</span><span>さみしい</span>
+            </a>
+            <a href="input.html?color=black" class="color-btn" style="background-color: #f3f3f3; border-color: #8c8c8c;">
+                <span class="emoji">😴</span><span>つかれた</span>
+            </a>
+            <a href="input.html?color=red" class="color-btn" style="background-color: #fff0f0; border-color: #ff6f6f;">
+                <span class="emoji">😡</span><span>イライラ</span>
+            </a>
+            <a href="input.html?color=white" class="color-btn" style="background-color: #ffffff; border-color: #cccccc;">
+                <span class="emoji">😁</span><span>期間限定</span>
+            </a>
+        </div>
+
+        <a href="logs.html" class="btn-logs">
+            📘 きろく帳を見る
+        </a>
+    </div>
+
+    <script>
+        // 正解のパスワード
+        const CORRECT_PASS = "yuuki01121003";
+
+        // ページを読み込んだとき
+        window.onload = function() {
+            // すでにログイン済みかチェック（セッションストレージ）
+            if (sessionStorage.getItem("isLoggedIn") === "true") {
+                showApp();
+            }
+        };
+
+        // パスワードチェック関数
+        function checkPassword() {
+            const inputPass = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-message');
+
+            if (inputPass === CORRECT_PASS) {
+                // 正解！
+                sessionStorage.setItem("isLoggedIn", "true"); // ログイン状態を保存
+                showApp();
+            } else {
+                // 不正解...
+                errorMsg.style.display = "block";
+                // 入力欄をクリアして揺らすなどのアニメーションを入れても良いですが、今回はシンプルに
+            }
+        }
+
+        // アプリ画面を表示する関数
+        function showApp() {
+            document.getElementById('login-screen').style.display = 'none'; // ロック画面を消す
+            document.getElementById('app-content').style.display = 'block'; // アプリ画面を出す
+        }
+
+        // エンターキーでもログインできるようにする
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    </script>
+</body>
+</html>

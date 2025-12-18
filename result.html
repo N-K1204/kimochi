@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ありがとう</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="thank-you-title">きもち<br>うけとったよ！</h1>
+        
+        <p style="background: rgba(255,255,255,0.8); padding: 15px; border-radius: 10px;">
+            おしえてくれて ありがとう😊
+        </p>
+
+        <a href="index.html" id="back-btn" class="btn" style="margin-top: 20px;">
+            🏠 ホームへ 🏠
+        </a>
+    </div>
+
+    <script>
+        // 色に合わせてデザインを変える
+        const params = new URLSearchParams(window.location.search);
+        const colorKey = params.get('color') || 'pink';
+        
+        const THEME = {
+            "pink":   { bg: "#fff0f7", main: "#ff8bb0" },
+            "green":  { bg: "#f0fff3", main: "#6ecb63" },
+            "yellow": { bg: "#fffbe0", main: "#f1c232" },
+            "purple": { bg: "#f9f5ff", main: "#b49cff" },
+            "blue":   { bg: "#f0f6ff", main: "#7da6ff" },
+            "black":  { bg: "#f3f3f3", main: "#8c8c8c" },
+            "red":    { bg: "#fff0f0", main: "#ff6f6f" },
+            "white":  { bg: "#ffffff", main: "#cccccc" }
+        };
+        const theme = THEME[colorKey] || THEME['pink'];
+        
+        document.body.style.backgroundColor = theme.bg;
+        document.getElementById('thank-you-title').style.color = theme.main;
+        document.getElementById('back-btn').style.backgroundColor = theme.main;
+    </script>
+</body>
+</html>

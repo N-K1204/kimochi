@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>きもちのぶんせき</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 分析ページ専用スタイル */
+        h1 {
+            text-align: center;
+            margin-top: 60px; /* ホームボタン避け */
+            margin-bottom: 20px;
+            color: #444;
+            font-weight: bold;
+            font-size: 24px; /* タイトル小さく */
+        }
+
+        .stat-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border: 2px solid #eee;
+        }
+        .stat-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 15px;
+            border-bottom: 2px dashed #ddd;
+            padding-bottom: 5px;
+            text-align: left;
+        }
+        .bar-container { margin-bottom: 10px; }
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 3px;
+            color: #666;
+        }
+        .bar-bg {
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            height: 18px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease-out;
+            width: 0%;
+        }
+        .pie-chart-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .pie-chart {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(#ddd 0% 100%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .rank-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+        .rank-item {
+            display: flex; justify-content: space-between; padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5; font-size: 15px;
+        }
+        .rank-count {
+            font-weight: bold; color: #444; background: #eee;
+            padding: 2px 8px; border-radius: 10px; font-size: 12px;
+        }
+
+        /* ヒートマップテーブル */
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: center;
+        }
+        .heatmap-table th, .heatmap-table td {
+            border: 1px solid #eee;
+            padding: 8px 4px;
+        }
+        .heatmap-table th {
+            background: #f9f9f9;
+            color: #666;
+        }
+        .heatmap-cell {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin: 1px;
+        }
+
+        /* フローティングボタン */
+        .floating-btn {
+            position: fixed;
+            right: 18px;
+            width: 48px;
+            height: 48px;
+            background: #ffffffcc;
+            backdrop-filter: blur(4px);
+            border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            color: #444;
+            cursor: pointer;
+            z-index: 999;
+        }
+        .scroll-top { bottom: 85px; }
+        .scroll-bottom { bottom: 25px; }
+
+        /* ホームボタン */
+        .home-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            text-decoration: none;
+            background: #bde4ff;
+            padding: 8px 14px;
+            font-size: 14px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+        
+        /* 読み込み中メッセージ */
+        #loading-msg {
+            text-align: center; margin-top: 50px; font-weight: bold; color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="home-btn">🏠 ホーム</a>
+
+    <h1>📊 きもちの ぶんせき</h1>
+
+    <div id="loading-msg">🔄 データをよみこんでるよ...</div>
+
+    <div class="container" id="main-content" style="display:none;">
+        
+        <div class="stat-card">
+            <div class="stat-title">🌈 どんな きもち が おおい？</div>
+            <div class="pie-chart-wrapper">
+                <div id="emotionPie" class="pie-chart"></div>
+            </div>
+            <div id="emotionRanking"></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">⏰ なんじごろ に おおい？</div>
+            <div id="timeBars"></div>
+            <p style="font-size:12px; color:#999; margin-top:5px; text-align:left;">
+                🌅あさ(4-11) ☀️ひる(11-16)<br>
+                🌇ゆうがた(16-19) 🌙よる(19-4)
+            </p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">📅 なんようび に おおい？</div>
+            <div id="weekBars"></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">🌟 ようび × じかん の けいこう</div>
+            <p style="font-size:12px; text-align:left; color:#666;">
+                いつ、どんなきもちになりやすいか
+            </p>
+            <table class="heatmap-table" id="heatmapTable">
+                <thead>
+                    <tr>
+                        <th></th><th>あさ</th>
+                        <th>ひる</th>
+                        <th>ゆう</th>
+                        <th>よる</th>
+                    </tr>
+                </thead>
+                <tbody id="heatmapBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">🔑 よくでる ことば</div>
+            <ul id="wordRanking" class="rank-list"></ul>
+        </div>
+
+        <a href="logs.html" class="btn" style="background:#ddd; color:#555; width:100%; box-sizing:border-box;">
+            📘 きろく帳にもどる
+        </a>
+    </div>
+
+    <div class="floating-btn scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">⬆</div>
+    <div class="floating-btn scroll-bottom" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});">⬇</div>
+
+<script>
+    // ============================================
+    // 🌍 設定
+    // ============================================
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec"; 
+    // ============================================
+
+    const SETTINGS = {
+        "pink":   { label: "😄 うれしい", color: "#ff8bb0" },
+        "green":  { label: "😌 おちつく", color: "#6ecb63" },
+        "yellow": { label: "😮 びっくり", color: "#f1c232" },
+        "purple": { label: "😕 もやもや", color: "#b49cff" },
+        "blue":   { label: "😢 さみしい", color: "#7da6ff" },
+        "black":  { label: "😴 つかれた", color: "#8c8c8c" },
+        "red":    { label: "😡 イライラ", color: "#ff6f6f" },
+        "white":  { label: "😁 そのほか", color: "#cccccc" }
+    };
+
+    const TARGET_WORDS = [
+        "がっこう", "おうち", "せんせい", "ともだち", "お母さん", "お父さん",
+        "たのしい", "うれしい", "できた", "イヤ", "つかれた", "むずかしい",
+        "怒られた", "痛い", "こわい", "泣いた", "べんきょう", "あそび", "給食", "トイレ"
+    ];
+
+    // ★修正：GASからデータを取得して分析を開始する
+    async function initStats() {
+        try {
+            const response = await fetch(GAS_URL + "?t=" + new Date().getTime());
+            const logs = await response.json();
+
+            if (Array.isArray(logs) && logs.length > 0) {
+                analyzeAndRender(logs);
+            } else {
+                throw new Error("No data");
+            }
+        } catch (e) {
+            document.getElementById('loading-msg').innerText = "データが見つかりませんでした😢";
+            console.error(e);
+        }
+    }
+
+    function analyzeAndRender(logs) {
+        document.getElementById('loading-msg').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+
+        const totalLogs = logs.length;
+        
+        // 集計用変数
+        const colorCounts = {};
+        const wordCounts = {};
+        // 時間帯：朝(4-11), 昼(11-16), 夕(16-19), 夜(19-4)
+        const timeCounts = { "🌅 あさ":0, "☀️ ひる":0, "🌇 ゆうがた":0, "🌙 よる":0 };
+        const weekCounts = { "月":0, "火":0, "水":0, "木":0, "金":0, "土":0, "日":0 };
+        const weekOrder = ["月", "火", "水", "木", "金", "土", "日"];
+        
+        // ヒートマップ用 [曜日][時間帯] = [色コード, 色コード...]
+        const heatmapData = {};
+        weekOrder.forEach(day => {
+            heatmapData[day] = { "🌅": [], "☀️": [], "🌇": [], "🌙": [] };
+        });
+
+        Object.keys(SETTINGS).forEach(k => colorCounts[k] = 0);
+        TARGET_WORDS.forEach(w => wordCounts[w] = 0);
+
+        // 集計ループ
+        logs.forEach(log => {
+            // 1. 色
+            if (colorCounts[log.color] !== undefined) colorCounts[log.color]++;
+
+            // 2. 言葉
+            const text = (log.emotion_label + " " + log.user_input).replace(/\s+/g, "");
+            TARGET_WORDS.forEach(word => {
+                if (text.includes(word)) wordCounts[word]++;
+            });
+
+            // 日時処理
+            const d = new Date(log.created_at.replace(/-/g, "/"));
+            const h = d.getHours();
+            const dayName = ["日", "月", "火", "水", "木", "金", "土"][d.getDay()];
+            
+            // colorKeyがSETTINGSにない場合の対策
+            const colorCode = SETTINGS[log.color] ? SETTINGS[log.color].color : "#ccc";
+
+            // 時間帯判定
+            let timeKey = "";
+            if (h >= 4 && h < 11) timeKey = "🌅";
+            else if (h >= 11 && h < 16) timeKey = "☀️";
+            else if (h >= 16 && h < 19) timeKey = "🌇";
+            else timeKey = "🌙";
+
+            // カウントアップ
+            if (timeKey === "🌅") timeCounts["🌅 あさ"]++;
+            if (timeKey === "☀️") timeCounts["☀️ ひる"]++;
+            if (timeKey === "🌇") timeCounts["🌇 ゆうがた"]++;
+            if (timeKey === "🌙") timeCounts["🌙 よる"]++;
+
+            if (weekCounts[dayName] !== undefined) weekCounts[dayName]++;
+
+            // ヒートマップデータ蓄積
+            if (heatmapData[dayName] && heatmapData[dayName][timeKey]) {
+                heatmapData[dayName][timeKey].push(colorCode);
+            }
+        });
+
+        // --- 描画関数 ---
+        function renderBar(containerId, label, count, max, color) {
+            const el = document.getElementById(containerId);
+            const percent = max > 0 ? (count / max) * 100 : 0;
+            el.innerHTML += `
+                <div class="bar-container">
+                    <div class="bar-label"><span>${label}</span><span>${count}回</span></div>
+                    <div class="bar-bg"><div class="bar-fill" style="width:${percent}%; background-color:${color};"></div></div>
+                </div>
+            `;
+        }
+
+        // 1. 感情円グラフ
+        let gradientStr = "";
+        let currentDeg = 0;
+        const sortedColors = Object.keys(colorCounts).sort((a, b) => colorCounts[b] - colorCounts[a]);
+        
+        sortedColors.forEach(key => {
+            const count = colorCounts[key];
+            if (count > 0) {
+                const percentage = (count / totalLogs) * 100;
+                const deg = (count / totalLogs) * 360;
+                const colorCode = SETTINGS[key].color;
+                gradientStr += `${colorCode} 0 ${currentDeg + deg}deg, `;
+                currentDeg += deg;
+                renderBar('emotionRanking', SETTINGS[key].label, count, totalLogs, colorCode);
+            }
+        });
+        if (gradientStr) document.getElementById('emotionPie').style.background = `conic-gradient(${gradientStr.slice(0, -2)})`;
+
+        // 2. 時間帯グラフ
+        const maxTime = Math.max(...Object.values(timeCounts), 1);
+        Object.keys(timeCounts).forEach(k => renderBar('timeBars', k, timeCounts[k], maxTime, '#81d4fa'));
+
+        // 3. 曜日グラフ
+        const maxWeek = Math.max(...Object.values(weekCounts), 1);
+        weekOrder.forEach(k => {
+            let color = '#a5d6a7';
+            if(k === '土') color = '#90caf9';
+            if(k === '日') color = '#ffab91';
+            renderBar('weekBars', k + 'ようび', weekCounts[k], maxWeek, color);
+        });
+
+        // 4. ヒートマップ描画
+        const heatmapBody = document.getElementById('heatmapBody');
+        weekOrder.forEach(day => {
+            let rowHtml = `<tr><td style="font-weight:bold;">${day}</td>`;
+            ["🌅", "☀️", "🌇", "🌙"].forEach(t => {
+                const colors = heatmapData[day][t];
+                let cellContent = "";
+                if (colors.length > 0) {
+                    colors.forEach(c => {
+                        cellContent += `<span class="heatmap-cell" style="background:${c};"></span>`;
+                    });
+                } else {
+                    cellContent = "<span style='color:#eee;'>-</span>";
+                }
+                rowHtml += `<td>${cellContent}</td>`;
+            });
+            rowHtml += "</tr>";
+            heatmapBody.innerHTML += rowHtml;
+        });
+
+        // 5. 言葉ランキング
+        const sortedWords = Object.keys(wordCounts).filter(w => wordCounts[w] > 0).sort((a, b) => wordCounts[b] - wordCounts[a]).slice(0, 5);
+        const wordRankEl = document.getElementById('wordRanking');
+        if(sortedWords.length === 0) wordRankEl.innerHTML = "<li style='font-size:12px; color:#999;'>まだ データが ありません</li>";
+        sortedWords.forEach((w, i) => {
+            const icon = ["🥇","🥈","🥉","4️⃣","5️⃣"][i] || "・";
+            wordRankEl.innerHTML += `<li class="rank-item"><span>${icon} ${w}</span><span class="rank-count">${wordCounts[w]}回</span></li>`;
+        });
+    }
+
+    // 開始
+    window.onload = initStats;
+
+</script>
+</body>
+</html>

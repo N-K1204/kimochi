@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>きろく</title>
+
+    <style>
+        body {
+            font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+            background: linear-gradient(135deg, #fff7e6, #ffeefd);
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 80px; 
+            color: #444;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 60px;
+            margin-bottom: 25px;
+            color: #444;
+            font-weight: 700;
+            font-size: 26px;
+        }
+
+        /* ホームボタン */
+        .home-btn {
+            position: absolute;
+            top: 15px; right: 15px;
+            text-decoration: none;
+            background: #bde4ff; color: white;
+            padding: 8px 14px; font-size: 14px;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        /* フィルターエリア（白い箱） */
+        .filter-box {
+            background: #ffffffcc;
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 15px; /* 箱同士の間隔 */
+        }
+
+        /* タイトルラベル */
+        .filter-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* 色ボタンの並び */
+        .color-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-start; /* 左揃え */
+        }
+
+        /* 色選びボタンのデザイン */
+        .color-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .color-btn.active {
+            border: 3px solid #555 !important;
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .reset-btn {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            text-decoration: underline;
+            cursor: pointer;
+            background: none; border: none;
+            padding: 0;
+        }
+
+        /* ログカード */
+        .log-item {
+            background: #ffffffee;
+            padding: 14px;
+            margin-bottom: 14px;
+            border-radius: 16px;
+            border-left: 12px solid #ccc;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .log-time { font-size: 12px; color: #888; margin-bottom: 4px; }
+        .log-label { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+        .log-text { font-size: 15px; line-height: 1.6; white-space: pre-wrap; color: #333; }
+
+        /* 検索UIの調整 */
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        button.search-btn {
+            padding: 8px 14px; font-size: 14px;
+            border-radius: 8px; border: none;
+            background: #ffb6c1; color: white;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        input[type="text"], input[type="date"] {
+            padding: 8px; border-radius: 6px;
+            border: 1px solid #ccc; font-size: 14px;
+            flex: 1; /* 横幅いっぱいに */
+        }
+
+        /* 上へ戻るボタン */
+        .floating-btn {
+            position: fixed; right: 18px; bottom: 90px;
+            width: 48px; height: 48px;
+            background: #ffffffcc; backdrop-filter: blur(4px);
+            border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 22px; color: #444; cursor: pointer; z-index: 999;
+        }
+
+        /* 下部メニュー */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(255,255,255,0.95);
+            border-top: 1px solid #ddd; padding: 10px 20px;
+            display: flex; justify-content: space-between; gap: 10px;
+            box-sizing: border-box; z-index: 900;
+        }
+        .nav-btn {
+            flex: 1; text-align: center; padding: 12px;
+            border-radius: 12px; text-decoration: none;
+            font-weight: bold; font-size: 14px; color: #555;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-analyze { background-color: #ffecb3; border: 2px solid #ffca28; }
+        .btn-memo    { background-color: #c8e6c9; border: 2px solid #81c784; }
+    </style>
+</head>
+<body>
+
+<a href="index.html" class="home-btn">🏠 ホーム</a>
+
+<h1>📘 きもちのきろく</h1>
+
+<div class="filter-box">
+    <span class="filter-title">🎨 きもち でさがす</span>
+    <div id="color-filter-container" class="color-filter">
+        </div>
+    <button class="reset-btn" onclick="resetFilters()">リセット</button>
+</div>
+
+<div class="filter-box">
+    <span class="filter-title">📅 ひづけ でさがす</span>
+    <div class="search-row">
+        <input type="date" id="date-input">
+        <button onclick="renderLogs()" class="search-btn">検索</button>
+    </div>
+</div>
+
+<div class="filter-box">
+    <span class="filter-title">🔍 ことば でさがす</span>
+    <div class="search-row">
+        <input type="text" id="keyword-input" placeholder="キーワード">
+        <button onclick="renderLogs()" class="search-btn">検索</button>
+    </div>
+</div>
+
+<hr style="margin: 25px 0; border: 0; border-top: 1px dashed #ccc;">
+
+<div id="logs-container"></div>
+
+<div class="floating-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">⬆</div>
+
+<div class="bottom-nav">
+    <a href="stats.html" class="nav-btn btn-analyze">📊 ぶんせき</a>
+    <a href="memo.html" class="nav-btn btn-memo">📝 じゆうメモ</a>
+</div>
+
+<script>
+    // ============================================
+    // 🌍 設定：ここにGASのURLを貼ってください
+    // ============================================
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec"; 
+    // ============================================
+
+    const SETTINGS = {
+        "pink":   { label: "😄", main: "#ff8bb0" },
+        "green":  { label: "😌", main: "#6ecb63" },
+        "yellow": { label: "😮", main: "#f1c232" },
+        "purple": { label: "😕", main: "#b49cff" },
+        "blue":   { label: "😢", main: "#7da6ff" },
+        "black":  { label: "😴", main: "#8c8c8c" },
+        "red":    { label: "😡", main: "#ff6f6f" },
+        "white":  { label: "😁", main: "#ffffff" }
+    };
+
+    let allLogs = [];
+    let currentFilterColor = "";
+
+    // 色ボタンを作る
+    const filterContainer = document.getElementById('color-filter-container');
+    Object.keys(SETTINGS).forEach(key => {
+        const btn = document.createElement('div');
+        btn.className = 'color-btn';
+        btn.style.backgroundColor = SETTINGS[key].main;
+        btn.innerText = SETTINGS[key].label; // 絵文字を表示
+        btn.dataset.color = key;
+        
+        if (key === 'white') btn.style.border = "2px solid #ccc";
+
+        btn.onclick = () => {
+            // 他のボタンのactiveを消す
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+            // 自分をactiveにする
+            btn.classList.add('active');
+            currentFilterColor = key;
+            renderLogs();
+        };
+        filterContainer.appendChild(btn);
+    });
+
+    // データを取得
+    async function fetchLogs() {
+        const container = document.getElementById('logs-container');
+        container.innerHTML = '<p style="text-align:center; margin-top:30px;">🔄 データを読み込み中...</p>';
+
+        try {
+            const url = GAS_URL + "?t=" + new Date().getTime();
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (Array.isArray(data)) {
+                allLogs = data;
+                renderLogs();
+            } else {
+                throw new Error("データ形式エラー");
+            }
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<p style="text-align:center; color:red;">読み込み失敗😢<br>GASのURLを確認してね</p>';
+        }
+    }
+
+    // 画面に表示
+    function renderLogs() {
+        const container = document.getElementById('logs-container');
+        container.innerHTML = "";
+
+        const dateVal = document.getElementById('date-input').value;
+        const keyVal = document.getElementById('keyword-input').value;
+
+        const filtered = allLogs.filter(log => {
+            // 色フィルタ
+            if (currentFilterColor && log.color !== currentFilterColor) return false;
+            // 日付フィルタ
+            if (dateVal && !log.created_at.startsWith(dateVal)) return false;
+            // キーワードフィルタ
+            if (keyVal) {
+                const text = (log.user_input + log.emotion_label).toLowerCase();
+                if (!text.includes(keyVal.toLowerCase())) return false;
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#888;">データが見つかりません</p>';
+            return;
+        }
+
+        filtered.forEach(log => {
+            const div = document.createElement('div');
+            div.className = 'log-item';
+            const colorInfo = SETTINGS[log.color] || { main: '#ccc' };
+            div.style.borderLeftColor = colorInfo.main;
+
+            // HTMLエスケープ（セキュリティ）
+            const safeLabel = (log.emotion_label || "").replace(/</g, "&lt;");
+            const safeText = (log.user_input || "").replace(/</g, "&lt;");
+
+            div.innerHTML = `
+                <div class="log-time">${log.created_at}</div>
+                <div class="log-label" style="color:${colorInfo.main}">${safeLabel}</div>
+                <div class="log-text">${safeText}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function resetFilters() {
+        currentFilterColor = "";
+        document.getElementById('date-input').value = "";
+        document.getElementById('keyword-input').value = "";
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+        renderLogs();
+    }
+
+    // 開始
+    fetchLogs();
+</script>
+
+</body>
+</html>
+
