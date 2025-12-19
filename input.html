@@ -130,6 +130,37 @@
             box-shadow: none;
         }
 
+        /* 自由入力ボタン */
+        .btn-free-input {
+            border: 2px dashed #bde4ff !important;
+            color: #555 !important;
+            background-color: #f0f8ff !important;
+        }
+
+        /* 自由入力フォームエリア */
+        .free-input-area {
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+        }
+        .free-input-text {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #bde4ff;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .free-input-ok {
+            padding: 10px 20px;
+            background: #bde4ff;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
         .btn-neg { border-color: #ffcdd2 !important; background-color: #fff0f0 !important; color: #d32f2f !important; }
         .btn-pos { border-color: #90caf9 !important; background-color: #e3f2fd !important; color: #1976d2 !important; }
         
@@ -232,7 +263,7 @@
         <button id="submit-btn" class="btn">
             おくる <span class="send-icon">💌</span>
         </button>
-        <button id="debug-send-log" class="btn" style="margin-left:8px;">送信ログ</button>
+        <button id="debug-send-log" class="btn" style="margin-left:8px;">そうしんログ</button>
         <br>
         <a href="index.html" class="btn-home">もどる</a>
     </div>
@@ -242,7 +273,7 @@
         // 🌍 設定（あなたのGASのURL）
         // ============================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec"; 
-        const GAS_CONTENT_TYPE = 'text/plain;charset=utf-8'; // use text/plain to avoid CORS preflight on GAS
+        const GAS_CONTENT_TYPE = 'application/json'; 
         // ============================================
 
         const SETTINGS = {
@@ -293,12 +324,13 @@
         }
 
         // ============================================
-        // 🐶 データ定義
+        // 🐶 心理学的データ定義
         // ============================================
         
         let storyParts = {
             when: "", place: "", place_sub: "", person: "", 
-            action: "", action_type: "", event: "", reason: "", thought: "", body: ""
+            action: "", action_type: "", event: "", reason: "", thought: "", body: "",
+            last_valence: null
         };
 
         const DATA = {
@@ -326,103 +358,294 @@
                 { label: "👨 とーちゃん", value: "とーちゃん" },
                 { label: "👵 おばあちゃん", value: "おばあちゃん" },
                 { label: "👴 おじいちゃん", value: "おじいちゃん" },
-                { label: "👤 ぼく", value: "ぼく" },
-                { label: "❓ そのほか", value: "そのほか" }
+                { label: "👤 ぼく", value: "ぼく" }
             ],
-            body: [
-                { label: "🔥 あつい・カッカ", value: "あつくてカッカ", n:true },
-                { label: "💓 ドキドキ", value: "ドキドキ", n:true },
-                { label: "👊 ちからがはいる", value: "ちからがはいってる", n:true },
-                { label: "💧 なみだがでる", value: "なみだがでそう", n:true },
-                { label: "🕳 むねがいたい", value: "むねがいたい", n:true },
-                { label: "🤐 こえがでない", value: "こえがでない", n:true },
-                { label: "🛌 ぐったり", value: "ぐったり", n:true },
-                { label: "🌀 あたまぐるぐる", value: "あたまがぐるぐる", n:true },
-                { label: "🤢 おなかがいたい", value: "おなかがいたい", n:true },
-                { label: "🥶 つめたい", value: "てあしがつめたい", n:true },
-                { label: "🥱 ねむい", value: "ねむい", n:true },
-                { label: "🙉 耳がいたい", value: "耳がいたい", n:true },
-                { label: "😬 歯をくいしばる", value: "はをくいしばってる", n:true },
-                { label: "😆 げんき！", value: "げんきいっぱい", p:true },
-                { label: "✨ スッキリ", value: "スッキリ", p:true },
-                { label: "😌 ポカポカ", value: "ポカポカ", p:true },
-                { label: "😐 ふつう", value: "ふつう" }
+            // 身体感覚（ソマティック・マーカー）のライブラリ
+            // p: Positive (Relaxed/Expansive), n: Negative (Tense/Constricted)
+            body_pos: [
+                { label: "✨ からだが かるい", value: "からだがかるかった", p:true },
+                { label: "😌 ポカポカ", value: "ポカポカしていた", p:true },
+                { label: "💪 ちからが わく", value: "ちからがわいてきた", p:true },
+                { label: "😆 スッキリ！", value: "スッキリした", p:true },
+                { label: "🐇 とびはねたい", value: "とびはねたいきぶんだった", p:true },
+                { label: "😊 しぜんと えがお", value: "しぜんとえがおになった", p:true },
+                { label: "😮 むねが スッとした", value: "むねがスッとした", p:true }
+            ],
+            body_neg: [
+                { label: "🔥 かおが カッカ", value: "かおがカッカした", n:true },
+                { label: "🕳 むねが キュッ", value: "むねがキュッとした", n:true },
+                { label: "🌪 おなか グルグル", value: "おなかがグルグルした", n:true },
+                { label: "👊 てに ちからがはいる", value: "てにちからがはいった", n:true },
+                { label: "🤐 こえが でない", value: "こえがでなかった", n:true },
+                { label: "💧 なみだが でそう", value: "なみだがでそうだった", n:true },
+                { label: "🥶 てあしが つめたい", value: "てあしがつめたかった", n:true },
+                { label: "😬 はを くいしばる", value: "はをくいしばった", n:true },
+                { label: "💓 ドキドキ", value: "むねがドキドキした", n:true },
+                { label: "😫 いきが くるしい", value: "いきがくるしかった", n:true },
+                { label: "😖 のどが つまる", value: "のどがつまるかんじがした", n:true }
+            ],
+            body_tired: [
+                { label: "🛌 からだが おもい", value: "からだがおもかった", n:true },
+                { label: "🥱 ねむい", value: "とてもねむかった", n:true },
+                { label: "🤕 あたまが いたい", value: "あたまがいたかった", n:true },
+                { label: "😶 ボーッとする", value: "あたまがボーッとした", n:true },
+                { label: "🧟‍♂️ うごきたくない", value: "うごきたくなかった", n:true }
             ],
             thought_pos: [
-                { label: "😆 やったー！", value: "「やったー！」", p:true },
+                { label: "😤 やりきった！", value: "「やりきった！」", p:true },
                 { label: "✨ もっとやりたい", value: "「もっとやりたい」", p:true },
-                { label: "😌 よかった", value: "「よかった」", p:true },
+                { label: "😌 これでいいんだ", value: "「これでいいんだ」", p:true },
                 { label: "🥰 だいすき", value: "「だいすき」", p:true },
-                { label: "😤 がんばった", value: "「がんばった」", p:true },
+                { label: "🤝 わかりあえた", value: "「わかりあえた」", p:true },
+                { label: "🛡 まもられた", value: "「まもられた」", p:true },
                 { label: "🤣 おもしろかった", value: "「おもしろかった」", p:true }
             ],
             thought_neg: [
-                { label: "👊 「やめてよ！」", value: "「やめてよ！」", n:true },
                 { label: "😿 「ずるい！」", value: "「ずるい！」", n:true },
-                { label: "🤐 ガマンした", value: "ガマンした", n:true },
+                { label: "🤐 ガマンしなきゃ", value: "「ガマンしなきゃ」", n:true },
                 { label: "💥 しかえししたい", value: "しかえししたかった", n:true },
-                { label: "🤯 もうしらない", value: "「もうしらない」", n:true },
-                { label: "😭 もうやだ", value: "「もうやだ」", n:true },
-                { label: "💧 じぶんがわるい", value: "じぶんがわるい", n:true },
+                { label: "🤯 わけが わからない", value: "わけがわからなかった", n:true },
+                { label: "💧 ぼくが わるい", value: "「ぼくがわるいんだ」", n:true },
                 { label: "🥺 たすけて", value: "「たすけて」", n:true },
                 { label: "🏠 かえりたい", value: "「かえりたい」", n:true },
-                { label: "🌀 わけがわからない", value: "わけがわからなかった", n:true },
                 { label: "😨 どうしよう", value: "どうしよう", n:true },
-                { label: "😳 はずかしい", value: "はずかしかった", n:true },
+                { label: "🫣 はずかしい", value: "はずかしかった", n:true },
+                { label: "😤 わかってくれない", value: "「わかってくれない」", n:true },
                 { label: "🙄 めんどくさい", value: "めんどくさかった", n:true }
             ]
         };
 
+        // デフォルト（場所不明時の汎用行動）
+        const DEFAULT_ACTIONS = [
+            {l:"👀 みる", v:"なにかをみていた", t:"passive_active"},
+            {l:"🗣 はなす", v:"だれかとはなしていた", t:"social"},
+            {l:"🚶 いる", v:"そこにいた", t:"passive"},
+            {l:"🧘 まつ", v:"まっていた", t:"wait"}
+        ];
+
         const ACTIONS_MAP = {
-            "きょうしつ": [{l:"✏️ べんきょう", v:"べんきょう", t:"study"}, {l:"⏳ じゅぎょう", v:"じゅぎょう", t:"study"}, {l:"🍱 きゅうしょく", v:"きゅうしょく", t:"eat"}, {l:"😆 やすみじかん", v:"やすみじかん", t:"play"}, {l:"🗣 おはなし", v:"おはなし", t:"talk"}, {l:"🎒 かえりの会", v:"かえりの会", t:"passive"}],
-            "たいいくかん": [{l:"🏃 たいいく", v:"たいいく", t:"sport"}, {l:"🏀 ボールあそび", v:"ボールあそび", t:"play"}, {l:"🏃 はしる", v:"かけっこ", t:"sport"}, {l:"🧘 しゅうかい", v:"ぜんこうしゅうかい", t:"passive"}],
-            "ろうか": [{l:"👟 くつをはく", v:"くつをはく", t:"move"}, {l:"🚶 いどう", v:"いどう", t:"move"}, {l:"🗣 おはなし", v:"おはなし", t:"talk"}, {l:"🏃 はしる", v:"はしりまわる", t:"play"}],
-            "としょしつ": [{l:"📖 ほんをよむ", v:"どくしょ", t:"passive"}, {l:"📚 かりる・かえす", v:"ほんをかりる", t:"work"}, {l:"🤫 しずかにする", v:"しずかにする", t:"rest"}],
-            "プール": [{l:"🏊 プール", v:"プール", t:"sport"}, {l:"🚿 シャワー", v:"シャワー", t:"care"}, {l:"👕 きがえ", v:"きがえ", t:"care"}],
-            "おんがくしつ": [{l:"🎵 うた", v:"うた", t:"art"}, {l:"🎹 がっき", v:"がっき", t:"art"}, {l:"🥁 たいこ", v:"がっきえんそう", t:"art"}, {l:"👂 きく", v:"おんがくかんしょう", t:"passive"}],
-            "ほうかごデイ": [{l:"📝 しゅくだい", v:"しゅくだい", t:"study"}, {l:"🍩 おやつ", v:"おやつ", t:"eat"}, {l:"🧱 ブロック", v:"ブロック", t:"play"}, {l:"😆 あそび", v:"あそび", t:"play"}, {l:"🚗 送迎", v:"そうげい", t:"ride"}],
-            "がっこうトイレ": [{l:"🚽 トイレ", v:"トイレ", t:"toilet"}, {l:"👏 てあらい", v:"てあらい", t:"care"}, {l:"👕 きがえ", v:"きがえ", t:"care"}],
-            "ほけんしつ": [{l:"🤕 てあて", v:"てあて", t:"care"}, {l:"🤒 やすむ", v:"きゅうけい", t:"rest"}, {l:"🗣 そうだん", v:"そうだん", t:"talk"}],
-            "こうてい": [{l:"🏃 おにごっこ", v:"おにごっこ", t:"play"}, {l:"⚽ サッカー", v:"サッカー", t:"sport"}, {l:"🌱 かんさつ", v:"かんさつ", t:"passive"}, {l:"🚶 おさんぽ", v:"さんぽ", t:"move"}, {l:"🛝 遊具", v:"ゆうぐ", t:"play"}],
-            "リビング": [{l:"📺 テレビ", v:"テレビ", t:"passive"}, {l:"🎮 ゲーム", v:"ゲーム", t:"game"}, {l:"🍚 ごはん", v:"ごはん", t:"eat"}, {l:"🛋 ゴロゴロ", v:"ゴロゴロ", t:"rest"}, {l:"🗣 おはなし", v:"おはなし", t:"talk"}, {l:"✍️ おえかき", v:"おえかき", t:"art"}, {l:"📱 タブレット", v:"タブレット", t:"game"}],
-            "おふろ": [{l:"🛀 おふろ", v:"おふろ", t:"care"}, {l:"🚿 シャワー", v:"シャワー", t:"care"}, {l:"🧼 あらう", v:"からだをあらう", t:"care"}, {l:"🦆 あそび", v:"みずあそび", t:"play"}, {l:"🦷 はみがき", v:"はみがき", t:"care"}],
-            "しんしつ": [{l:"😴 ねる", v:"ねる", t:"sleep"}, {l:"🥱 おきる", v:"おきた", t:"wake"}, {l:"📖 えほん", v:"えほん", t:"passive"}, {l:"🤕 ぐあいがわるい", v:"ねこむ", t:"sick"}],
-            "おうちトイレ": [{l:"🚽 トイレ", v:"トイレ", t:"toilet"}, {l:"💩 うんち", v:"うんち", t:"toilet"}],
-            "げんかん": [{l:"👟 くつをはく", v:"くつをはく", t:"move"}, {l:"🚪 でかける", v:"でかける", t:"move"}, {l:"🏠 かえってきた", v:"かえってきた", t:"move"}, {l:"📦 荷物", v:"にもつ", t:"work"}],
-            "そぼのいえ": [{l:"🍘 おかし", v:"おかし", t:"eat"}, {l:"🗣 おはなし", v:"おはなし", t:"talk"}, {l:"📺 テレビ", v:"テレビ", t:"passive"}, {l:"😆 あそび", v:"あそび", t:"play"}],
-            "こうえん": [{l:"🛝 すべりだい", v:"すべりだい", t:"play"}, {l:"🌪 ブランコ", v:"ブランコ", t:"play"}, {l:"🏜 おすなば", v:"おすなば", t:"play"}, {l:"🏃 はしる", v:"はしりまわる", t:"play"}, {l:"🚲 自転車", v:"じてんしゃ", t:"sport"}],
-            "おみせ": [{l:"🛒 かう", v:"かいもの", t:"shop_buy"}, {l:"👀 みる", v:"みてる", t:"shop_look"}, {l:"⏳ まつ", v:"レジならび", t:"wait"}, {l:"🗣 おねだり", v:"おねだり", t:"talk"}, {l:"🚻 トイレ", v:"トイレ", t:"toilet"}],
-            "のりもの": [{l:"🚌 バス", v:"バス", t:"ride"}, {l:"🚙 くるま", v:"くるま", t:"ride"}, {l:"🚃 でんしゃ", v:"でんしゃ", t:"ride"}, {l:"🚶 あるく", v:"あるく", t:"move"}, {l:"🚥 しんごう", v:"しんごうまち", t:"wait"}],
-            "みち": [{l:"🚶 あるく", v:"あるく", t:"move"}, {l:"🏃 はしる", v:"はしる", t:"move"}, {l:"🤕 ころんだ", v:"ころんだ", t:"accident"}, {l:"🚥 しんごう", v:"しんごう", t:"wait"}],
-            "ならいごと": [{l:"🏊 スイミング", v:"スイミング", t:"sport"}, {l:"🎹 ピアノ", v:"ピアノ", t:"art"}, {l:"✏️ じゅく", v:"じゅく", t:"study"}, {l:"⚽ サッカー", v:"サッカー", t:"sport"}, {l:"🇬🇧 えいご", v:"えいご", t:"study"}],
-            "まちあいしつ": [{l:"⏳ まつ", v:"じゅんばんまち", t:"wait"}, {l:"📖 ほんをよむ", v:"ほんをよむ", t:"passive"}, {l:"🤫 しずかにする", v:"しずかにする", t:"rest"}, {l:"📺 テレビ", v:"テレビ", t:"passive"}],
-            "しんさつしつ": [{l:"🩺 しんさつ", v:"しんさつ", t:"medical"}, {l:"💉 ちゅうしゃ", v:"ちゅうしゃ", t:"medical"}, {l:"🗣 おはなし", v:"もんしん", t:"talk"}, {l:"💊 おくすり", v:"処置", t:"medical"}]
+            "きょうしつ": [
+                {l:"✏️ べんきょう", v:"べんきょう", t:"study"},
+                {l:"🙋‍♂️ はっぴょう", v:"はっぴょう", t:"challenge"},
+                {l:"🤐 じっとする", v:"じっとしていた", t:"endure"},
+                {l:"🍱 きゅうしょく", v:"きゅうしょく", t:"eat"},
+                {l:"😆 やすみじかん", v:"やすみじかん", t:"social"},
+                {l:"🗣 おしゃべり", v:"おしゃべり", t:"social"},
+                {l:"😢 おこられた", v:"おこられていた", t:"conflict"}
+            ],
+            "たいいくかん": [
+                {l:"🏃 たいいく", v:"たいいく", t:"sport"},
+                {l:"🏀 チームせん", v:"チームでのしあい", t:"competition"},
+                {l:"🧘 しゅうかい", v:"しゅうかい", t:"passive"},
+                {l:"👀 けんがく", v:"けんがく", t:"passive_active"}
+            ],
+            "ろうか": [
+                {l:"🚶 いどう", v:"いどう", t:"move"},
+                {l:"🏃 はしる", v:"はしりまわる", t:"play"},
+                {l:"🗣 たちばなし", v:"たちばなし", t:"social"},
+                {l:"🤫 かくれる", v:"かくれていた", t:"escape"}
+            ],
+            "としょしつ": [
+                {l:"📖 ほんをよむ", v:"どくしょ", t:"passive"},
+                {l:"🔍 さがす", v:"ほんをさがす", t:"search"},
+                {l:"🤫 しずかにする", v:"しずかにしていた", t:"rest"}
+            ],
+            "プール": [
+                {l:"🏊 およぐ", v:"およいでいた", t:"sport"},
+                {l:"🚿 シャワー", v:"シャワー", t:"sensory"},
+                {l:"👕 きがえ", v:"きがえ", t:"care"},
+                {l:"🥶 がまん", v:"さむいのがまんしていた", t:"endure"}
+            ],
+            "おんがくしつ": [
+                {l:"🎵 うたう", v:"うたっていた", t:"art"},
+                {l:"🎹 がっき", v:"がっきをひいた", t:"art"},
+                {l:"🙉 みみをふさぐ", v:"みみをふさいでいた", t:"sensory_overload"}
+            ],
+            "ほうかごデイ": [
+                {l:"📝 しゅくだい", v:"しゅくだい", t:"study"},
+                {l:"🍩 おやつ", v:"おやつ", t:"eat"},
+                {l:"🧱 ブロック", v:"ブロック", t:"play_solitary"},
+                {l:"🎮 ゲーム", v:"ゲーム", t:"play"},
+                {l:"🚗 そうげい", v:"そうげい", t:"ride"}
+            ],
+            "がっこうトイレ": [
+                {l:"🚽 トイレ", v:"トイレ", t:"toilet"},
+                {l:"👕 きがえ", v:"きがえ", t:"care"},
+                {l:"🏃 にげこむ", v:"にげこんだ", t:"escape"}
+            ],
+            "ほけんしつ": [
+                {l:"🤕 てあて", v:"てあて", t:"care"},
+                {l:"🤒 やすむ", v:"きゅうけい", t:"rest"},
+                {l:"🗣 そうだん", v:"そうだん", t:"talk_deep"}
+            ],
+            "リビング": [
+                {l:"📺 テレビ", v:"テレビ", t:"passive"},
+                {l:"🎮 ゲーム", v:"ゲーム", t:"play"},
+                {l:"🍽 ごはん", v:"ごはん", t:"eat"},
+                {l:"🛋 ゴロゴロ", v:"ゴロゴロ", t:"rest"},
+                {l:"🗣 おはなし", v:"かぞくとおはなし", t:"social_family"},
+                {l:"😢 おこられた", v:"おこられていた", t:"conflict_family"}
+            ],
+            "おふろ": [
+                {l:"🛀 つかる", v:"ゆぶねにつかる", t:"relax"},
+                {l:"🚿 あらう", v:"からだをあらう", t:"care"},
+                {l:"🧼 シャンプー", v:"シャンプー", t:"sensory"},
+                {l:"🦆 みずあそび", v:"みずあそび", t:"play"}
+            ],
+            "しんしつ": [
+                {l:"😴 ねる", v:"ねようとしていた", t:"sleep"},
+                {l:"🥱 おきる", v:"おきた", t:"wake"},
+                {l:"👻 こわいゆめ", v:"こわいゆめをみた", t:"nightmare"},
+                {l:"🤕 ぐあいがわるい", v:"ねこむ", t:"sick"}
+            ],
+            "おうちトイレ": [
+                {l:"🚽 トイレ", v:"トイレ", t:"toilet"},
+                {l:"🧘 ひとりになる", v:"ひとりになる", t:"escape"}
+            ],
+            "そぼのいえ": [
+                {l:"🍘 おかし", v:"おかし", t:"eat"},
+                {l:"🗣 おはなし", v:"おはなし", t:"social"},
+                {l:"🎁 もらう", v:"なにかもらう", t:"receive"}
+            ],
+            "こうえん": [
+                {l:"🏃 おにごっこ", v:"おにごっこ", t:"play_group"},
+                {l:"🛝 ゆうぐ", v:"ゆうぐであそぶ", t:"play"},
+                {l:"🚲 じてんしゃ", v:"じてんしゃ", t:"sport"},
+                {l:"👀 みてるだけ", v:"みてるだけ", t:"passive_active"}
+            ],
+            "おみせ": [
+                {l:"🛒 かう", v:"かいもの", t:"shop_buy"},
+                {l:"👀 みる", v:"みてる", t:"shop_look"},
+                {l:"🗣 おねだり", v:"おねだり", t:"request"},
+                {l:"⏳ まつ", v:"レジならび", t:"wait"}
+            ],
+            "のりもの": [
+                {l:"🚌 のる", v:"のっていた", t:"ride"},
+                {l:"👀 そとをみる", v:"そとをみていた", t:"passive"},
+                {l:"📢 うるさい", v:"おとがきになる", t:"sensory_overload"}
+            ],
+            "ならいごと": [
+                {l:"🏊 れんしゅう", v:"れんしゅう", t:"challenge"},
+                {l:"🏆 テスト", v:"テスト", t:"test"},
+                {l:"⏳ じゅんばん", v:"じゅんばんまち", t:"wait"}
+            ],
+            "しんさつしつ": [
+                {l:"🩺 しんさつ", v:"しんさつ", t:"medical"},
+                {l:"💉 ちゅうしゃ", v:"ちゅうしゃ", t:"medical_pain"},
+                {l:"🗣 おはなし", v:"せんせいとおはなし", t:"talk_formal"}
+            ],
+            "こうてい": [
+                {l:"🏃 おにごっこ", v:"おにごっこ", t:"play_group"},
+                {l:"⚽ サッカー", v:"サッカー", t:"sport"},
+                {l:"🌱 かんさつ", v:"かんさつ", t:"passive"},
+                {l:"🚶 さんぽ", v:"さんぽ", t:"move"},
+                {l:"🛝 ゆうぐ", v:"ゆうぐ", t:"play"}
+            ],
+            "げんかん": [
+                {l:"👟 くつをはく", v:"くつをはく", t:"move"},
+                {l:"🚪 でかける", v:"でかける", t:"move"},
+                {l:"🏠 かえってきた", v:"かえってきた", t:"move"}
+            ],
+            "まちあいしつ": [
+                {l:"⏳ まつ", v:"じゅんばんまち", t:"wait"},
+                {l:"📖 ほんをよむ", v:"ほんをよむ", t:"passive"},
+                {l:"📺 テレビ", v:"テレビ", t:"passive"}
+            ],
+            "みち": [
+                {l:"🚶 あるく", v:"あるく", t:"move"},
+                {l:"🏃 はしる", v:"はしる", t:"move"},
+                {l:"🤕 ころんだ", v:"ころんだ", t:"accident"},
+                {l:"🚥 しんごう", v:"しんごう", t:"wait"}
+            ]
         };
 
         const EVENTS_MAP = {
-            "study": [{ l: "✅ できた", v: "できた", p: true }, { l: "😖 むずかしい", v: "むずかしかった", n: true }, { l: "🥱 つまらない", v: "つまらなかった", n: true }],
-            "play": [{ l: "😆 たのしい", v: "たのしかった", p: true }, { l: "🎉 もっとやりたい", v: "もっとやりたかった", p: true }, { l: "😤 ずるい", v: "ずるかった", n: true }],
-            "sport": [{ l: "💪 がんばった", v: "がんばった", p: true }, { l: "😮 すごい", v: "すごかった", p: true }, { l: "😭 つかれた", v: "つかれた", n: true }],
-            "eat": [{ l: "😋 おいしい", v: "おいしかった", p: true }, { l: "😣 きらい", v: "きらいだった", n: true }],
-            "talk": [{ l: "😊 たのしく話せた", v: "たのしくはなせた", p: true }, { l: "😳 はずかしい", v: "はずかしかった", n: true }],
-            "care": [{ l: "✨ きれいになった", v: "きれいになった", p: true }, { l: "😣 いやだった", v: "いやだった", n: true }],
-            "rest": [{ l: "😌 ほっとした", v: "ほっとした", p: true }],
-            "passive": [{ l: "😌 のんびり", v: "のんびりしてた", p: true }, { l: "😡 つまらない", v: "つまらなかった", n: true }],
-            "work": [{ l: "✅ できた", v: "できた", p: true }, { l: "😖 むずかしい", v: "むずかしかった", n: true }],
-            "move": [{ l: "🚶 いつもどおり", v: "いつもどおりだった" }, { l: "🤕 ころんだ", v: "ころんだ", n: true }],
-            "game": [{ l: "🎮 たのしい", v: "たのしかった", p: true }, { l: "😤 むずかしい", v: "むずかしかった", n: true }],
-            "sleep": [{ l: "😴 ぐっすり", v: "ぐっすりねた", p: true }, { l: "🌀 さっぱり", v: "さっぱりねられなかった", n: true }],
-            "wake": [{ l: "😁 すっきり", v: "すっきりおきた", p: true }, { l: "😴 ねむい", v: "ねむかった", n: true }],
-            "sick": [{ l: "😢 つらい", v: "つらかった", n: true }],
-            "toilet": [{ l: "😌 ほっとした", v: "ほっとした", p: true }],
-            "ride": [{ l: "🚗 たのしい", v: "たのしかった", p: true }, { l: "🤢 むかむか", v: "むかむかした", n: true }],
-            "wait": [{ l: "⏳ 待った", v: "まった", n: true }, { l: "😌 まんぞく", v: "まんぞくした", p: true }],
-            "accident": [{ l: "🤕 いたい", v: "いたかった", n: true }],
-            "shop_buy": [{ l: "😊 かえた", v: "かえた", p: true }, { l: "😢 かえなかった", v: "かえなかった", n: true }],
-            "shop_look": [{ l: "😆 楽しい", v: "たのしかった", p: true }],
-            "art": [{ l: "🎨 たのしい", v: "たのしかった", p: true }, { l: "😖 むずかしい", v: "むずかしかった", n: true }],
-            "medical": [{ l: "😢 こわい", v: "こわかった", n: true }, { l: "😌 よかった", v: "よかった", p: true }]
+            "study": [{l:"💡 わかった", v:"わかった", p:true}, {l:"😵 わからない", v:"わからなかった", n:true}, {l:"🖊 まちがえた", v:"まちがえた", n:true}],
+            "challenge": [{l:"👏 ほめられた", v:"ほめられた", p:true}, {l:"😖 しっぱい", v:"しっぱいした", n:true}, {l:"😨 きんちょう", v:"きんちょうした", n:true}],
+            "endure": [{l:"🕰 ながかった", v:"ながかった", n:true}, {l:"😣 がまんした", v:"がまんできた", p:true}],
+            "eat": [{l:"😋 おいしい", v:"おいしかった", p:true}, {l:"🤢 きらい", v:"きらいなものだった", n:true}, {l:"🥛 こぼした", v:"こぼしちゃった", n:true}],
+            "social": [{l:"🤝 なかよし", v:"なかよくできた", p:true}, {l:"🗡 わるぐち", v:"わるぐちをいわれた", n:true}, {l:"🙉 むしされた", v:"むしされた", n:true}, {l:"🤥 うそ", v:"うそをつかれた", n:true}],
+            "social_family": [{l:"😄 わらった", v:"わらった", p:true}, {l:"😡 けんか", v:"けんかした", n:true}, {l:"😐 ふつう", v:"ふつうだった", p:true}],
+            "conflict": [{l:"😡 いいかえした", v:"いいかえした", n:true}, {l:"🤐 だまってた", v:"だまっていた", n:true}, {l:"😭 ないた", v:"ないてしまった", n:true}],
+            "conflict_family": [{l:"😡 いいかえした", v:"いいかえした", n:true}, {l:"🤐 シュンとした", v:"シュンとした", n:true}, {l:"🚪 こもった", v:"へやにこもった", n:true}],
+            "sport": [{l:"🏆 かった", v:"かった", p:true}, {l:"💔 まけた", v:"まけた", n:true}, {l:"✨ できた", v:"うまくできた", p:true}, {l:"🤕 ぶつかった", v:"ぶつかった", n:true}],
+            "competition": [{l:"🤝 きょうりょく", v:"きょうりょくした", p:true}, {l:"😤 ずるい", v:"あいてがずるした", n:true}, {l:"🦶 しっぱい", v:"あしをひっぱってしまった", n:true}],
+            "passive": [{l:"😌 おちつく", v:"おちついていた", p:true}, {l:"🥱 たいくつ", v:"たいくつだった", n:true}, {l:"💭 かんがえごと", v:"かんがえごとをしてた", p:true}],
+            "passive_active": [{l:"👀 じっとみる", v:"じっとみていた", p:true}, {l:"🥺 いれて", v:"いれてといえなかった", n:true}],
+            "move": [{l:"🛌 つかれた", v:"つかれた", n:true}, {l:"🌸 はっけん", v:"なにかみつけた", p:true}, {l:"🐕 ビックリ", v:"びっくりした", n:true}],
+            "play": [{l:"😆 たのしい", v:"たのしかった", p:true}, {l:"💥 けんか", v:"けんかした", n:true}, {l:"🧸 とられた", v:"とられた", n:true}, {l:"🧱 こわされた", v:"こわされた", n:true}],
+            "play_solitary": [{l:"✨ できた", v:"かんせいした", p:true}, {l:"🤔 むずかしい", v:"うまくいかなかった", n:true}, {l:"📢 じゃまされた", v:"じゃまされた", n:true}],
+            "play_group": [{l:"🏃 おいつけない", v:"おいつけなかった", n:true}, {l:"🤝 なかよし", v:"チームワークがよかった", p:true}, {l:"😨 ルール不明", v:"ルールがわからなかった", n:true}],
+            "escape": [{l:"😌 ホッとした", v:"ホッとした", p:true}, {l:"😨 みつかった", v:"みつかった", n:true}, {l:"😢 ひとりぼっち", v:"ひとりぼっちだった", n:true}],
+            "sensory": [{l:"✨ スッキリ", v:"スッキリした", p:true}, {l:"😖 イヤなかんじ", v:"カンショクがいやだった", n:true}, {l:"👃 くさい", v:"においがいやだった", n:true}],
+            "sensory_overload": [{l:"📢 うるさい", v:"おとがうるさすぎた", n:true}, {l:"💡 まぶしい", v:"まぶしかった", n:true}, {l:"😵 クラクラ", v:"クラクラした", n:true}],
+            "care": [{l:"✨ きれい", v:"きれいになった", p:true}, {l:"😖 めんどくさい", v:"めんどくさかった", n:true}, {l:"👔 キツイ", v:"フクがきつかった", n:true}],
+            "talk_deep": [{l:"👂 きいてくれた", v:"きいてくれた", p:true}, {l:"🙅‍♂️ わかってない", v:"わかってくれなかった", n:true}, {l:"🗣 いえた", v:"いいたいことがいえた", p:true}],
+            "relax": [{l:"😌 きもちいい", v:"きもちよかった", p:true}, {l:"🥵 のぼせた", v:"のぼせた", n:true}],
+            "rest": [{l:"🛌 かいふく", v:"げんきになった", p:true}, {l:"🤕 まだいたい", v:"まだいたかった", n:true}],
+            "sleep": [{l:"😴 ぐっすり", v:"よくねむれた", p:true}, {l:"😳 ねれない", v:"ねむれなかった", n:true}],
+            "nightmare": [{l:"😨 こわかった", v:"こわかった", n:true}, {l:"😭 ないておきた", v:"ないておきた", n:true}],
+            "wake": [{l:"😃 スッキリ", v:"スッキリおきた", p:true}, {l:"🥱 おきれない", v:"おきれなかった", n:true}],
+            "sick": [{l:"🤢 きもちわるい", v:"きもちわるかった", n:true}, {l:"🤒 ねつがある", v:"ねつがあった", n:true}],
+            "toilet": [{l:"🚽 スッキリ", v:"でてスッキリした", p:true}, {l:"😖 でない", v:"でなくてくるしかった", n:true}, {l:"👖 まにあわず", v:"まにあわなかった", n:true}],
+            "receive": [{l:"🎁 うれしい", v:"うれしかった", p:true}, {l:"🤔 いらない", v:"ほしくなかった", n:true}],
+            "shop_buy": [{l:"🎁 かえた", v:"かえた", p:true}, {l:"🙅‍♂️ ダメ", v:"ダメといわれた", n:true}, {l:"💸 うりきれ", v:"うりきれだった", n:true}],
+            "shop_look": [{l:"👀 ほしい", v:"ほしいものがあった", n:true}, {l:"📢 ガヤガヤ", v:"ガヤガヤしてつかれた", n:true}],
+            "request": [{l:"🙆‍♂️ OK", v:"いいよといわれた", p:true}, {l:"🙅‍♂️ ダメ", v:"ダメといわれた", n:true}, {l:"🙉 むし", v:"きいてもらえなかった", n:true}],
+            "wait": [{l:"🥱 ながい", v:"ながかった", n:true}, {l:"📱 スマホ", v:"スマホをみていた", p:true}, {l:"😖 イライラ", v:"イライラした", n:true}],
+            "ride": [{l:"🤢 よった", v:"よった", n:true}, {l:"🏞 けしき", v:"けしきがきれいだった", p:true}, {l:"👯 こんでた", v:"こんでてつらかった", n:true}],
+            "medical": [{l:"👨‍⚕️ やさしかった", v:"やさしかった", p:true}, {l:"😨 こわかった", v:"こわかった", n:true}],
+            "medical_pain": [{l:"😭 いたかった", v:"いたかった", n:true}, {l:"😐 へいき", v:"へいきだった", p:true}, {l:"😤 あばれた", v:"あばれてしまった", n:true}],
+            "talk_formal": [{l:"😳 きんちょう", v:"きんちょうした", n:true}, {l:"🗣 こたえられた", v:"ちゃんとはなせた", p:true}],
+            "test": [{l:"💯 できた", v:"できた", p:true}, {l:"😵 むずかしい", v:"むずかしかった", n:true}],
+            "search": [{l:"👀 みつかった", v:"みつかった", p:true}, {l:"😖 ない", v:"みつからなかった", n:true}],
+            "accident": [{l:"😭 いたかった", v:"いたかった", n:true}, {l:"🩸 ちがでた", v:"ちがでた", n:true}, {l:"😢 ビックリ", v:"びっくりした", n:true}]
         };
+
+        function getReasonChoices(isPositive) {
+            if (isPositive) {
+                return [
+                    { label: "😤 がんばった", save: {reason: "がんばったから"}, p:true },
+                    { label: "🤝 てつだった", save: {reason: "てつだってもらえたから"}, p:true },
+                    { label: "😊 すきなこと", save: {reason: "すきなことだったから"}, p:true },
+                    { label: "👂 きいてくれた", save: {reason: "はなしをきいてくれたから"}, p:true },
+                    { label: "🕰 じゅんびした", save: {reason: "じゅんびしていたから"}, p:true },
+                    { label: "🍀 うんがよかった", save: {reason: "うんがよかったから"}, p:true },
+                    { label: "🧘 おちついてた", save: {reason: "おちついていたから"}, p:true },
+                    { label: "❓ なんとなく", save: {reason: "なんとなく"}, p:true }
+                ];
+            } else {
+                return [
+                    { label: "🌀 はじめて", save: {reason: "はじめてでわからなくて"}, n:true },
+                    { label: "🙉 きいてない", save: {reason: "はなしをきいてくれなくて"}, n:true },
+                    { label: "😵 いみふめい", save: {reason: "いみがわからなくて"}, n:true },
+                    { label: "😣 むりやり", save: {reason: "やりたくないのにやらされて"}, n:true },
+                    { label: "🤥 うそ", save: {reason: "うそをつかれて"}, n:true },
+                    { label: "📢 うるさい", save: {reason: "おとがうるさくて"}, n:true },
+                    { label: "👃 くさい", save: {reason: "においがイヤで"}, n:true },
+                    { label: "🤕 いたい", save: {reason: "いたくて"}, n:true },
+                    { label: "😴 ねむい", save: {reason: "ねむくて"}, n:true },
+                    { label: "🤤 おなかすいた", save: {reason: "おなかがすいてて"}, n:true },
+                    { label: "🔁 かあわった", save: {reason: "きゅうによていがかわって"}, n:true },
+                    { label: "👫 ひとりだけ", save: {reason: "じぶんひとりだけで"}, n:true },
+                    { label: "❓ わからない", save: {reason: "よくわからないけど"}, n:true }
+                ];
+            }
+        }
+
+        // 感情価(valence)に基づく体の反応を取得する関数
+        function getBodyChoices(isPositive) {
+            let choices = [];
+            if (isPositive) {
+                // ポジティブな感覚 + ニュートラル
+                choices = [...DATA.body_pos, {label:"😐 ふつう", value:"ふつう"}];
+            } else {
+                // ネガティブ（高覚醒＆低覚醒） + ニュートラル
+                // ランダムに少し混ぜるか、全部出すか。ここでは主要なものを抽出
+                choices = [...DATA.body_neg, ...DATA.body_tired, {label:"😐 ふつう", value:"ふつう"}];
+            }
+            return choices;
+        }
 
         const SCENARIO_TREE = {
             // 1. いつ
@@ -443,7 +666,7 @@
             },
 
             // 3. 場所（詳細）
-            place_school: { text: "がっこうの、どこ？", choices: [ {label:"🪑 きょうしつ", next:"who_check", save:{place_sub:"きょうしつ"}}, {label:"🤸 たいいくかん", next:"who_check", save:{place_sub:"たいいくかん"}}, {label:"👟 ろうか・げんかん", next:"who_check", save:{place_sub:"ろうか"}}, {label:"📚 図書室", next:"who_check", save:{place_sub:"としょしつ"}}, {label:"🏊 プール", next:"who_check", save:{place_sub:"プール"}}, {label:"🎵 おんがくしつ", next:"who_check", save:{place_sub:"おんがくしつ"}}, {label:"🏫 ほうかごデイ", next:"who_check", save:{place_sub:"ほうかごデイ"}}, {label:"🚽 トイレ", next:"who_check", save:{place_sub:"がっこうトイレ"}}, {label:"🏥 ほけんしつ", next:"who_check", save:{place_sub:"ほけんしつ"}}, {label:"🌳 校庭(そと)", next:"who_check", save:{place_sub:"こうてい"}} ] },
+            place_school: { text: "がっこうの、どこ？", choices: [ {label:"🪑 きょうしつ", next:"who_check", save:{place_sub:"きょうしつ"}}, {label:"🤸 たいいくかん", next:"who_check", save:{place_sub:"たいいくかん"}}, {label:"👟 ろうか・げんかん", next:"who_check", save:{place_sub:"ろうか"}}, {label:"📚 としょしつ", next:"who_check", save:{place_sub:"としょしつ"}}, {label:"🏊 プール", next:"who_check", save:{place_sub:"プール"}}, {label:"🎵 おんがくしつ", next:"who_check", save:{place_sub:"おんがくしつ"}}, {label:"🏫 ほうかごデイ", next:"who_check", save:{place_sub:"ほうかごデイ"}}, {label:"🚽 トイレ", next:"who_check", save:{place_sub:"がっこうトイレ"}}, {label:"🏥 ほけんしつ", next:"who_check", save:{place_sub:"ほけんしつ"}}, {label:"🌳 こうてい(そと)", next:"who_check", save:{place_sub:"こうてい"}} ] },
             place_home: { text: "おうちの、どこ？", choices: [ {label:"🛋 リビング", next:"who_check", save:{place_sub:"リビング"}}, {label:"🛀 おふろ", next:"who_check", save:{place_sub:"おふろ"}}, {label:"🛌 しんしつ", next:"who_check", save:{place_sub:"しんしつ"}}, {label:"🚽 トイレ", next:"who_check", save:{place_sub:"おうちトイレ"}}, {label:"🚪 げんかん", next:"who_check", save:{place_sub:"げんかん"}}, {label:"👵 そぼ・そふのいえ", next:"who_check", save:{place_sub:"そぼのいえ"}} ] },
             place_outside: { text: "おそとの、どこ？", choices: [ {label:"🌳 こうえん", next:"who_check", save:{place_sub:"こうえん"}}, {label:"🏪 おみせ", next:"who_check", save:{place_sub:"おみせ"}}, {label:"🚌 のりもの", next:"who_check", save:{place_sub:"のりもの"}}, {label:"🛣 みち", next:"who_check", save:{place_sub:"みち"}}, {label:"✏️ ならいごと", next:"who_check", save:{place_sub:"ならいごと"}} ] },
             place_hospital: { text: "びょういんの、どこ？", choices: [ {label:"⏳ まちあいしつ", next:"who_check", save:{place_sub:"まちあいしつ"}}, {label:"🩺 しんさつしつ", next:"who_check", save:{place_sub:"しんさつしつ"}} ] },
@@ -459,7 +682,7 @@
                 text: "なにを している ときだった？",
                 getChoices: () => {
                     const sub = storyParts.place_sub;
-                    const actions = ACTIONS_MAP[sub] || ACTIONS_MAP["きょうしつ"]; 
+                    const actions = ACTIONS_MAP[sub] || DEFAULT_ACTIONS; 
                     return actions.map(a => ({
                         label: a.l,
                         next: "event_check",
@@ -476,8 +699,8 @@
                     const events = EVENTS_MAP[type] || EVENTS_MAP["passive"];
                     return events.map(e => ({
                         label: e.l,
-                        next: e.n ? "reason_check" : "thought_pos", // ネガティブなら理由へ
-                        save: { event: e.v },
+                        next: "reason_check", 
+                        save: { event: e.v, last_valence: e.n ? 'n' : 'p' },
                         p: e.p,
                         n: e.n
                     }));
@@ -486,22 +709,19 @@
 
             // 7. 理由深掘り
             reason_check: {
-                text: "どうして そうなったのかな？\n（あてはまらないときは「その他」）",
-                choices: [
-                    { label: "🌀 はじめてだった", next: "thought_neg", save: {reason: "はじめてで"}, n:true },
-                    { label: "👂 きこえなかった", next: "thought_neg", save: {reason: "きこえなくて"}, n:true },
-                    { label: "😵 いみがわからない", next: "thought_neg", save: {reason: "いみがわからなくて"}, n:true },
-                    { label: "😖 むりやり", next: "thought_neg", save: {reason: "むりやりで"}, n:true },
-                    { label: "🗣 おしゃべりしてた", next: "thought_neg", save: {reason: "おしゃべりしてて"}, n:true },
-                    { label: "👊 たたかれた", next: "thought_neg", save: {reason: "たたかれて"}, n:true },
-                    { label: "😡 わるぐち", next: "thought_neg", save: {reason: "わるぐちをいわれて"}, n:true },
-                    { label: "📢 うるさかった", next: "thought_neg", save: {reason: "うるさくて"}, n:true },
-                    { label: "👃 くさかった", next: "thought_neg", save: {reason: "においがイヤで"}, n:true },
-                    { label: "💡 まぶしかった", next: "thought_neg", save: {reason: "まぶしくて"}, n:true },
-                    { label: "🏷 チクチクした", next: "thought_neg", save: {reason: "チクチクして"}, n:true },
-                    { label: "🔁 よていへんこう", next: "thought_neg", save: {reason: "よていがかわって"}, n:true },
-                    { label: "❓ その他・わからない", next: "thought_neg", save: {reason: ""} } 
-                ]
+                text: "どうして そうなったのかな？",
+                getChoices: () => {
+                    const isPositive = storyParts.last_valence === 'p';
+                    const reasons = getReasonChoices(isPositive);
+                    const nextStep = isPositive ? "thought_pos" : "thought_neg";
+                    return reasons.map(r => ({
+                        label: r.label,
+                        next: nextStep,
+                        save: r.save,
+                        p: r.p,
+                        n: r.n
+                    }));
+                }
             },
 
             // 8. 思考
@@ -517,8 +737,18 @@
             // 9. からだ
             body_check: {
                 text: "おしえてくれて ありがとう。\nさいごに、いまの からだは どんなかんじ？",
-                choices: DATA.body.map(b => ({ label: b.label, save: {body: b.value}, p:b.p, n:b.n })),
-                end: true
+                getChoices: () => {
+                    // 直前の感情価に基づいて、適切な身体感覚リストを表示
+                    const isPositive = storyParts.last_valence === 'p';
+                    const bodies = getBodyChoices(isPositive);
+                    return bodies.map(b => ({
+                        label: b.label,
+                        save: {body: b.value},
+                        p: b.p,
+                        n: b.n
+                    }));
+                },
+                end: true // ここで終了フラグ
             }
         };
 
@@ -540,7 +770,7 @@
             historyStack = [];
             updateBackButton(); 
 
-            storyParts = { when: "", place: "", place_sub: "", person: "", action: "", action_type: "", event: "", reason: "", thought: "", body: "" };
+            storyParts = { when: "", place: "", place_sub: "", person: "", action: "", action_type: "", event: "", reason: "", thought: "", body: "", last_valence: null };
             
             showStep("start");
         }
@@ -564,48 +794,143 @@
             let choices = step.choices || [];
             if(step.getChoices) choices = step.getChoices();
 
-            if (step.end) {
-                setTimeout(() => {
-                    choices.forEach(c => createButton(c, stepId, historyDiv, choiceArea, true));
-                    // 状況に応じた提案ボタンを追加
-                    generateContextualSuggestions(stepId, choiceArea);
-                }, 800);
-            } else {
-                setTimeout(() => {
-                    choices.forEach(c => createButton(c, stepId, historyDiv, choiceArea, false));
-                    // 状況に応じた提案ボタンを追加
-                    generateContextualSuggestions(stepId, choiceArea);
-                }, 800);
-            }
+            // ★★★ 自由記述ボタンの追加ロジック ★★★
+            // 「終了ステップ」かどうかをチェック
+            const isEndStep = !!step.end;
+
+            const freeChoice = { 
+                label: "✏️ じゆうに かく", 
+                isFree: true, 
+                // 終了ステップなら next は不要、それ以外なら自動判定用IDをセット
+                next: isEndStep ? null : "next_auto",
+                saveKey: getSaveKeyForStep(stepId),
+                isLast: isEndStep 
+            };
+            
+            choices = [...choices, freeChoice];
+
+            const delay = 800; 
+            setTimeout(() => {
+                choices.forEach(c => {
+                    // 通常の選択肢における「次」の決定
+                    let nextStepId = c.next;
+                    
+                    // 自由入力ボタンで、かつ終了ステップでない場合、次のステップIDを計算する
+                    if (c.isFree && !c.isLast) {
+                        nextStepId = getNextStepId(stepId); 
+                    }
+
+                    // step.end が true の場合、createButton に渡す isLast を true にする
+                    // 個別の選択肢(c.isLast) もしくは ステップ全体が終了(isEndStep) なら true
+                    const finalIsLast = c.isLast || isEndStep;
+
+                    createButton(c, stepId, historyDiv, choiceArea, finalIsLast, nextStepId);
+                });
+            }, delay);
         }
 
-        function createButton(choice, currentStepId, historyDiv, choiceArea, isLast) {
+        function getSaveKeyForStep(stepId) {
+            if(stepId === 'start') return 'when';
+            if(stepId === 'place_check') return 'place';
+            if(stepId.startsWith('place_')) return 'place_sub';
+            if(stepId === 'who_check') return 'person';
+            if(stepId === 'action_check') return 'action';
+            if(stepId === 'event_check') return 'event';
+            if(stepId === 'reason_check') return 'reason';
+            if(stepId.startsWith('thought')) return 'thought';
+            if(stepId === 'body_check') return 'body';
+            return 'unknown';
+        }
+
+        function getNextStepId(currentStepId) {
+            if(currentStepId === 'start') return 'place_check';
+            if(currentStepId === 'place_check') return 'who_check'; 
+            if(currentStepId.startsWith('place_')) return 'who_check';
+            if(currentStepId === 'who_check') return 'action_check';
+            if(currentStepId === 'action_check') return 'event_check';
+            if(currentStepId === 'event_check') return 'reason_check';
+            if(currentStepId === 'reason_check') return 'thought_pos'; 
+            if(currentStepId.startsWith('thought')) return 'body_check';
+            return null;
+        }
+
+        function createButton(choice, currentStepId, historyDiv, choiceArea, isLast, overrideNext) {
             const btn = document.createElement('button');
             btn.className = 'game-btn';
             btn.innerText = choice.label;
             
             if(choice.p) btn.classList.add('btn-pos');
             else if(choice.n) btn.classList.add('btn-neg');
+            if(choice.isFree) btn.classList.add('btn-free-input');
 
             btn.onclick = () => {
-                historyStack.push({
-                    stepId: currentStepId,
-                    storyParts: JSON.parse(JSON.stringify(storyParts)) 
-                });
-                updateBackButton();
-
-                const userBubble = document.createElement('div');
-                userBubble.className = 'bubble-user';
-                userBubble.innerText = choice.label;
-                historyDiv.appendChild(userBubble);
-                historyDiv.scrollTop = historyDiv.scrollHeight;
-
-                if (choice.save) Object.assign(storyParts, choice.save);
-
-                if (isLast) generateSentence();
-                else showStep(choice.next);
+                if (choice.isFree) {
+                    showFreeInputUI(currentStepId, choiceArea, historyDiv, choice.saveKey, isLast, overrideNext);
+                } else {
+                    processChoice(choice.label, choice.save, choice.next, currentStepId, historyDiv, isLast);
+                }
             };
             choiceArea.appendChild(btn);
+        }
+
+        // 選択肢を選んだときの共通処理
+        function processChoice(label, saveData, nextStepId, currentStepId, historyDiv, isLast) {
+            historyStack.push({
+                stepId: currentStepId,
+                storyParts: JSON.parse(JSON.stringify(storyParts)) 
+            });
+            updateBackButton();
+
+            const userBubble = document.createElement('div');
+            userBubble.className = 'bubble-user';
+            userBubble.innerText = label;
+            historyDiv.appendChild(userBubble);
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+
+            if (saveData) Object.assign(storyParts, saveData);
+
+            // ★★★ 最重要修正：isLastがtrueなら、nextStepIdに関わらず必ず文章生成へ ★★★
+            if (isLast) {
+                generateSentence();
+            } else {
+                showStep(nextStepId);
+            }
+        }
+
+        function showFreeInputUI(currentStepId, choiceArea, historyDiv, saveKey, isLast, nextStepId) {
+            choiceArea.innerHTML = ""; 
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'free-input-area';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'free-input-text';
+            input.placeholder = 'ここにかいてね';
+            
+            const okBtn = document.createElement('button');
+            okBtn.innerText = 'OK';
+            okBtn.className = 'free-input-ok';
+
+            okBtn.onclick = () => {
+                const val = input.value.trim();
+                if (!val) return; 
+
+                const saveData = {};
+                saveData[saveKey] = val;
+                
+                if (saveKey === 'event') {
+                    saveData['last_valence'] = 'p'; 
+                }
+
+                // ここでも isLast を確実に渡す
+                processChoice(val, saveData, nextStepId, currentStepId, historyDiv, isLast);
+            };
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(okBtn);
+            choiceArea.appendChild(wrapper);
+            input.focus();
         }
 
         function goBack() {
@@ -650,107 +975,6 @@
             }
         }
 
-        // 提案ボタンを生成する（重複避け、文脈対応版）
-        function generateContextualSuggestions(stepId, choiceArea) {
-            try {
-                // 既存の提案エリアをクリア
-                const existing = document.getElementById('suggestion-area');
-                if (existing) existing.remove();
-
-                const suggestions = [];
-
-                // 既存のボタンラベル一覧を取得（重複チェック用）
-                const existingLabels = Array.from(document.querySelectorAll('#choice-area .game-btn'))
-                    .map(btn => btn.innerText.trim());
-
-                // action_checkは既に選択肢が表示されているので、提案は出さない
-                if (stepId === 'action_check') {
-                    return; // 重複避け
-                }
-
-                // event_checkは既に選択肢が表示されているので、提案は出さない
-                if (stepId === 'event_check') {
-                    return; // 重複避け
-                }
-
-                // place_checkの場合：よく使う場所を提案
-                if (stepId === 'place_check') {
-                    const places = [
-                        { label: "🏫 がっこう", save: { place: "がっこう" }, next: "place_school" },
-                        { label: "🏠 おうち", save: { place: "おうち" }, next: "place_home" }
-                    ];
-                    suggestions.push(...places.filter(p => !existingLabels.includes(p.label)));
-                }
-
-                // who_checkの場合：文脈に応じた人物提案
-                if (stepId === 'who_check') {
-                    // 学校か自宅かで提案を変える
-                    if (storyParts.place === 'がっこう') {
-                        const schoolPeople = [
-                            { label: "👦 かなとくん", save: { person: "かなとくん" }, next: "action_check" },
-                            { label: "🏫 がっこうのせんせい", save: { person: "せんせい" }, next: "action_check" },
-                            { label: "👥 ぐるーぷのみんな", save: { person: "ぐるーぷのみんな" }, next: "action_check" }
-                        ];
-                        suggestions.push(...schoolPeople.filter(p => !existingLabels.includes(p.label)));
-                    } else if (storyParts.place === 'おうち') {
-                        const homePeople = [
-                            { label: "👩 かーちゃん", save: { person: "かーちゃん" }, next: "action_check" },
-                            { label: "👨 とーちゃん", save: { person: "とーちゃん" }, next: "action_check" },
-                            { label: "👤 ぼく", save: { person: "ぼく" }, next: "action_check" }
-                        ];
-                        suggestions.push(...homePeople.filter(p => !existingLabels.includes(p.label)));
-                    }
-                }
-
-                // thought_pos / thought_negの場合：体の状態クイック提案
-                if (stepId === 'body_check') {
-                    // ポジティブな感情なら、ポジティブなbody提案
-                    const isPositive = storyParts.thought && (storyParts.thought.includes('やった') || storyParts.thought.includes('よかった') || storyParts.thought.includes('だいすき'));
-                    const bodyChoices = isPositive 
-                        ? DATA.body.filter(b => b.p).slice(0, 2)
-                        : DATA.body.filter(b => b.n).slice(0, 2);
-                    
-                    suggestions.push(...bodyChoices.filter(b => !existingLabels.includes(b.label)).map(b => ({
-                        label: b.label,
-                        save: { body: b.value },
-                        p: b.p,
-                        n: b.n
-                    })));
-                }
-
-                if (suggestions.length === 0) return;
-
-                const sugWrap = document.createElement('div');
-                sugWrap.id = 'suggestion-area';
-                sugWrap.style.marginTop = '8px';
-                sugWrap.style.display = 'flex';
-                sugWrap.style.flexWrap = 'wrap';
-                sugWrap.style.gap = '8px';
-                sugWrap.style.justifyContent = 'center';
-                sugWrap.style.borderTop = '1px dotted #ccc';
-                sugWrap.style.paddingTop = '8px';
-
-                const historyDiv = document.getElementById('chat-history');
-                const isLast = stepId === 'body_check';
-
-                suggestions.forEach(s => {
-                    const choiceObj = { 
-                        label: s.label, 
-                        save: s.save, 
-                        next: s.next || undefined,
-                        p: s.p,
-                        n: s.n
-                    };
-                    createButton(choiceObj, stepId, historyDiv, sugWrap, isLast);
-                });
-
-                // 提案エリアをchoiceAreaの下に追加
-                choiceArea.parentNode.appendChild(sugWrap);
-            } catch(e) {
-                console.error('Suggestion generation error:', e);
-            }
-        }
-
         function generateSentence() {
             document.getElementById('choice-wrapper').style.display = 'none';
             const finalText = document.getElementById('game-final-text');
@@ -770,7 +994,7 @@
             let pe = storyParts.person === "ひとり" ? "ひとりで" : (storyParts.person + "と");
             let a = storyParts.action;
             let e = storyParts.event;
-            let r = storyParts.reason ? `理由は、${storyParts.reason}` : "";
+            let r = storyParts.reason ? `りゆうは、${storyParts.reason}` : "";
             let t = storyParts.thought;
             let b = storyParts.body;
 
@@ -786,14 +1010,14 @@
                 .replace("{b}", b);
 
             text = text.replace("。。", "。"); 
-            text = text.replace("理由は、。", "");
+            text = text.replace("りゆうは、。", "");
 
             finalText.value = text;
         }
 
         window.onload = startGame;
 
-        // ★★★ 修正箇所：ボタンクリック処理（GAS連携対応版・タイムアウト対応） ★★★
+        // ★★★ ボタンクリック処理（GAS連携対応版） ★★★
         submitBtn.addEventListener('click', function() {
             let finalInput = "";
             if (currentMode === 'free') {
@@ -802,215 +1026,47 @@
                 finalInput = document.getElementById('game-final-text').value;
                 if(!finalInput) finalInput = "（おはなしの とちゅう）";
             }
-
-            // ボタン連打防止
+            
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'おくってるよ... 🚀';
+            
+            const now = new Date();
+            const dateStr = now.getFullYear() + "-" + 
+                           String(now.getMonth()+1).padStart(2, '0') + "-" + 
+                           String(now.getDate()).padStart(2, '0') + " " + 
+                           String(now.getHours()).padStart(2, '0') + ":" + 
+                           String(now.getMinutes()).padStart(2, '0') + ":" + 
+                           String(now.getSeconds()).padStart(2, '0');
 
-            // ローカル保存
+            const newLog = {
+                created_at: dateStr,
+                color: colorKey,
+                emotion_label: theme.label,
+                user_input: finalInput || "-"
+            };
+
             try {
-                const now = new Date();
-                const dateStr = now.getFullYear() + "-" +
-                               String(now.getMonth()+1).padStart(2, '0') + "-" +
-                               String(now.getDate()).padStart(2, '0') + " " +
-                               String(now.getHours()).padStart(2, '0') + ":" +
-                               String(now.getMinutes()).padStart(2, '0') + ":" +
-                               String(now.getSeconds()).padStart(2, '0');
-
-                const newLog = {
-                    created_at: dateStr,
-                    color: colorKey,
-                    emotion_label: theme.label,
-                    user_input: finalInput || "-"
-                };
                 const logs = JSON.parse(localStorage.getItem('emotion_logs') || "[]");
                 logs.unshift(newLog);
                 localStorage.setItem('emotion_logs', JSON.stringify(logs));
             } catch(e) { console.error(e); }
 
-            // GAS送信（タイムアウト付き）
             const postData = { color: colorKey, emotion: theme.label, text: finalInput || "（テキストなし）" };
-
-            function addSendHistory(entry) {
-                try {
-                    const arr = JSON.parse(localStorage.getItem('send_history') || '[]');
-                    arr.unshift(entry);
-                    localStorage.setItem('send_history', JSON.stringify(arr.slice(0, 200))); // keep recent 200
-                } catch(e) { console.error('addSendHistory error', e); }
-            }
-
-            function fetchWithTimeout(url, options = {}, timeout = 6000) {
-                const controller = new AbortController();
-                const signal = controller.signal;
-                const fetchPromise = fetch(url, Object.assign({}, options, { signal }));
-                const timeoutId = setTimeout(() => controller.abort(), timeout);
-                return fetchPromise.finally(() => clearTimeout(timeoutId));
-            }
 
             let sendPromise = Promise.resolve();
             if (typeof GAS_URL !== 'undefined' && GAS_URL && GAS_URL.startsWith('http')) {
-                // try send with retries; if fails, enqueue for later
-                const trySendOnce = (asContentType = GAS_CONTENT_TYPE) => {
-                    const headers = { 'Content-Type': asContentType };
-                    const payload = asContentType.includes('json') ? JSON.stringify(postData) : JSON.stringify(postData);
-                    const attemptTs = new Date().toISOString();
-                    return fetchWithTimeout(GAS_URL, {
-                        method: 'POST',
-                        headers,
-                        body: payload
-                    }, 6000)
-                    .then(response => response.text().then(text => ({ status: response.status, text })))
-                    .then(({status, text}) => {
-                        let parsed = null;
-                        try { parsed = text ? JSON.parse(text) : null; } catch(e) { parsed = { raw: text }; }
-                        addSendHistory({ ts: attemptTs, success: true, status: status, response: parsed, contentType: asContentType });
-                        console.log('GAS body:', parsed);
-                        return true;
-                    })
-                    .catch(err => {
-                        const reason = (err && err.name === 'AbortError') ? 'timeout' : (err && err.message ? err.message : String(err));
-                        addSendHistory({ ts: attemptTs, success: false, reason, contentType: asContentType });
-                        if (err && err.name === 'AbortError') console.warn('GAS fetch aborted: timeout');
-                        else console.warn('GAS send failed:', reason);
-                        return false;
-                    });
-                };
-
-                const trySendWithRetries = async (maxAttempts = 3) => {
-                    for (let i = 0; i < maxAttempts; i++) {
-                        const ok = await trySendOnce();
-                        if (ok) return true;
-                        // backoff
-                        await new Promise(r => setTimeout(r, 500 * Math.pow(2, i)));
-                    }
-                    return false;
-                };
-
-                const enqueuePending = (payload, note) => {
-                    try {
-                        const list = JSON.parse(localStorage.getItem('pending_sends') || '[]');
-                        list.push({ payload, ts: new Date().toISOString(), note: note || '' });
-                        localStorage.setItem('pending_sends', JSON.stringify(list));
-                        console.log('Enqueued pending send (total):', list.length);
-                        addSendHistory({ ts: new Date().toISOString(), enqueued: true, note: note || '' });
-                    } catch(e) { console.error('enqueuePending error', e); }
-                };
-
-                const trySendBeacon = (payload) => {
-                    try {
-                        if (navigator.sendBeacon) {
-                            const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-                            const ok = navigator.sendBeacon(GAS_URL, blob);
-                            console.log('sendBeacon used, returned:', ok);
-                            return ok;
-                        }
-                    } catch(e) { console.warn('sendBeacon failed', e); }
-                    return false;
-                };
-
-                // perform send, and enqueue if failed
-                sendPromise = (async () => {
-                    const ok = await trySendWithRetries(2);
-                    if (!ok) {
-                        // try sendBeacon as last ditch
-                        const beaconOk = trySendBeacon(postData);
-                        if (!beaconOk) enqueuePending(postData);
-                    }
-                })();
+                sendPromise = fetch(GAS_URL, {
+                    method: 'POST',
+                    redirect: "follow",
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(postData)
+                });
             }
 
-            // タイムアウトやエラーでも必ず画面遷移させる
             sendPromise.finally(() => {
-                // 画面遷移
                 window.location.href = `result.html?color=${colorKey}&input=${encodeURIComponent(finalInput)}`;
             });
         });
-
-        // 再送処理：ページ読み込み時に未送信キューをフラッシュする
-        async function flushPendingSends() {
-            try {
-                const list = JSON.parse(localStorage.getItem('pending_sends') || '[]');
-                if (!Array.isArray(list) || list.length === 0) return;
-                console.log('flushPendingSends: found', list.length);
-                const remaining = [];
-                for (const item of list) {
-                    try {
-                        const ok = await (async () => {
-                            try {
-                                // try original content type first
-                                let ok1 = false;
-                                try {
-                                    const res = await fetchWithTimeout(GAS_URL, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': GAS_CONTENT_TYPE },
-                                        body: GAS_CONTENT_TYPE.includes('json') ? JSON.stringify(item.payload) : JSON.stringify(item.payload)
-                                    }, 6000);
-                                    const text = await res.text();
-                                    try { JSON.parse(text); } catch(e) { /* ignore */ }
-                                    console.log('Flushed pending item (first try)');
-                                    ok1 = true;
-                                } catch(e) { console.warn('flush first try failed', e); }
-                                if (ok1) return true;
-                                // try as text/plain
-                                try {
-                                    const res2 = await fetchWithTimeout(GAS_URL, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                                        body: JSON.stringify(item.payload)
-                                    }, 6000);
-                                    const text2 = await res2.text();
-                                    try { JSON.parse(text2); } catch(e) { /* ignore */ }
-                                    console.log('Flushed pending item (second try as text/plain)');
-                                    return true;
-                                } catch(e) { console.warn('flush second try failed', e); }
-                                return false;
-                            } catch(e) {
-                                console.warn('Flush attempt inner failed', e && e.message ? e.message : e);
-                                return false;
-                            }
-                        })();
-                        if (!ok) remaining.push(item);
-                    } catch(e) { remaining.push(item); }
-                }
-                localStorage.setItem('pending_sends', JSON.stringify(remaining));
-                console.log('flushPendingSends: remaining', remaining.length);
-            } catch(e) { console.error('flushPendingSends error', e); }
-        }
-
-        // 画面が読み込まれたら未送信キューを試す
-        window.addEventListener('load', () => {
-            setTimeout(() => flushPendingSends(), 2000);
-        });
-
-        // ページ離脱時に sendBeacon を試す（直前送信がある場合）
-        window.addEventListener('beforeunload', () => {
-            try {
-                const list = JSON.parse(localStorage.getItem('pending_sends') || '[]');
-                if (Array.isArray(list) && list.length > 0 && navigator.sendBeacon) {
-                    // まとめて送る
-                    try {
-                        const blob = new Blob([JSON.stringify(list.map(i => i.payload))], { type: 'application/json' });
-                        navigator.sendBeacon(GAS_URL, blob);
-                    } catch(e) { /* ignore */ }
-                }
-            } catch(e) { /* ignore */ }
-        });
-
-        // 送信ログを表示する (新しいウィンドウ)
-        function openSendHistoryWindow() {
-            try {
-                const list = JSON.parse(localStorage.getItem('send_history') || '[]');
-                const w = window.open('', '_blank');
-                if (!w) { alert('新しいウィンドウを開けませんでした。ポップアップブロックを確認してください。'); return; }
-                w.document.title = '送信ログ';
-                const pre = w.document.createElement('pre');
-                pre.style.whiteSpace = 'pre-wrap';
-                pre.textContent = JSON.stringify(list.slice(0,200), null, 2);
-                w.document.body.appendChild(pre);
-            } catch(e) { alert('送信ログを読み取れませんでした'); }
-        }
-
-        document.getElementById('debug-send-log').addEventListener('click', () => openSendHistoryWindow());
     </script>
 </body>
 </html>
