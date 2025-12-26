@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コトバのまほう</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .magic-bg {
+            background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        h1 { color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        .magic-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 4px solid #b49cff;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .wizard-icon { font-size: 60px; display: block; margin-bottom: 10px; }
+
+        /* 入力エリア */
+        #user-input-magic {
+            width: 100%; height: 100px; font-size: 18px; padding: 15px;
+            border-radius: 15px; border: 2px solid #ccc; margin-bottom: 15px;
+            box-sizing: border-box; font-family: inherit;
+        }
+        
+        .btn-magic {
+            background-color: #b49cff; color: white; font-weight: bold; font-size: 20px;
+            border: none; border-radius: 30px; padding: 15px 40px; cursor: pointer;
+            box-shadow: 0 6px 0 #9279e0; transition: 0.1s; width: 100%;
+        }
+        .btn-magic:active { transform: translateY(4px); box-shadow: none; }
+
+        /* --- ▼▼▼ 新しい結果表示エリアのデザイン ▼▼▼ --- */
+        
+        /* 結果全体を包むコンテナ */
+        #result-container {
+            margin-top: 40px;
+            text-align: left;
+            display: none; /* 最初は隠す */
+        }
+
+        /* 博士太郎のアイコンエリア */
+        .doctor-icon-area {
+            position: relative;
+            height: 40px;
+            margin-bottom: 10px;
+        }
+        .doctor-emoji {
+            font-size: 60px;
+            position: absolute;
+            left: -10px; /* ★さらに左へ！枠からはみ出させる */
+            top: -30px;
+            filter: drop-shadow(2px 2px 0 white);
+            z-index: 10;
+        }
+
+        /* 4つの枠（カード）の共通スタイル */
+        .res-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            border-left: 8px solid #ccc; /* 左側に色のアクセント */
+            animation: slideIn 0.5s ease;
+        }
+
+        /* 各カードの色分け */
+        .card-1 { border-left-color: #ff9e80; background-color: #fffbe6; } /* うけとめる */
+        .card-2 { border-left-color: #80cbc4; background-color: #e0f2f1; } /* 相手の気持ち */
+        .card-3 { border-left-color: #ce93d8; background-color: #f3e5f5; } /* 言い換え */
+        .card-4 { border-left-color: #90caf9; background-color: #e3f2fd; } /* クールダウン */
+
+        .res-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            display: block;
+            opacity: 0.8;
+        }
+
+        .res-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            font-weight: bold;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="magic-bg">
+
+    <div class="container" style="background:transparent; box-shadow:none;">
+        <h1>🪄 コトバのまほう</h1>
+        
+        <div class="magic-card">
+            <div class="wizard-icon">🧙‍♂️</div>
+            <p style="font-weight:bold; color:#555; text-align:left;">
+                イライラして いいたくなったこと、<br>
+                ここに かいてみてね。<br>
+                「博士 太郎（はかせ たろう）」が 
+                <br>ことばをへんしんさせるよ！
+            </p>
+            
+            <textarea id="user-input-magic" placeholder="（例）あいつムカつく！きえろ！"></textarea>
+            
+            <button id="btn-ask" class="btn-magic" onclick="askWizard()">
+                まほうを かける ✨
+            </button>
+
+            <div id="result-container">
+                <div class="doctor-icon-area">
+                    <div class="doctor-emoji">🧙‍♂️</div>
+                </div>
+
+                <div class="res-card card-1">
+                    <span class="res-title">📩 博士太郎 からのメッセージ</span>
+                    <div id="res-step1" class="res-text">...</div>
+                </div>
+
+                <div class="res-card card-2">
+                    <span class="res-title">💔 あいての きもち</span>
+                    <div id="res-step2" class="res-text">...</div>
+                </div>
+
+                <div class="res-card card-3">
+                    <span class="res-title">✨ まほうの へんかん</span>
+                    <div id="res-step3" class="res-text">...</div>
+                </div>
+
+                <div class="res-card card-4">
+                    <span class="res-title">🧘 おちつく ほうほう</span>
+                    <div id="res-step4" class="res-text">...</div>
+                </div>
+            </div>
+            </div>
+
+        <br>
+        <a href="index.html" class="btn-home" style="background:rgba(255,255,255,0.3); border:2px solid white;">🏠 ホームにもどる</a>
+    </div>
+
+    <script>
+        // ★ここもあなたのGASのURLに書き換えてください
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
+
+        async function askWizard() {
+            const text = document.getElementById("user-input-magic").value;
+            const container = document.getElementById("result-container");
+            const btn = document.getElementById("btn-ask");
+
+            if (!text.trim()) return; 
+
+            // 準備中表示
+            container.style.display = "block";
+            document.getElementById("res-step1").innerText = "考え中...";
+            document.getElementById("res-step2").innerText = "考え中...";
+            document.getElementById("res-step3").innerText = "考え中...";
+            document.getElementById("res-step4").innerText = "考え中...";
+            
+            btn.disabled = true;
+            btn.style.backgroundColor = "#ccc";
+            btn.style.boxShadow = "none";
+
+            const postData = { type: "ai_consult", text: text };
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    redirect: "follow",
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(postData)
+                });
+                
+                const data = await response.json();
+                
+                // GASから返ってきたJSON（またはテキスト）を処理
+                let result = data.reply;
+                
+                // もしJSON文字列として返ってきたらパースする
+                try {
+                    const jsonRes = JSON.parse(result);
+                    document.getElementById("res-step1").innerHTML = jsonRes.step1;
+                    document.getElementById("res-step2").innerHTML = jsonRes.step2;
+                    document.getElementById("res-step3").innerHTML = jsonRes.step3;
+                    document.getElementById("res-step4").innerHTML = jsonRes.step4;
+                } catch(e) {
+                    // JSONじゃない場合（エラーメッセージなど）は1つ目にまとめて表示
+                    document.getElementById("res-step1").innerText = result;
+                    document.getElementById("res-step2").innerText = "-";
+                    document.getElementById("res-step3").innerText = "-";
+                    document.getElementById("res-step4").innerText = "-";
+                }
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById("res-step1").innerText = "通信エラー😢";
+            } finally {
+                btn.disabled = false;
+                btn.style.backgroundColor = "#b49cff";
+                btn.style.boxShadow = "0 6px 0 #9279e0";
+            }
+        }
+    </script>
+</body>
+</html>
