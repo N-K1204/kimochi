@@ -48,7 +48,7 @@
             border-radius: 10px;
             margin-bottom: 20px;
             text-align: center;
-            font-family: sans-serif; /* パスワードの●を見やすく */
+            font-family: sans-serif;
         }
 
         .login-btn {
@@ -72,49 +72,33 @@
             color: #ff6f6f;
             font-size: 14px;
             margin-top: 15px;
-            display: none; /* 最初は隠す */
+            display: none;
             font-weight: bold;
         }
 
-        /* ------------------------------------------------
-           既存のスタイル
-        ------------------------------------------------ */
-        /* タイトル（h1）のサイズ調整 */
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #444;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        /* きろくボタン専用のスタイル */
-        .btn-logs {
+        /* アプリ画面の追加スタイル */
+        #app-content { display: none; }
+        
+        /* 新機能ボタンのスタイル */
+        .btn-feature {
             display: block;
             width: 100%;
             padding: 15px 0;
-            margin-top: 30px;
-            background-color: #ffffff;
-            border: 2px solid #ccc;
+            margin-top: 15px;
             border-radius: 15px;
-            color: #666;
-            font-size: 16px;
+            color: white;
+            font-size: 18px;
             font-weight: bold;
             text-align: center;
             text-decoration: none;
-            box-shadow: 0 4px 0 #ddd;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
             transition: 0.1s;
             box-sizing: border-box;
         }
-        .btn-logs:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
+        .btn-feature:active { transform: translateY(4px); box-shadow: none; }
         
-        /* コンテンツエリア（最初は隠す） */
-        #app-content {
-            display: none;
-        }
+        .btn-magic { background-color: #b49cff; border: 2px solid #9575cd; }
+        .btn-gacha { background-color: #4dd0e1; border: 2px solid #00acc1; }
     </style>
 </head>
 <body>
@@ -128,6 +112,7 @@
             <div id="error-message" class="error-msg">ちがうみたい...💦</div>
         </div>
     </div>
+
     <div id="app-content" class="container">
         <h1>🌈 きもちにっき 🌈</h1>
         
@@ -158,52 +143,52 @@
             </a>
         </div>
 
+        <div style="margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 20px;">
+            <p style="font-size:14px; color:#888; margin-bottom:10px;">👇 こまったときは ココ！</p>
+            
+            <a href="magic.html" class="btn-feature btn-magic">
+                🧙‍♂️ コトバの まほう
+            </a>
+            
+            <a href="gacha.html" class="btn-feature btn-gacha">
+                💊 おたすけ ガチャ
+            </a>
+        </div>
+
         <a href="logs.html" class="btn-logs">
-            📘 きもちのきろく
+            📘 きろくのきろく
         </a>
     </div>
 
     <script>
-        // 正解のパスワード
         const CORRECT_PASS = "yuuki01121003";
 
-        // ページを読み込んだとき
         window.onload = function() {
-            // すでにログイン済みかチェック（セッションストレージ）
             if (sessionStorage.getItem("isLoggedIn") === "true") {
                 showApp();
             }
         };
 
-        // パスワードチェック関数
         function checkPassword() {
             const inputPass = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-message');
 
             if (inputPass === CORRECT_PASS) {
-                // 正解！
-                sessionStorage.setItem("isLoggedIn", "true"); // ログイン状態を保存
+                sessionStorage.setItem("isLoggedIn", "true");
                 showApp();
             } else {
-                // 不正解...
                 errorMsg.style.display = "block";
-                // 入力欄をクリアして揺らすなどのアニメーションを入れても良いですが、今回はシンプルに
             }
         }
 
-        // アプリ画面を表示する関数
         function showApp() {
-            document.getElementById('login-screen').style.display = 'none'; // ロック画面を消す
-            document.getElementById('app-content').style.display = 'block'; // アプリ画面を出す
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
         }
 
-        // エンターキーでもログインできるようにする
         document.getElementById('password').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                checkPassword();
-            }
+            if (e.key === 'Enter') checkPassword();
         });
     </script>
 </body>
 </html>
-
