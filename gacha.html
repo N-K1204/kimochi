@@ -53,7 +53,6 @@
         }
         .btn-try:active { transform: translateY(4px); box-shadow: none; }
         
-        /* メッセージ表示用のIDスタイル */
         #instruction-text {
             font-size: 14px; color: #888;
             transition: opacity 0.3s;
@@ -89,37 +88,30 @@
     </div>
 
     <script>
-        // ★天才カウンセラー厳選！こども向け対処法リスト（30種類以上）
+        // ★ここにGASのURLを貼ってください（input.htmlと同じもの）
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
+
         const CARDS = [
-            // --- ① 体を止める・固定する（衝動を抑える） ---
             { icon: "✊", title: "おてて グー！", desc: "りょうてを ギュッと にぎって、\n「グー！」のかたちに しよう。\nそのまま 10 かぞえてみてね。" },
             { icon: "🧘", title: "おひざ ポン", desc: "せいざをして、\nりょうてを おひざのうえに ピタッ。\nおててを うごかさない チャレンジ！" },
             { icon: "🫂", title: "じぶんを ギュッ", desc: "さわりたくなったら、\nじぶんの からだを ギュッとして\n「だいじょうぶ」って いおう。" },
             { icon: "🔒", title: "おしり ロック", desc: "りょうてを おしりの したに いれて\nすわってみよう。\n手が かってに うごかないよ。" },
             { icon: "🐢", title: "カメさん ポーズ", desc: "ゆかに ペタッとして、\nカメさんのように まるまろう。\nせなかを まるめると おちつくよ。" },
-
-            // --- ② 体を動かす（エネルギー発散・リセット） ---
             { icon: "🙌", title: "てを ブラブラ〜", desc: "りょうてを おもいっきり\nブラブラ〜！って ふってみよう。\nイヤな きもちを おいはらえ！" },
             { icon: "👖", title: "ズボン パンパン", desc: "手が うごきそうになったら、\nじぶんの ふとももを\nパンパン！って たたこう。" },
             { icon: "🐇", title: "ジャンプ 5かい", desc: "そのばで ジャンプ！\n1、2、3、4、5！\nチャクチ できたかな？" },
             { icon: "🙆‍♂️", title: "せのび ぐ〜ん", desc: "りょうてを うえにあげて\nぐ〜〜〜ん！と せのびしよう。\nからだが ゆるむよ。" },
             { icon: "🧱", title: "かべを おそう", desc: "りょうてで かべを\nギュ〜〜〜ッ！と おしてみよう。\nちからが ぜんぶ でていくよ。" },
             { icon: "🐾", title: "あしぶみ ドンドン", desc: "そのばで あしぶみ しよう。\nイチ、ニ、イチ、ニ！\nリズムよく あるいてみよう。" },
-
-            // --- ③ 感覚刺激（五感を使って落ち着く） ---
             { icon: "🥛", title: "おみず ゴクゴク", desc: "つめたい おみずを\nコップ 1ぱい のんでみよう。\nきもちが スッキリするよ。" },
             { icon: "🧼", title: "てを あらおう", desc: "つめたい おみずで\nてを キレイに あらってみよう。\nバイキンも イライラも さようなら！" },
             { icon: "🧊", title: "おでこ ペタッ", desc: "つめたい カベ や ゆか に\nおでこを ペタッと つけてみよう。\nあたまが ヒンヤリ するよ。" },
             { icon: "👂", title: "みみを すます", desc: "めを つぶって、おとを きこう。\nとけいの おと？ とりの こえ？\nなにが きこえるかな？" },
             { icon: "🧸", title: "フワフワ さがし", desc: "おうちの なかで\nさわると「フワフワ」するものを\nさがして タッチしてみよう。" },
-
-            // --- ④ 呼吸・リラックス（自律神経を整える） ---
             { icon: "💨", title: "ふうせん 呼吸", desc: "おなかが ふうせんだと おもって、\nおおきく すって、\nゆ〜っくり はいてみよう。" },
             { icon: "🎂", title: "ロウソク ふーッ", desc: "ゆびを 1ぽん たてて、\nケーキの ロウソクだと おもって\nやさしく ふーッ！と けしてみよう。" },
             { icon: "🦁", title: "ライオンの ポーズ", desc: "おおきな くちを あけて\nした（ベロ）を ベーッ！と だして\n「ハァーッ」って いきを はこう。" },
             { icon: "😌", title: "ごろん タイム", desc: "ゆかに ごろんと ねころがって、\n天井（てんじょう）を じーっと\n1分かん みつめてみよう。" },
-
-            // --- ⑤ 認知・考える（脳のスイッチを切り替える） ---
             { icon: "🔴", title: "あかいもの さがし", desc: "まわりを キョロキョロ みて、\n「あかい もの」を 3つ\nさがして みつけよう！" },
             { icon: "🖼", title: "まどを みて", desc: "まどの そとを みてみよう。\nくも や とり は いるかな？\nなにが みえるか かぞえてみて。" },
             { icon: "🔢", title: "かずを かぞえる", desc: "めを つぶって、\nゆっくり 10 まで かぞえよう。\n1... 2... 3..." },
@@ -132,17 +124,15 @@
             const machine = document.querySelector('.gacha-machine');
             const instruction = document.getElementById('instruction-text');
 
-            machine.style.pointerEvents = 'none'; // 連打防止
-            instruction.style.display = 'none';   // メッセージを消す
+            machine.style.pointerEvents = 'none'; 
+            instruction.style.display = 'none'; 
 
-            // ガチャガチャ揺れる演出
             machine.style.transform = "rotate(10deg)";
             setTimeout(() => machine.style.transform = "rotate(-10deg)", 100);
             setTimeout(() => machine.style.transform = "rotate(10deg)", 200);
             setTimeout(() => machine.style.transform = "rotate(0deg)", 300);
 
             setTimeout(() => {
-                // ランダムに1枚選ぶ
                 const card = CARDS[Math.floor(Math.random() * CARDS.length)];
                 
                 document.getElementById('card-icon').innerText = card.icon;
@@ -151,10 +141,26 @@
                 
                 const cardEl = document.getElementById('result-card');
                 cardEl.style.display = "block";
-                
-                // ガチャマシンを隠す
                 machine.style.display = 'none';
+
+                // ★追加：GASに通知を送る（裏でこっそり）
+                sendGachaLog(card);
+
             }, 400);
+        }
+
+        function sendGachaLog(card) {
+            if (!GAS_URL) return;
+            fetch(GAS_URL, {
+                method: 'POST',
+                redirect: "follow",
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    type: "gacha_log",
+                    title: card.icon + " " + card.title,
+                    desc: card.desc
+                })
+            }).catch(e => console.log(e));
         }
 
         function resetGacha() {
@@ -164,8 +170,6 @@
 
             machine.style.display = "flex";
             machine.style.pointerEvents = 'auto';
-            
-            // メッセージをまた出す
             instruction.style.display = 'block';
         }
     </script>
