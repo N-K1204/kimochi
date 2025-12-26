@@ -329,7 +329,7 @@
         
         let storyParts = {
             when: "", place: "", place_sub: "", person: "", 
-            action: "", action_type: "", event: "", reason: "", thought: "", body: "",
+            action: "", action_type: "", event: "", reason: "", thought: "", body: "", want_call: "",
             last_valence: null
         };
 
@@ -361,7 +361,6 @@
                 { label: "👤 ぼく", value: "ぼく" }
             ],
             // 身体感覚（ソマティック・マーカー）のライブラリ
-            // p: Positive (Relaxed/Expansive), n: Negative (Tense/Constricted)
             body_pos: [
                 { label: "✨ からだが かるい", value: "からだがかるかった", p:true },
                 { label: "😌 ポカポカ", value: "ポカポカしていた", p:true },
@@ -457,7 +456,7 @@
                 {l:"🥶 がまん", v:"さむいのがまんしていた", t:"endure"}
             ],
             "おんがくしつ": [
-                {l:"🎵 うたう", v:"うたっていた", t:"art"},
+                {l:"🎵 うた", v:"うた", t:"art"},
                 {l:"🎹 がっき", v:"がっきをひいた", t:"art"},
                 {l:"🙉 みみをふさぐ", v:"みみをふさいでいた", t:"sensory_overload"}
             ],
@@ -738,17 +737,27 @@
             body_check: {
                 text: "おしえてくれて ありがとう。\nさいごに、いまの からだは どんなかんじ？",
                 getChoices: () => {
-                    // 直前の感情価に基づいて、適切な身体感覚リストを表示
                     const isPositive = storyParts.last_valence === 'p';
                     const bodies = getBodyChoices(isPositive);
                     return bodies.map(b => ({
                         label: b.label,
                         save: {body: b.value},
                         p: b.p,
-                        n: b.n
+                        n: b.n,
+                        next: "call_check"
                     }));
-                },
-                end: true // ここで終了フラグ
+                }
+            },
+
+            // 10. 電話確認
+            call_check: {
+                text: "かなとくんと、でんわ📞したい？",
+                choices: [
+                    { label: "📞 したい！", save: {want_call: "\n(かなとくんと電話：したい！)"}, p:true },
+                    { label: "🤔 あとで", save: {want_call: "\n(かなとくんと電話：あとで)"} },
+                    { label: "🙅‍♂️ しない", save: {want_call: "\n(かなとくんと電話：しない)"} }
+                ],
+                end: true
             }
         };
 
@@ -770,7 +779,7 @@
             historyStack = [];
             updateBackButton(); 
 
-            storyParts = { when: "", place: "", place_sub: "", person: "", action: "", action_type: "", event: "", reason: "", thought: "", body: "", last_valence: null };
+            storyParts = { when: "", place: "", place_sub: "", person: "", action: "", action_type: "", event: "", reason: "", thought: "", body: "", want_call: "", last_valence: null };
             
             showStep("start");
         }
@@ -839,6 +848,7 @@
             if(stepId === 'reason_check') return 'reason';
             if(stepId.startsWith('thought')) return 'thought';
             if(stepId === 'body_check') return 'body';
+            if(stepId === 'call_check') return 'want_call';
             return 'unknown';
         }
 
@@ -851,6 +861,7 @@
             if(currentStepId === 'event_check') return 'reason_check';
             if(currentStepId === 'reason_check') return 'thought_pos'; 
             if(currentStepId.startsWith('thought')) return 'body_check';
+            if(currentStepId === 'body_check') return 'call_check';
             return null;
         }
 
@@ -997,6 +1008,7 @@
             let r = storyParts.reason ? `りゆうは、${storyParts.reason}` : "";
             let t = storyParts.thought;
             let b = storyParts.body;
+            let c = storyParts.want_call || "";
 
             let text = template
                 .replace("{w}", w)
@@ -1011,6 +1023,8 @@
 
             text = text.replace("。。", "。"); 
             text = text.replace("りゆうは、。", "");
+            
+            text += c;
 
             finalText.value = text;
         }
