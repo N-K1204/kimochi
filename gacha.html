@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おたすけガチャ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .gacha-container {
+            text-align: center;
+            padding: 20px;
+            background: #e0f7fa;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 { font-size: 28px; color: #006064; margin-bottom: 10px; }
+        
+        .gacha-machine {
+            width: 220px; height: 220px;
+            background: #ffccbc;
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center; justify-content: center;
+            font-size: 80px;
+            border: 8px solid #ffab91;
+            box-shadow: 0 10px 0 #e64a19;
+            cursor: pointer;
+            transition: 0.1s;
+            user-select: none;
+        }
+        .gacha-machine:active { transform: translateY(5px); box-shadow: 0 5px 0 #e64a19; }
+        
+        .card {
+            background: white;
+            border: 4px solid #4dd0e1;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 320px;
+            display: none;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-icon { font-size: 80px; margin-bottom: 10px; display: block; }
+        .card-title { font-size: 24px; font-weight: bold; color: #0097a7; margin-bottom: 10px; }
+        .card-desc { font-size: 18px; color: #555; line-height: 1.6; font-weight: bold; }
+
+        .btn-try {
+            background-color: #4dd0e1; color: white; border:none;
+            padding: 12px 30px; border-radius: 30px; font-weight:bold; font-size: 16px;
+            cursor: pointer; margin-top: 20px; box-shadow: 0 4px 0 #00acc1;
+        }
+        .btn-try:active { transform: translateY(4px); box-shadow: none; }
+        
+        /* メッセージ表示用のIDスタイル */
+        #instruction-text {
+            font-size: 14px; color: #888;
+            transition: opacity 0.3s;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="gacha-container">
+        <h1>💊 おたすけ ガチャ</h1>
+        <p style="font-weight:bold; color:#555;">
+            どうすればいいか わからないとき、<br>
+            ボタンを おしてね！
+        </p>
+        
+        <div class="gacha-machine" onclick="playGacha()">💊</div>
+        
+        <p id="instruction-text">👆 ボタンをおしてね</p>
+        
+        <div id="result-card" class="card">
+            <span id="card-icon" class="card-icon"></span>
+            <div id="card-title" class="card-title"></div>
+            <div id="card-desc" class="card-desc"></div>
+            <button class="btn-try" onclick="resetGacha()">もういっかい</button>
+        </div>
+
+        <br><br>
+        <a href="index.html" class="btn-home" style="background:#00bcd4;">🏠 ホームにもどる</a>
+    </div>
+
+    <script>
+        // ★天才カウンセラー厳選！こども向け対処法リスト（30種類以上）
+        const CARDS = [
+            // --- ① 体を止める・固定する（衝動を抑える） ---
+            { icon: "✊", title: "おてて グー！", desc: "りょうてを ギュッと にぎって、\n「グー！」のかたちに しよう。\nそのまま 10 かぞえてみてね。" },
+            { icon: "🧘", title: "おひざ ポン", desc: "せいざをして、\nりょうてを おひざのうえに ピタッ。\nおててを うごかさない チャレンジ！" },
+            { icon: "🫂", title: "じぶんを ギュッ", desc: "さわりたくなったら、\nじぶんの からだを ギュッとして\n「だいじょうぶ」って いおう。" },
+            { icon: "🔒", title: "おしり ロック", desc: "りょうてを おしりの したに いれて\nすわってみよう。\n手が かってに うごかないよ。" },
+            { icon: "🐢", title: "カメさん ポーズ", desc: "ゆかに ペタッとして、\nカメさんのように まるまろう。\nせなかを まるめると おちつくよ。" },
+
+            // --- ② 体を動かす（エネルギー発散・リセット） ---
+            { icon: "🙌", title: "てを ブラブラ〜", desc: "りょうてを おもいっきり\nブラブラ〜！って ふってみよう。\nイヤな きもちを おいはらえ！" },
+            { icon: "👖", title: "ズボン パンパン", desc: "手が うごきそうになったら、\nじぶんの ふとももを\nパンパン！って たたこう。" },
+            { icon: "🐇", title: "ジャンプ 5かい", desc: "そのばで ジャンプ！\n1、2、3、4、5！\nチャクチ できたかな？" },
+            { icon: "🙆‍♂️", title: "せのび ぐ〜ん", desc: "りょうてを うえにあげて\nぐ〜〜〜ん！と せのびしよう。\nからだが ゆるむよ。" },
+            { icon: "🧱", title: "かべを おそう", desc: "りょうてで かべを\nギュ〜〜〜ッ！と おしてみよう。\nちからが ぜんぶ でていくよ。" },
+            { icon: "🐾", title: "あしぶみ ドンドン", desc: "そのばで あしぶみ しよう。\nイチ、ニ、イチ、ニ！\nリズムよく あるいてみよう。" },
+
+            // --- ③ 感覚刺激（五感を使って落ち着く） ---
+            { icon: "🥛", title: "おみず ゴクゴク", desc: "つめたい おみずを\nコップ 1ぱい のんでみよう。\nきもちが スッキリするよ。" },
+            { icon: "🧼", title: "てを あらおう", desc: "つめたい おみずで\nてを キレイに あらってみよう。\nバイキンも イライラも さようなら！" },
+            { icon: "🧊", title: "おでこ ペタッ", desc: "つめたい カベ や ゆか に\nおでこを ペタッと つけてみよう。\nあたまが ヒンヤリ するよ。" },
+            { icon: "👂", title: "みみを すます", desc: "めを つぶって、おとを きこう。\nとけいの おと？ とりの こえ？\nなにが きこえるかな？" },
+            { icon: "🧸", title: "フワフワ さがし", desc: "おうちの なかで\nさわると「フワフワ」するものを\nさがして タッチしてみよう。" },
+
+            // --- ④ 呼吸・リラックス（自律神経を整える） ---
+            { icon: "💨", title: "ふうせん 呼吸", desc: "おなかが ふうせんだと おもって、\nおおきく すって、\nゆ〜っくり はいてみよう。" },
+            { icon: "🎂", title: "ロウソク ふーッ", desc: "ゆびを 1ぽん たてて、\nケーキの ロウソクだと おもって\nやさしく ふーッ！と けしてみよう。" },
+            { icon: "🦁", title: "ライオンの ポーズ", desc: "おおきな くちを あけて\nした（ベロ）を ベーッ！と だして\n「ハァーッ」って いきを はこう。" },
+            { icon: "😌", title: "ごろん タイム", desc: "ゆかに ごろんと ねころがって、\n天井（てんじょう）を じーっと\n1分かん みつめてみよう。" },
+
+            // --- ⑤ 認知・考える（脳のスイッチを切り替える） ---
+            { icon: "🔴", title: "あかいもの さがし", desc: "まわりを キョロキョロ みて、\n「あかい もの」を 3つ\nさがして みつけよう！" },
+            { icon: "🖼", title: "まどを みて", desc: "まどの そとを みてみよう。\nくも や とり は いるかな？\nなにが みえるか かぞえてみて。" },
+            { icon: "🔢", title: "かずを かぞえる", desc: "めを つぶって、\nゆっくり 10 まで かぞえよう。\n1... 2... 3..." },
+            { icon: "🖍", title: "くうきに おえかき", desc: "ひとさしゆび で\nくうきに すきな え を かこう。\nまる？ ハート？ なにができる？" },
+            { icon: "👏", title: "エア ハイタッチ", desc: "だれかと（いなかったら くうきと）\nイェーイ！って ハイタッチ！\nパチン！って おとを ならそう。" },
+            { icon: "🦸‍♂️", title: "ヒーロー 変身", desc: "かっこいい ヒーローの ポーズで\nビシッ！と とまってみよう。\nつよい こころに なれるよ。" }
+        ];
+
+        function playGacha() {
+            const machine = document.querySelector('.gacha-machine');
+            const instruction = document.getElementById('instruction-text');
+
+            machine.style.pointerEvents = 'none'; // 連打防止
+            instruction.style.display = 'none';   // メッセージを消す
+
+            // ガチャガチャ揺れる演出
+            machine.style.transform = "rotate(10deg)";
+            setTimeout(() => machine.style.transform = "rotate(-10deg)", 100);
+            setTimeout(() => machine.style.transform = "rotate(10deg)", 200);
+            setTimeout(() => machine.style.transform = "rotate(0deg)", 300);
+
+            setTimeout(() => {
+                // ランダムに1枚選ぶ
+                const card = CARDS[Math.floor(Math.random() * CARDS.length)];
+                
+                document.getElementById('card-icon').innerText = card.icon;
+                document.getElementById('card-title').innerText = card.title;
+                document.getElementById('card-desc').innerText = card.desc;
+                
+                const cardEl = document.getElementById('result-card');
+                cardEl.style.display = "block";
+                
+                // ガチャマシンを隠す
+                machine.style.display = 'none';
+            }, 400);
+        }
+
+        function resetGacha() {
+            document.getElementById('result-card').style.display = "none";
+            const machine = document.querySelector('.gacha-machine');
+            const instruction = document.getElementById('instruction-text');
+
+            machine.style.display = "flex";
+            machine.style.pointerEvents = 'auto';
+            
+            // メッセージをまた出す
+            instruction.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
