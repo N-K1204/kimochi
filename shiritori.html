@@ -3,196 +3,619 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>きもちにっき</title>
+    <title>しりとりバトル！</title>
     <link rel="stylesheet" href="style.css">
+    <script src="shiritori_data.js"></script>
     <style>
-        /* ------------------------------------------------
-           パスワード画面のスタイル
-        ------------------------------------------------ */
-        #login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #fff7e6, #ffeefd);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
+        /* --- 基本レイアウト --- */
+        .game-screen { display: none; }
+        .active-screen { display: block; } /* 選択肢バグ防止のためアニメなし */
 
-        .login-box {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
+        /* --- 設定画面 --- */
+        .setup-box {
+            background: #fff; border-radius: 20px; padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px;
+            text-align: left; position: relative; z-index: 10;
         }
-
-        .login-title {
-            font-size: 20px;
-            margin-bottom: 20px;
-            color: #555;
-            font-weight: bold;
+        .mode-select label, .difficulty-select label {
+            display: block; padding: 10px; border: 2px solid #ddd;
+            border-radius: 10px; margin-bottom: 10px; cursor: pointer;
+            font-weight: bold; transition: 0.2s; background: #fff;
         }
-
-        .pass-input {
-            width: 80%;
-            padding: 10px;
-            font-size: 18px;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-family: sans-serif;
-        }
-
-        .login-btn {
-            background-color: #ff8bb0;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #ff6f9e;
-            transition: 0.1s;
-        }
-        .login-btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
-        .error-msg {
-            color: #ff6f6f;
-            font-size: 14px;
-            margin-top: 15px;
-            display: none;
-            font-weight: bold;
-        }
-
-        /* アプリ画面の追加スタイル */
-        #app-content { display: none; }
+        .mode-select label:hover, .difficulty-select label:hover { background-color: #f9f9f9; transform: scale(1.02); }
+        .mode-select input:checked + span, .difficulty-select input:checked + span { color: #ff8bb0; }
+        .mode-select input:checked + span::after, .difficulty-select input:checked + span::after { content: " ✅"; }
         
-        /* 新機能ボタンのスタイル */
-        .btn-feature {
-            display: block;
-            width: 100%;
-            padding: 15px 0;
-            margin-top: 15px;
-            border-radius: 15px;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            text-decoration: none;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-            transition: 0.1s;
-            box-sizing: border-box;
+        .rule-input {
+            width: 100%; padding: 10px; border-radius: 10px;
+            border: 1px solid #ccc; font-size: 16px; box-sizing: border-box;
+            margin-bottom: 15px; background: #fff;
+            appearance: none; -webkit-appearance: none;
         }
-        .btn-feature:active { transform: translateY(4px); box-shadow: none; }
+        .select-wrapper { position: relative; }
+        .select-wrapper::after {
+            content: "▼"; font-size: 12px; color: #888;
+            position: absolute; right: 15px; top: 40%; pointer-events: none;
+        }
+
+        /* --- 演出アニメーション --- */
+        .vs-anim { 
+            font-size: 50px; font-weight: bold; color: #ff6f6f; 
+            text-shadow: 2px 2px 0 #fff, 4px 4px 0 rgba(0,0,0,0.1);
+            animation: popUp 0.5s infinite alternate; 
+        }
+        .slot-machine { 
+            font-size: 90px; font-weight: bold; margin: 20px 0; color: #444; 
+            text-shadow: 3px 3px 0 #eee;
+        }
         
-        .btn-magic { background-color: #b49cff; border: 2px solid #9575cd; }
-        .btn-gacha { background-color: #4dd0e1; border: 2px solid #00acc1; }
+        /* --- ゲーム画面 --- */
+        .turn-indicator {
+            font-size: 24px; font-weight: bold; padding: 15px;
+            background: #e3f2fd; border-radius: 15px; margin-bottom: 20px;
+            border: 3px solid #90caf9; color: #1565c0;
+            box-shadow: 0 4px 0 #64b5f6; transition: 0.3s;
+        }
+        .my-turn-anim { 
+            animation: popUp 0.5s ease; 
+            background-color: #fff9c4; border-color: #fbc02d; color: #f57f17; 
+            box-shadow: 0 4px 0 #f9a825;
+        }
+
+        .current-char-display { font-size: 18px; color: #555; margin-bottom: 5px; }
+        .big-char {
+            font-size: 70px; color: #ff8bb0; font-weight: bold; line-height: 1;
+            text-shadow: 3px 3px 0 #eee;
+        }
+        
+        .timer-bar-bg {
+            width: 100%; height: 15px; background: #eee; border-radius: 10px;
+            overflow: hidden; margin-bottom: 20px; border: 2px solid #ddd;
+        }
+        .timer-bar-fill {
+            height: 100%; background: #6ecb63; width: 100%;
+            transition: width 1s linear, background-color 0.5s;
+        }
+
+        .word-history {
+            height: 220px; overflow-y: auto; background: #f9f9f9;
+            border: 2px solid #eee; border-radius: 15px; padding: 10px;
+            margin-bottom: 15px; display: flex; flex-direction: column-reverse;
+        }
+        .history-item {
+            padding: 10px 16px; background: white; border-radius: 20px;
+            margin-bottom: 8px; font-weight: bold; color: #555; font-size: 18px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.05); display: inline-block; align-self: center;
+            animation: slideDown 0.3s ease; border-bottom: 2px solid #ddd;
+        }
+        .history-p1 { border-left: 8px solid #ff8bb0; align-self: flex-start; border-radius: 20px 20px 20px 0; }
+        .history-p2 { border-right: 8px solid #4dd0e1; align-self: flex-end; border-radius: 20px 20px 0 20px; }
+
+        .input-area { display: flex; gap: 10px; margin-bottom: 15px; position: relative; z-index: 10; }
+        .word-input {
+            flex: 1; padding: 15px; font-size: 20px; border-radius: 30px;
+            border: 2px solid #ddd; outline: none;
+        }
+        .word-input:focus { border-color: #ff8bb0; box-shadow: 0 0 0 3px rgba(255, 139, 176, 0.3); }
+        
+        .send-btn {
+            width: 60px; height: 58px; border-radius: 50%; border: none;
+            background: #ff8bb0; color: white; font-size: 24px; cursor: pointer;
+            box-shadow: 0 4px 0 #ff5c8d; transition: 0.1s;
+        }
+        .send-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .btn-giveup {
+            background-color: #fff; border: 2px solid #ccc; color: #888;
+            font-size: 14px; padding: 8px 20px; border-radius: 20px;
+            cursor: pointer; margin-top: 10px; position: relative; z-index: 10;
+        }
+        .btn-giveup:hover { background-color: #eee; color: #555; }
+
+        /* --- ポップな結果画面 --- */
+        #screen-result {
+            padding: 30px 10px; border-radius: 20px;
+            transition: 0.5s;
+        }
+        /* 勝ちデザイン */
+        .win-mode {
+            background: linear-gradient(135deg, #fff0f7, #fffde7);
+            animation: popWinBg 2s infinite alternate;
+        }
+        .win-title {
+            color: #ff6f9e; text-shadow: 2px 2px 0 #fff;
+            animation: bounceTitle 1s infinite;
+        }
+        /* 負けデザイン */
+        .lose-mode {
+            background: #e3f2fd;
+            animation: shockShake 0.5s ease-out;
+        }
+        .lose-title {
+            color: #5c6bc0; font-size: 30px;
+            transform: rotate(-5deg);
+        }
+
+        /* --- モーダル --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(3px);
+        }
+        .modal-box {
+            background: white; padding: 25px; border-radius: 20px;
+            width: 80%; max-width: 300px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .btn-yes { background-color: #ff6f6f; color: white; border: none; padding: 10px 30px; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #d32f2f; }
+        .btn-no { background-color: #bbb; color: white; border: none; padding: 10px 30px; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #999; }
+        .btn-yes:active, .btn-no:active { transform: translateY(4px); box-shadow: none; }
+
+        /* 紙吹雪レイヤー */
+        #confetti-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 999; overflow: hidden;
+        }
+        .confetti-emoji {
+            position: absolute; font-size: 24px;
+            animation: fall linear forwards;
+        }
+
+        /* --- アニメーション定義 --- */
+        @keyframes popUp { 0% { transform: scale(0.8); } 100% { transform: scale(1.1); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+        
+        /* 勝ち：背景がほんのり虹色に */
+        @keyframes popWinBg {
+            0% { background-color: #fff0f5; }
+            50% { background-color: #f0ffff; }
+            100% { background-color: #fffacd; }
+        }
+        /* 勝ち：タイトルが弾む */
+        @keyframes bounceTitle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px) scale(1.1); }
+        }
+        /* 負け：ガーンと揺れる */
+        @keyframes shockShake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px) rotate(-2deg); }
+            40% { transform: translateX(10px) rotate(2deg); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-box">
-            <div class="login-title">🔑 あいことば を いれてね</div>
-            <input type="password" id="password" class="pass-input" placeholder="ここに入力">
-            <br>
-            <button class="login-btn" onclick="checkPassword()">あける</button>
-            <div id="error-message" class="error-msg">ちがうみたい...💦</div>
+<div id="confetti-container"></div>
+
+<div id="giveup-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 style="font-size:22px; color:#555;">🏳️ ほんとうに<br>ギブアップ する？</h3>
+        <div class="modal-btns">
+            <button class="btn-yes" onclick="confirmGiveUp()">する！</button>
+            <button class="btn-no" onclick="closeModal()">しない</button>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="main-container">
+    <h1>🍎 しりとりバトル</h1>
+
+    <div id="screen-setup" class="game-screen active-screen">
+        <div class="setup-box">
+            <h3>🎮 モードをえらんでね</h3>
+            <div class="mode-select">
+                <label><input type="radio" name="mode" value="robot" checked onchange="toggleP2Input()"> <span>🤖 ロボットとたいせん</span></label>
+                <label><input type="radio" name="mode" value="friend" onchange="toggleP2Input()"> <span>👫 おともだちとたいせん</span></label>
+            </div>
+
+            <div id="difficulty-area">
+                <h3>🔥 むずかしさ</h3>
+                <div class="difficulty-select">
+                    <label><input type="radio" name="difficulty" value="easy" checked> <span>🐣 かんたん（ゆっくり）</span></label>
+                    <label><input type="radio" name="difficulty" value="normal"> <span>🐥 ふつう</span></label>
+                    <label><input type="radio" name="difficulty" value="hard"> <span>🦅 むずかしい（はやい！）</span></label>
+                </div>
+            </div>
+
+            <h3>📝 おなまえ</h3>
+            <input type="text" id="p1-name" class="rule-input" value="じぶん" placeholder="プレイヤー1">
+            <div id="p2-input-area" style="display:none;">
+                <input type="text" id="p2-name" class="rule-input" value="おともだち" placeholder="プレイヤー2">
+            </div>
+
+            <h3>⏱ ルール</h3>
+            <label>じかんせいげん：</label>
+            <div class="select-wrapper">
+                <select id="time-limit" class="rule-input">
+                    <option value="0">なし</option>
+                    <option value="10">10びょう（むずかしい！）</option>
+                    <option value="30" selected>30びょう</option>
+                    <option value="60">60びょう</option>
+                </select>
+            </div>
+            
+            <label>もじのかず：</label>
+            <div class="select-wrapper">
+                <select id="char-limit" class="rule-input">
+                    <option value="0" selected>なんでもOK</option>
+                    <option value="2">2もじ いじょう</option>
+                    <option value="3">3もじ いじょう</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn" onclick="startSetup()" style="position:relative; z-index:10; font-size:20px; padding:15px 50px;">スタート！🚀</button>
+        <br>
+        <a href="index.html" class="btn-home" style="margin-top:20px; position:relative; z-index:10;">🏠 ホームにもどる</a>
+    </div>
+
+    <div id="screen-intro" class="game-screen" style="text-align:center;">
+        <div class="vs-anim">VS</div>
+        <h2 id="match-title" style="font-size:28px;">〇〇 vs 〇〇</h2>
+        <br>
+        <p style="font-weight:bold;">さいしょの もじ は...</p>
+        <div id="slot-machine" class="slot-machine">?</div>
+        <div id="turn-announce" style="font-size:22px; font-weight:bold; color:#555; display:none; margin-top:20px;">
+            <span id="first-player" style="color:#ff8bb0; font-size:28px; background:#fff0f7; padding:5px 15px; border-radius:10px;"></span> から！
         </div>
     </div>
 
-    <div id="app-content" class="container">
-        <h1>🌈 きもちにっき 🌈</h1>
+    <div id="screen-game" class="game-screen">
+        <div id="turn-indicator" class="turn-indicator">あなたのばん</div>
         
-        <div class="color-grid">
-            <a href="input.html?color=pink" class="color-btn" style="background-color: #fff0f7; border-color: #ff8bb0;">
-                <span class="emoji">😄</span><span>うれしい</span>
-            </a>
-            <a href="input.html?color=green" class="color-btn" style="background-color: #f0fff3; border-color: #6ecb63;">
-                <span class="emoji">😌</span><span>おちつく</span>
-            </a>
-            <a href="input.html?color=yellow" class="color-btn" style="background-color: #fffbe0; border-color: #f1c232;">
-                <span class="emoji">😮</span><span>びっくり</span>
-            </a>
-            <a href="input.html?color=purple" class="color-btn" style="background-color: #f9f5ff; border-color: #b49cff;">
-                <span class="emoji">😕</span><span>もやもや</span>
-            </a>
-            <a href="input.html?color=blue" class="color-btn" style="background-color: #f0f6ff; border-color: #7da6ff;">
-                <span class="emoji">😢</span><span>さみしい</span>
-            </a>
-            <a href="input.html?color=black" class="color-btn" style="background-color: #f3f3f3; border-color: #8c8c8c;">
-                <span class="emoji">😴</span><span>つかれた</span>
-            </a>
-            <a href="input.html?color=red" class="color-btn" style="background-color: #fff0f0; border-color: #ff6f6f;">
-                <span class="emoji">😡</span><span>イライラ</span>
-            </a>
-            <a href="input.html?color=white" class="color-btn" style="background-color: #ffffff; border-color: #cccccc;">
-                <span class="emoji">😁</span><span>期間限定</span>
-            </a>
+        <div id="timer-area" style="display:none;">
+            <div class="timer-bar-bg"><div id="timer-bar" class="timer-bar-fill"></div></div>
         </div>
 
-        <div style="margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 20px;">
-            <p style="font-size:14px; color:#888; margin-bottom:10px;">👇 こまったときは ココ！</p>
-            
-            <a href="magic.html" class="btn-feature btn-magic">
-                🧙‍♂️ コトバのまほう
-            </a>
-            
-            <a href="gacha.html" class="btn-feature btn-gacha">
-                💊 おたすけ ガチャ
-            </a>
-
-            <a href="shiritori.html" class="btn-feature btn-shiritori">
-                🍎 しりとり バトル
-            </a>
+        <div class="current-char-display">
+            つぎは <span id="target-char" class="big-char">あ</span> から！
         </div>
 
-        <a href="logs.html" class="btn-logs">
-            📘 きろくのきろく
-        </a>
+        <div id="history-area" class="word-history"></div>
+
+        <div class="input-area">
+            <input type="text" id="word-input" class="word-input" placeholder="ひらがな で かいてね">
+            <button class="send-btn" onclick="submitWord()">➤</button>
+        </div>
+        <p style="font-size:12px; color:#999; font-weight:bold;">※さいごが「ん」だと まけだよ！</p>
+
+        <button class="btn-giveup" onclick="showGiveUpModal()">🏳️ ギブアップする</button>
     </div>
 
-    <script>
-        const CORRECT_PASS = "yuuki01121003";
+    <div id="screen-result" class="game-screen">
+        <div id="result-content">
+            <h2 id="result-title" style="font-size:40px; margin-bottom:10px;"></h2>
+            <div id="result-icon" style="font-size:80px; margin-bottom:10px; filter: drop-shadow(0 5px 0 rgba(0,0,0,0.1));"></div>
+            
+            <p id="winner-text" style="font-size:24px; font-weight:bold; margin:10px 0; background:rgba(255,255,255,0.8); padding:10px; border-radius:10px; display:inline-block;">
+                〇〇の かち！
+            </p>
+            <br>
+            <p id="lose-reason" style="color:#555; font-weight:bold; margin-top:10px;">（りゆう：〇〇）</p>
+            
+            <div style="margin-top:30px;">
+                <button class="btn" onclick="location.reload()" style="position:relative; z-index:10; font-size:20px; box-shadow:0 6px 0 #ff5c8d;">もういっかい！</button>
+                <br>
+                <a href="index.html" class="btn-home" style="margin-top:20px; position:relative; z-index:10;">🏠 ホームにもどる</a>
+            </div>
+        </div>
+    </div>
 
-        window.onload = function() {
-            if (sessionStorage.getItem("isLoggedIn") === "true") {
-                showApp();
-            }
-        };
+</div>
 
-        function checkPassword() {
-            const inputPass = document.getElementById('password').value;
-            const errorMsg = document.getElementById('error-message');
+<script>
+    // --- 変数 ---
+    let mode = 'robot';
+    let difficulty = 'normal'; // easy, normal, hard
+    let p1Name = "じぶん";
+    let p2Name = "ロボット";
+    let timeLimit = 30;
+    let charLimit = 0;
+    
+    let currentTurn = 1;
+    let currentLastChar = ""; 
+    let usedWords = [];
+    let timerInterval = null;
+    let timeLeft = 0;
 
-            if (inputPass === CORRECT_PASS) {
-                sessionStorage.setItem("isLoggedIn", "true");
-                showApp();
-            } else {
-                errorMsg.style.display = "block";
-            }
+    window.onload = function() { toggleP2Input(); };
+
+    function toggleP2Input() {
+        const radios = document.getElementsByName('mode');
+        let selected = 'robot';
+        for(let r of radios) { if(r.checked) selected = r.value; }
+        
+        const p2Area = document.getElementById('p2-input-area');
+        const diffArea = document.getElementById('difficulty-area');
+        
+        if(selected === 'friend') {
+            p2Area.style.display = 'block';
+            diffArea.style.display = 'none'; 
+        } else {
+            p2Area.style.display = 'none';
+            diffArea.style.display = 'block';
+        }
+    }
+
+    document.getElementById('word-input').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') submitWord();
+    });
+
+    // --- ゲーム開始 ---
+    function startSetup() {
+        const modeRadios = document.getElementsByName('mode');
+        for(let r of modeRadios) { if(r.checked) mode = r.value; }
+
+        const diffRadios = document.getElementsByName('difficulty');
+        for(let r of diffRadios) { if(r.checked) difficulty = r.value; }
+
+        p1Name = document.getElementById('p1-name').value.trim() || "プレイヤー1";
+        if(mode === 'friend') {
+            p2Name = document.getElementById('p2-name').value.trim() || "プレイヤー2";
+        } else {
+            p2Name = "ロボット";
         }
 
-        function showApp() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
+        timeLimit = parseInt(document.getElementById('time-limit').value);
+        charLimit = parseInt(document.getElementById('char-limit').value);
+
+        switchScreen('screen-intro');
+        document.getElementById('match-title').innerText = `${p1Name} VS ${p2Name}`;
+
+        // スロット演出
+        const chars = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわ";
+        const slot = document.getElementById('slot-machine');
+        let count = 0;
+        let interval = setInterval(() => {
+            const r = Math.floor(Math.random() * chars.length);
+            slot.innerText = chars[r];
+            slot.style.color = count % 2 === 0 ? "#444" : "#ff8bb0";
+            count++;
+            if(count > 20) {
+                clearInterval(interval);
+                currentLastChar = slot.innerText; 
+                slot.style.color = "#ff6f6f";
+                slot.style.transform = "scale(1.3)";
+                setTimeout(decideTurn, 1000); 
+            }
+        }, 80);
+    }
+
+    function decideTurn() {
+        currentTurn = Math.random() < 0.5 ? 1 : 2;
+        const starter = currentTurn === 1 ? p1Name : p2Name;
+        
+        const announce = document.getElementById('turn-announce');
+        document.getElementById('first-player').innerText = starter;
+        announce.style.display = 'block';
+
+        setTimeout(() => {
+            setupGameScreen();
+        }, 2000);
+    }
+
+    function setupGameScreen() {
+        switchScreen('screen-game');
+        updateUI();
+        if(timeLimit > 0) document.getElementById('timer-area').style.display = 'block';
+        
+        if(mode === 'robot' && currentTurn === 2) {
+            scheduleRobotMove();
+        } else {
+            startTimer();
+        }
+    }
+
+    function updateUI() {
+        const name = currentTurn === 1 ? p1Name : p2Name;
+        const indicator = document.getElementById('turn-indicator');
+        indicator.innerText = `${name} のばん！`;
+        
+        if ((mode === 'robot' && currentTurn === 1) || mode === 'friend') {
+            indicator.classList.add('my-turn-anim');
+            setTimeout(() => indicator.classList.remove('my-turn-anim'), 500);
         }
 
-        document.getElementById('password').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkPassword();
+        document.getElementById('target-char').innerText = currentLastChar;
+        document.getElementById('word-input').value = "";
+        document.getElementById('word-input').focus();
+    }
+
+    function submitWord() {
+        if(mode === 'robot' && currentTurn === 2) return; 
+
+        const input = document.getElementById('word-input').value.trim();
+        if(!input) return;
+
+        const check = validateWord(input);
+        if(check.error) {
+            alert(check.msg);
+            return;
+        }
+
+        addHistory(input, currentTurn);
+        processNext(input);
+    }
+
+    function validateWord(word) {
+        if(!/^[ぁ-んー]+$/.test(word)) return {error:true, msg:"ひらがな で かいてね！"};
+        if(word.charAt(0) !== currentLastChar) return {error:true, msg:`「${currentLastChar}」から はじまる ことば だよ！`};
+        if(charLimit > 0 && word.length < charLimit) return {error:true, msg:`${charLimit}もじ いじょう にしてね！`};
+        if(usedWords.includes(word)) return {error:true, msg:"そのことば は もう でたよ！"};
+        if(word.slice(-1) === "ん") {
+            gameOver(currentTurn === 1 ? 2 : 1, `「${word}」...「ん」がついちゃった！`);
+            return {error:true, msg:""}; 
+        }
+        return {error:false};
+    }
+
+    function processNext(word) {
+        stopTimer();
+        usedWords.push(word);
+        
+        let last = word.slice(-1);
+        const map = {'ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','っ':'つ','ゃ':'や','ゅ':'ゆ','ょ':'よ','ゎ':'わ'};
+        if(map[last]) last = map[last];
+        if(last === 'ー') {
+            let prev = word.slice(-2, -1);
+            if(map[prev]) prev = map[prev];
+            last = prev; 
+        }
+        currentLastChar = last;
+
+        currentTurn = currentTurn === 1 ? 2 : 1;
+        updateUI();
+
+        if(mode === 'robot' && currentTurn === 2) {
+            scheduleRobotMove(); 
+        } else {
+            startTimer();
+        }
+    }
+
+    function scheduleRobotMove() {
+        // 難易度調整
+        let delay = 1500;
+        if(difficulty === 'easy') delay = 3000; 
+        if(difficulty === 'hard') delay = 600;  
+
+        setTimeout(robotMove, delay);
+    }
+
+    function robotMove() {
+        const candidates = WORD_DICTIONARY[currentLastChar] || [];
+        let playable = candidates.filter(w => {
+            if(charLimit > 0 && w.length < charLimit) return false;
+            if(usedWords.includes(w)) return false;
+            if(w.slice(-1) === 'ん') return false;
+            return true;
         });
-    </script>
+
+        // かんたん：30%で諦める
+        if (difficulty === 'easy' && Math.random() < 0.3) playable = []; 
+
+        if(playable.length === 0) {
+            gameOver(1, "ロボットは ことば を おもいつかなかった！");
+        } else {
+            const word = playable[Math.floor(Math.random() * playable.length)];
+            addHistory(word, 2);
+            processNext(word);
+        }
+    }
+
+    function addHistory(word, playerNum) {
+        const div = document.createElement('div');
+        div.className = `history-item history-p${playerNum}`;
+        div.innerText = word;
+        const container = document.getElementById('history-area');
+        container.insertBefore(div, container.firstChild);
+    }
+
+    function startTimer() {
+        if(timeLimit === 0) return;
+        timeLeft = timeLimit;
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = "100%";
+        bar.style.backgroundColor = "#6ecb63";
+
+        if(timerInterval) clearInterval(timerInterval);
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const percent = (timeLeft / timeLimit) * 100;
+            bar.style.width = percent + "%";
+            
+            if(percent < 30) bar.style.backgroundColor = "#ff6f6f";
+
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                const winner = currentTurn === 1 ? 2 : 1;
+                gameOver(winner, "じかんぎれ！");
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+    }
+
+    // --- 勝敗演出 ---
+    function gameOver(winnerNum, reason) {
+        stopTimer();
+        switchScreen('screen-result');
+        const winnerName = winnerNum === 1 ? p1Name : p2Name;
+        const resScreen = document.getElementById('screen-result');
+        
+        document.getElementById('winner-text').innerText = `✨ ${winnerName} の かち！ ✨`;
+        document.getElementById('lose-reason').innerText = `（りゆう：${reason}）`;
+
+        // ロボットが勝った（＝プレイヤーが負けた）場合
+        if (mode === 'robot' && winnerNum === 2) {
+            // 負け演出
+            resScreen.classList.add('lose-mode');
+            document.getElementById('result-title').innerText = "ガーン...😱";
+            document.getElementById('result-title').className = "lose-title";
+            document.getElementById('result-icon').innerText = "🌀";
+            document.body.style.backgroundColor = "#dceeff"; 
+        } else {
+            // 勝ち演出
+            resScreen.classList.add('win-mode');
+            document.getElementById('result-title').innerText = "やったー！🎉";
+            document.getElementById('result-title').className = "win-title";
+            document.getElementById('result-icon').innerText = "🏆";
+            document.body.style.backgroundColor = "#fff0f5"; 
+            fireConfetti();
+        }
+    }
+
+    function fireConfetti() {
+        const container = document.getElementById('confetti-container');
+        const emojis = ["🎉", "✨", "🍬", "🍭", "🎈", "🎊", "⭐"];
+        
+        for (let i = 0; i < 50; i++) {
+            const conf = document.createElement('div');
+            conf.className = 'confetti-emoji';
+            conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            conf.style.left = Math.random() * 100 + 'vw';
+            conf.style.top = -50 + 'px';
+            conf.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            container.appendChild(conf);
+        }
+    }
+
+    // ギブアップ関連
+    function showGiveUpModal() {
+        document.getElementById('giveup-modal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('giveup-modal').style.display = 'none';
+    }
+    function confirmGiveUp() {
+        closeModal();
+        const winner = currentTurn === 1 ? 2 : 1;
+        const loserName = currentTurn === 1 ? p1Name : p2Name;
+        gameOver(winner, `${loserName} の ギブアップ`);
+    }
+
+    function switchScreen(id) {
+        document.querySelectorAll('.game-screen').forEach(el => {
+            el.classList.remove('active-screen');
+            el.classList.remove('win-mode');
+            el.classList.remove('lose-mode');
+        });
+        document.getElementById(id).classList.add('active-screen');
+        // 背景色リセット
+        document.body.style.backgroundColor = "#fafafa";
+        document.getElementById('confetti-container').innerHTML = "";
+    }
+</script>
+
 </body>
 </html>
