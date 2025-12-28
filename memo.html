@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>✨ じゆうメモ</title>
+<title>✨ じゆうメモ（リッチ版）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
@@ -149,7 +149,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 .input-title::placeholder { color: #ccc; }
 
 /* ツールバー（日付・色） */
-.toolbar {
+.toolbar-top {
     display: flex; align-items: center; gap: 15px; flex-wrap: wrap;
 }
 .date-editor {
@@ -162,14 +162,45 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 .mood-btn:hover { transform: scale(1.2); }
 .mood-btn.selected { border-color: #555; transform: scale(1.1); }
 
-/* 本文入力 */
+/* --- 装飾ツールバー --- */
+.format-toolbar {
+    display: flex; gap: 8px; align-items: center;
+    background: white; padding: 8px 15px; border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    flex-wrap: wrap;
+}
+.format-btn {
+    background: #f0f0f0; border: none; border-radius: 6px;
+    padding: 5px 10px; font-weight: bold; cursor: pointer;
+    font-family: inherit; color: #555; transition: .2s;
+}
+.format-btn:hover { background: #e0e0e0; }
+.format-select {
+    padding: 5px; border-radius: 6px; border: 1px solid #ddd;
+    font-family: inherit; color: #555;
+}
+.color-picker-wrapper {
+    position: relative; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 1px solid #ddd; cursor: pointer;
+}
+.color-picker {
+    position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; padding: 0; margin: 0; cursor: pointer; border: none;
+}
+
+/* 本文入力（ContentEditable） */
 .input-body {
     flex: 1; width: 100%; min-height: 300px;
     border: none; background: rgba(255,255,255,0.9);
     border-radius: 16px; padding: 20px;
     font-size: 16px; line-height: 1.8;
-    resize: none; outline: none;
+    outline: none; overflow-y: auto;
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+/* プレースホルダーの代わり */
+.input-body:empty::before {
+    content: attr(placeholder);
+    color: #ccc;
+    pointer-events: none;
+    display: block; /* For Firefox */
 }
 
 /* フッター */
@@ -220,12 +251,30 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
     <div class="main-editor">
         <input type="text" class="input-title" id="memo-title" placeholder="無題のメモ">
         
-        <div class="toolbar">
+        <div class="toolbar-top">
             <input type="datetime-local" class="date-editor" id="memo-date">
             <div class="mood-selector" id="mood-selector"></div>
         </div>
 
-        <textarea class="input-body" id="memo-body" placeholder="ここに記入"></textarea>
+        <div class="format-toolbar">
+            <button class="format-btn" onclick="execCmd('bold')" title="太字"><b>B</b></button>
+            <button class="format-btn" onclick="execCmd('underline')" title="下線"><u>U</u></button>
+            <button class="format-btn" onclick="execCmd('strikeThrough')" title="取り消し線"><s>S</s></button>
+            
+            <select class="format-select" onchange="execCmd('fontSize', this.value); this.value='';" title="文字サイズ">
+                <option value="">サイズ</option>
+                <option value="3">ふつう</option>
+                <option value="5">おおきく</option>
+                <option value="7">特大</option>
+            </select>
+
+            <div class="color-picker-wrapper" title="文字の色">
+                <input type="color" class="color-picker" onchange="execCmd('foreColor', this.value)">
+            </div>
+            <button class="format-btn" onclick="execCmd('removeFormat')" title="装飾をクリア">クリア</button>
+        </div>
+
+        <div class="input-body" id="memo-body" contenteditable="true" placeholder="ここに記入"></div>
 
         <div class="editor-footer">
             <span class="status" id="save-status">準備完了</span>
@@ -236,7 +285,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
 <script>
 (function(){
-    const KEY = 'memo_app_pro_v2';
+    const KEY = 'memo_app_pro_rich_v1'; // キー名を変更して新しい形式に対応
     let notes = [], currentId = null;
 
     const MOODS = [
@@ -260,6 +309,13 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         moodSelector: document.getElementById('mood-selector'),
         btnNew: document.getElementById('btn-new'),
         btnDelete: document.getElementById('btn-delete')
+    };
+
+    // --- リッチテキスト操作用 ---
+    window.execCmd = function(command, value = null) {
+        document.execCommand(command, false, value);
+        el.body.focus(); // フォーカスを戻す
+        scheduleSave();  // 変更を保存
     };
 
     const nowISO = () => new Date().toISOString();
@@ -292,7 +348,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         const n = {
             id,
             title: '',
-            content: '',
+            content: '', // HTMLとして保存される
             created_at: now,
             updated_at: now,
             mood: MOODS[0].color
@@ -328,10 +384,10 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
         // 検索フィルター
         const targets = notes.filter(n => {
+            // contentはHTMLタグを含むため、検索時はタグを除去してテキストのみで検索するとベターだが簡易的にそのまま検索
             const matchKw = (n.title && n.title.toLowerCase().includes(kw)) || 
                             (n.content && n.content.toLowerCase().includes(kw));
             
-            // 日付検索: メモの作成日時(の先頭10文字)と一致するか
             const noteDate = toLocalISO(n.created_at).slice(0, 10);
             const matchDt = dt ? (noteDate === dt) : true;
 
@@ -382,7 +438,8 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
         currentId = n.id;
         el.title.value = n.title;
-        el.body.value = n.content;
+        // HTMLとしてセット
+        el.body.innerHTML = n.content; 
         el.dateInput.value = toLocalISO(n.created_at);
         currentMood = n.mood;
         
@@ -419,7 +476,8 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         if (!currentId) return;
 
         const title = el.title.value;
-        const content = el.body.value;
+        // HTMLとして取得
+        const content = el.body.innerHTML; 
         const dateVal = el.dateInput.value; 
         const created_at = dateVal ? new Date(dateVal).toISOString() : nowISO();
 
@@ -433,10 +491,9 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
     // --- イベント設定 ---
     el.title.addEventListener('input', scheduleSave);
-    el.body.addEventListener('input', scheduleSave);
+    el.body.addEventListener('input', scheduleSave); // divのinputイベント
     el.dateInput.addEventListener('change', scheduleSave);
     
-    // 検索窓に入力があったらすぐ絞り込み
     el.searchKw.addEventListener('input', renderList);
     el.searchDt.addEventListener('change', renderList);
 
