@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>✨ じゆうメモ（リッチ版）</title>
+<title>✨ みんなのメモ（共有版）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
-    --primary: #FF85A2; /* ポップなピンク */
-    --bg-color: #FFF9FB; /* ほんのりピンクな白 */
+    --primary: #FF85A2; 
+    --bg-color: #FFF9FB; 
     --sidebar-bg: #FFFFFF;
     --text: #444;
 }
@@ -26,7 +26,6 @@ body {
     flex-direction: column;
 }
 
-/* --- ヘッダー --- */
 header {
     background: #fff;
     padding: 10px 20px;
@@ -51,14 +50,8 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 }
 .btn-home:active { transform: translateY(3px); box-shadow: none; }
 
-/* --- レイアウト --- */
-.container {
-    display: flex;
-    flex: 1;
-    overflow: hidden; 
-}
+.container { display: flex; flex: 1; overflow: hidden; }
 
-/* --- 左サイドバー（リスト＆検索） --- */
 .sidebar {
     width: 340px;
     background: var(--sidebar-bg);
@@ -70,31 +63,20 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
     overflow-y: auto;
 }
 
-/* 新規作成ボタン */
 .btn-new {
-    width: 100%;
-    padding: 14px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 16px;
+    width: 100%; padding: 14px;
+    background: var(--primary); color: white;
+    border: none; border-radius: 12px;
+    font-weight: bold; font-size: 16px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(255, 133, 162, 0.4);
     transition: .2s;
 }
 .btn-new:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(255, 133, 162, 0.5); }
 
-/* 検索エリア */
 .search-area {
-    background: #f8f8f8;
-    padding: 12px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border: 2px solid #eee;
+    background: #f8f8f8; padding: 12px; border-radius: 12px;
+    display: flex; flex-direction: column; gap: 8px; border: 2px solid #eee;
 }
 .search-label { font-size: 12px; font-weight: bold; color: #888; }
 .search-input {
@@ -104,20 +86,14 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 }
 .search-input:focus { border-color: var(--primary); outline: none; }
 
-/* メモリスト */
-.note-list {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+/* 読み込み中の表示 */
+.loading-msg { text-align: center; color: #999; margin-top: 20px; font-size: 14px; }
+
+.note-list { flex: 1; display: flex; flex-direction: column; gap: 10px; }
 .note-card {
-    padding: 12px;
-    border-radius: 12px;
-    background: white;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: .2s;
+    padding: 12px; border-radius: 12px;
+    background: white; border: 2px solid transparent;
+    cursor: pointer; transition: .2s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 .note-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -127,19 +103,22 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 .note-card-meta { font-size: 11px; color: #999; display: flex; justify-content: space-between; }
 .mood-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 
-/* --- 右エディタエリア --- */
 .main-editor {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 40px;
-    gap: 15px;
-    overflow-y: auto;
+    flex: 1; display: flex; flex-direction: column;
+    padding: 20px 40px; gap: 15px; overflow-y: auto;
     background-image: radial-gradient(#ffeef2 1px, transparent 1px);
     background-size: 20px 20px;
+    position: relative; /* オーバーレイ用 */
 }
 
-/* タイトル入力 */
+/* 保存中オーバーレイ */
+.saving-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.6); z-index: 50;
+    display: none; justify-content: center; align-items: center;
+    font-weight: bold; color: var(--primary);
+}
+
 .input-title {
     width: 100%; font-size: 24px; font-weight: bold;
     border: none; background: transparent;
@@ -148,10 +127,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 }
 .input-title::placeholder { color: #ccc; }
 
-/* ツールバー（日付・色） */
-.toolbar-top {
-    display: flex; align-items: center; gap: 15px; flex-wrap: wrap;
-}
+.toolbar-top { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
 .date-editor {
     padding: 6px 10px; border-radius: 8px; border: 1px solid #ddd;
     font-family: inherit; color: #666; background: rgba(255,255,255,0.8);
@@ -162,12 +138,10 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 .mood-btn:hover { transform: scale(1.2); }
 .mood-btn.selected { border-color: #555; transform: scale(1.1); }
 
-/* --- 装飾ツールバー --- */
 .format-toolbar {
     display: flex; gap: 8px; align-items: center;
     background: white; padding: 8px 15px; border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-wrap: wrap;
 }
 .format-btn {
     background: #f0f0f0; border: none; border-radius: 6px;
@@ -186,7 +160,6 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
     position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; padding: 0; margin: 0; cursor: pointer; border: none;
 }
 
-/* 本文入力（ContentEditable） */
 .input-body {
     flex: 1; width: 100%; min-height: 300px;
     border: none; background: rgba(255,255,255,0.9);
@@ -195,15 +168,10 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
     outline: none; overflow-y: auto;
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
-/* プレースホルダーの代わり */
 .input-body:empty::before {
-    content: attr(placeholder);
-    color: #ccc;
-    pointer-events: none;
-    display: block; /* For Firefox */
+    content: attr(placeholder); color: #ccc; pointer-events: none; display: block;
 }
 
-/* フッター */
 .editor-footer {
     display: flex; justify-content: space-between; align-items: center;
     background: white; padding: 10px 20px; border-radius: 16px;
@@ -218,7 +186,6 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 }
 .btn-delete:hover { background: #ffcdd2; }
 
-/* スマホ対応 */
 @media (max-width: 768px) {
     .container { flex-direction: column; }
     .sidebar { width: 100%; height: 40vh; border-right: none; border-bottom: 2px dashed #ffcdd2; }
@@ -230,7 +197,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 <body>
 
 <header>
-    <h1>📝 じゆうメモ</h1>
+    <h1>📝 みんなのメモ</h1>
     <a href="logs.html" class="btn-home">📖 きもちのきろく へ</a>
 </header>
 
@@ -245,10 +212,13 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         </div>
 
         <div class="note-list" id="note-list">
-            </div>
+            <div class="loading-msg">読み込み中...<br>（時間がかかるよ）</div>
+        </div>
     </div>
 
     <div class="main-editor">
+        <div class="saving-overlay" id="saving-overlay">☁️ 保存中...</div>
+
         <input type="text" class="input-title" id="memo-title" placeholder="無題のメモ">
         
         <div class="toolbar-top">
@@ -277,7 +247,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         <div class="input-body" id="memo-body" contenteditable="true" placeholder="ここに記入"></div>
 
         <div class="editor-footer">
-            <span class="status" id="save-status">準備完了</span>
+            <span class="status" id="save-status">クラウドに保存されます</span>
             <button class="btn-delete" id="btn-delete" title="このメモを削除">🗑 削除</button>
         </div>
     </div>
@@ -285,17 +255,15 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
 <script>
 (function(){
-    // ★保存場所は「memo_app_pro_v2」のままなのでデータは消えません
-    const KEY = 'memo_app_pro_v2'; 
+    // ★ここにGASのURLを貼り付けてください！
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
+
     let notes = [], currentId = null;
 
     const MOODS = [
-        { color: '#FF85A2', name: 'ピンク' },
-        { color: '#FFD93D', name: 'イエロー' },
-        { color: '#6BCB77', name: 'グリーン' },
-        { color: '#4D96FF', name: 'ブルー' },
-        { color: '#A29BFE', name: 'パープル' },
-        { color: '#B2B2B2', name: 'グレー' }
+        { color: '#FF85A2', name: 'ピンク' }, { color: '#FFD93D', name: 'イエロー' },
+        { color: '#6BCB77', name: 'グリーン' }, { color: '#4D96FF', name: 'ブルー' },
+        { color: '#A29BFE', name: 'パープル' }, { color: '#B2B2B2', name: 'グレー' }
     ];
     let currentMood = MOODS[0].color;
 
@@ -309,19 +277,16 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         saveStatus: document.getElementById('save-status'),
         moodSelector: document.getElementById('mood-selector'),
         btnNew: document.getElementById('btn-new'),
-        btnDelete: document.getElementById('btn-delete')
+        btnDelete: document.getElementById('btn-delete'),
+        overlay: document.getElementById('saving-overlay')
     };
 
-    // --- 【修正】選択範囲の保存・復元ロジック ---
+    // --- 選択範囲保存 ---
     let savedRange = null;
-
     window.saveSelection = function() {
         const sel = window.getSelection();
-        if (sel.rangeCount > 0) {
-            savedRange = sel.getRangeAt(0);
-        }
+        if (sel.rangeCount > 0) savedRange = sel.getRangeAt(0);
     };
-
     window.restoreSelection = function() {
         if (savedRange) {
             const sel = window.getSelection();
@@ -329,14 +294,11 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
             sel.addRange(savedRange);
         }
     };
-
-    // --- リッチテキスト操作用 ---
     window.execCmd = function(command, value = null) {
-        // コマンド実行前に、保存しておいた選択範囲を復元する
         restoreSelection();
         document.execCommand(command, false, value);
-        el.body.focus(); // フォーカスを戻す
-        scheduleSave();  // 変更を保存
+        el.body.focus();
+        scheduleSave(); 
     };
 
     const nowISO = () => new Date().toISOString();
@@ -350,73 +312,140 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     };
 
-    // --- データ読み込み・保存 ---
-    function loadNotes() {
+    // --- データ操作 (GAS通信) ---
+    async function loadNotes() {
+        el.noteList.innerHTML = '<div class="loading-msg">読み込み中...<br>（時間がかかるよ）</div>';
         try {
-            notes = JSON.parse(localStorage.getItem(KEY) || '[]');
-            notes = notes.map(n => ({...n, mood: n.mood || MOODS[0].color}));
-        } catch(e) { notes = []; }
+            const res = await fetch(GAS_URL, {
+                method: 'POST', redirect: "follow",
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ type: "get_memos" })
+            });
+            notes = await res.json();
+            if(!Array.isArray(notes)) notes = [];
+        } catch(e) { 
+            console.error(e); 
+            notes = [];
+            el.noteList.innerHTML = '<div class="loading-msg">エラー😢</div>';
+        }
         renderList();
+        
+        // 初回ロード時
+        if (!currentId && notes.length > 0) openNote(notes[0].id);
+        if (!currentId && notes.length === 0) startNew();
     }
-    function saveToStorage() {
-        localStorage.setItem(KEY, JSON.stringify(notes));
+
+    async function saveNoteToCloud(n) {
+        el.saveStatus.innerText = '保存中...';
+        try {
+            await fetch(GAS_URL, {
+                method: 'POST', redirect: "follow",
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ 
+                    type: "save_memo",
+                    id: n.id,
+                    title: n.title,
+                    content: n.content,
+                    mood: n.mood,
+                    created_at: n.created_at,
+                    updated_at: n.updated_at
+                })
+            });
+            el.saveStatus.innerText = '保存完了 ✅（通知なし）';
+        } catch(e) {
+            el.saveStatus.innerText = '保存エラー 😢';
+        }
+    }
+
+    async function deleteNoteCloud(id) {
+        el.saveStatus.innerText = '削除中...';
+        el.overlay.style.display = 'flex';
+        try {
+            await fetch(GAS_URL, {
+                method: 'POST', redirect: "follow",
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ type: "delete_memo", id: id })
+            });
+            notes = notes.filter(n => n.id !== id);
+            renderList();
+            if (notes.length > 0) openNote(notes[0].id);
+            else startNew();
+            el.saveStatus.innerText = '削除しました 🗑';
+        } catch(e) {
+            el.saveStatus.innerText = '削除エラー 😢';
+        } finally {
+            el.overlay.style.display = 'none';
+        }
     }
 
     // --- メモ操作 ---
-    function createNote() {
+    function startNew() {
         const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
         const now = nowISO();
         const n = {
-            id,
-            title: '',
-            content: '', // HTMLとして保存される
-            created_at: now,
-            updated_at: now,
-            mood: MOODS[0].color
+            id, title: '', content: '', created_at: now, updated_at: now, mood: MOODS[0].color
         };
         notes.unshift(n);
-        saveToStorage();
-        return n;
+        renderList();
+        openNote(id);
+        el.saveStatus.innerText = '新規作成 (入力すると保存されます)';
     }
 
-    function updateNote(id, changes) {
-        const idx = notes.findIndex(n => n.id === id);
-        if (idx === -1) return;
-        
-        notes[idx] = { ...notes[idx], ...changes, updated_at: nowISO() };
-        // 先頭に移動
-        const item = notes.splice(idx, 1)[0];
-        notes.unshift(item);
-        
-        saveToStorage();
+    function openNote(id) {
+        const n = notes.find(x => x.id === id);
+        if (!n) return;
+        currentId = n.id;
+        el.title.value = n.title;
+        el.body.innerHTML = n.content;
+        el.dateInput.value = toLocalISO(n.created_at);
+        currentMood = n.mood;
+        initMoodSelector();
+        renderList();
+        el.saveStatus.innerText = '編集中';
     }
 
-    function deleteNote(id) {
-        notes = notes.filter(n => n.id !== id);
-        saveToStorage();
+    // --- 自動保存（デバウンス）---
+    let timer = null;
+    function scheduleSave() {
+        el.saveStatus.innerText = '入力中... (2秒後に保存)';
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(doSave, 2000); // 2秒待ってから保存
     }
 
-    // --- 画面表示 ---
+    function doSave() {
+        if (!currentId) return;
+        const n = notes.find(x => x.id === currentId);
+        if(!n) return;
+
+        // データを更新
+        n.title = el.title.value;
+        n.content = el.body.innerHTML;
+        const dVal = el.dateInput.value;
+        n.created_at = dVal ? new Date(dVal).toISOString() : nowISO();
+        n.updated_at = nowISO();
+        n.mood = currentMood;
+
+        renderList(); // リスト更新（ローカル反映）
+        saveNoteToCloud(n); // クラウド送信
+    }
+
+    // --- 描画 ---
     function renderList() {
         const kw = el.searchKw.value.toLowerCase();
-        const dt = el.searchDt.value; // YYYY-MM-DD
+        const dt = el.searchDt.value; 
         const list = el.noteList;
         list.innerHTML = '';
 
-        // 検索フィルター
         const targets = notes.filter(n => {
-            // contentはHTMLタグを含むため、検索時はタグを除去してテキストのみで検索するとベターだが簡易的にそのまま検索
             const matchKw = (n.title && n.title.toLowerCase().includes(kw)) || 
                             (n.content && n.content.toLowerCase().includes(kw));
-            
             const noteDate = toLocalISO(n.created_at).slice(0, 10);
             const matchDt = dt ? (noteDate === dt) : true;
-
             return matchKw && matchDt;
         });
 
-        if (targets.length === 0) {
-            list.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px;">みつかりません<br>条件をかえてみてね</div>';
+        if (targets.length === 0 && notes.length > 0) {
+            list.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px;">みつかりません</div>';
             return;
         }
 
@@ -424,16 +453,12 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
             const card = document.createElement('div');
             card.className = `note-card ${n.id === currentId ? 'active' : ''}`;
             card.onclick = () => openNote(n.id);
-
             const titleText = n.title.trim() || '(無題)';
-            
             card.innerHTML = `
                 <div class="note-card-title">
                     <span class="mood-dot" style="background:${n.mood}"></span>${titleText}
                 </div>
-                <div class="note-card-meta">
-                    <span>${formatDateFriendly(n.created_at)}</span>
-                </div>
+                <div class="note-card-meta"><span>${formatDateFriendly(n.created_at)}</span></div>
             `;
             list.appendChild(card);
         });
@@ -446,96 +471,33 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
             btn.className = 'mood-btn';
             btn.style.backgroundColor = m.color;
             btn.title = m.name;
-            btn.onclick = () => changeMood(m.color);
+            btn.onclick = () => {
+                currentMood = m.color;
+                initMoodSelector();
+                if(currentId) scheduleSave();
+            };
             if (m.color === currentMood) btn.classList.add('selected');
             el.moodSelector.appendChild(btn);
         });
     }
 
-    // --- アクション ---
-    function openNote(id) {
-        const n = notes.find(x => x.id === id);
-        if (!n) return;
-
-        currentId = n.id;
-        el.title.value = n.title;
-        // HTMLとしてセット
-        el.body.innerHTML = n.content; 
-        el.dateInput.value = toLocalISO(n.created_at);
-        currentMood = n.mood;
-        
-        el.saveStatus.innerText = '編集中';
-        initMoodSelector(); 
-        renderList(); 
-    }
-
-    function startNew() {
-        const n = createNote();
-        openNote(n.id);
-        el.title.focus();
-        el.saveStatus.innerText = '新規作成';
-    }
-
-    function changeMood(color) {
-        currentMood = color;
-        initMoodSelector();
-        if (currentId) {
-            updateNote(currentId, { mood: color });
-            renderList();
-        }
-    }
-
-    // --- 自動保存 ---
-    let timer = null;
-    function scheduleSave() {
-        el.saveStatus.innerText = '入力中...';
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(doSave, 800);
-    }
-
-    function doSave() {
-        if (!currentId) return;
-
-        const title = el.title.value;
-        // HTMLとして取得
-        const content = el.body.innerHTML; 
-        const dateVal = el.dateInput.value; 
-        const created_at = dateVal ? new Date(dateVal).toISOString() : nowISO();
-
-        updateNote(currentId, {
-            title, content, created_at, mood: currentMood
-        });
-        
-        el.saveStatus.innerText = '保存しました ✅';
-        renderList(); 
-    }
-
     // --- イベント設定 ---
     el.title.addEventListener('input', scheduleSave);
-    el.body.addEventListener('input', scheduleSave); // divのinputイベント
+    el.body.addEventListener('input', scheduleSave);
     el.dateInput.addEventListener('change', scheduleSave);
-    
-    // 検索窓に入力があったらすぐ絞り込み
     el.searchKw.addEventListener('input', renderList);
     el.searchDt.addEventListener('change', renderList);
-
     el.btnNew.addEventListener('click', startNew);
-
     el.btnDelete.addEventListener('click', () => {
         if (!currentId) return;
-        if (confirm('本当にこのメモを消してもいいですか？')) {
-            deleteNote(currentId);
-            if (notes.length > 0) openNote(notes[0].id);
-            else startNew();
+        if (confirm('本当にこのメモを消してもいいですか？\n（みんなの画面からも消えます）')) {
+            deleteNoteCloud(currentId);
         }
     });
 
-    // 初期化
+    // 開始
     initMoodSelector();
     loadNotes();
-    
-    if (notes.length > 0) openNote(notes[0].id);
-    else startNew();
 
 })();
 </script>
