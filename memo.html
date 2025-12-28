@@ -74,6 +74,17 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 }
 .btn-new:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(255, 133, 162, 0.5); }
 
+/* データ復活ボタン */
+.btn-restore {
+    width: 100%; padding: 10px;
+    background: #FFD93D; color: #555;
+    border: 2px solid #FFC107; border-radius: 12px;
+    font-weight: bold; font-size: 14px;
+    cursor: pointer; margin-top: auto; /* 一番下へ */
+    box-shadow: 0 3px 0 #FFB300;
+}
+.btn-restore:active { transform: translateY(3px); box-shadow: none; }
+
 .search-area {
     background: #f8f8f8; padding: 12px; border-radius: 12px;
     display: flex; flex-direction: column; gap: 8px; border: 2px solid #eee;
@@ -114,9 +125,9 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 /* 保存中オーバーレイ */
 .saving-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255,255,255,0.6); z-index: 50;
+    background: rgba(255,255,255,0.8); z-index: 50;
     display: none; justify-content: center; align-items: center;
-    font-weight: bold; color: var(--primary);
+    font-weight: bold; color: var(--primary); flex-direction: column; gap: 10px;
 }
 
 .input-title {
@@ -214,10 +225,14 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         <div class="note-list" id="note-list">
             <div class="loading-msg">読み込み中...<br>（時間がかかるよ）</div>
         </div>
+
+        <button class="btn-restore" id="btn-restore">📤 昔のメモを復活・共有</button>
     </div>
 
     <div class="main-editor">
-        <div class="saving-overlay" id="saving-overlay">☁️ 保存中...</div>
+        <div class="saving-overlay" id="saving-overlay">
+            <span id="overlay-msg">☁️ 通信中...</span>
+        </div>
 
         <input type="text" class="input-title" id="memo-title" placeholder="無題のメモ">
         
@@ -258,6 +273,9 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
     // ★ここにGASのURLを貼り付けてください！
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
 
+    // 昔のデータを保存していた可能性のあるキー
+    const LOCAL_KEYS = ['memo_app_pro_v2', 'memo_app_pro_rich_v1', 'memo_data'];
+
     let notes = [], currentId = null;
 
     const MOODS = [
@@ -278,7 +296,9 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         moodSelector: document.getElementById('mood-selector'),
         btnNew: document.getElementById('btn-new'),
         btnDelete: document.getElementById('btn-delete'),
-        overlay: document.getElementById('saving-overlay')
+        btnRestore: document.getElementById('btn-restore'),
+        overlay: document.getElementById('saving-overlay'),
+        overlayMsg: document.getElementById('overlay-msg')
     };
 
     // --- 選択範囲保存 ---
@@ -357,9 +377,67 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         }
     }
 
+    // --- ローカルデータの復活＆アップロード ---
+    el.btnRestore.addEventListener('click', async () => {
+        if (!confirm('スマホの中に残っている昔のメモを、みんなが見れる場所にアップロードしますか？\n（時間がかかります）')) return;
+
+        let localNotes = [];
+        // 全ての可能性のあるキーから収集
+        LOCAL_KEYS.forEach(key => {
+            try {
+                const data = JSON.parse(localStorage.getItem(key) || '[]');
+                if (Array.isArray(data)) {
+                    data.forEach(item => {
+                        // 重複チェック (ID)
+                        if (!localNotes.some(ln => ln.id === item.id)) {
+                            // プレーンテキストなら改行を<br>に変換
+                            if (item.content && !item.content.includes('<') && item.content.includes('\n')) {
+                                item.content = item.content.replace(/\n/g, '<br>');
+                            }
+                            localNotes.push(item);
+                        }
+                    });
+                }
+            } catch(e){}
+        });
+
+        if (localNotes.length === 0) {
+            alert('スマホの中に昔のメモは見つかりませんでした。');
+            return;
+        }
+
+        // アップロード処理
+        el.overlay.style.display = 'flex';
+        el.overlayMsg.innerText = `昔のメモを ${localNotes.length}件 アップロード中...`;
+
+        let successCount = 0;
+        for (let i = 0; i < localNotes.length; i++) {
+            const n = localNotes[i];
+            el.overlayMsg.innerText = `アップロード中... (${i+1}/${localNotes.length})`;
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST', redirect: "follow",
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ 
+                        type: "save_memo",
+                        id: n.id, title: n.title, content: n.content,
+                        mood: n.mood || MOODS[0].color,
+                        created_at: n.created_at, updated_at: n.updated_at
+                    })
+                });
+                successCount++;
+            } catch(e) { console.error(e); }
+        }
+
+        el.overlay.style.display = 'none';
+        alert(`${successCount}件のメモを復活させました！\n画面を更新します。`);
+        loadNotes(); // 再読み込み
+    });
+
     async function deleteNoteCloud(id) {
         el.saveStatus.innerText = '削除中...';
         el.overlay.style.display = 'flex';
+        el.overlayMsg.innerText = '削除中...';
         try {
             await fetch(GAS_URL, {
                 method: 'POST', redirect: "follow",
@@ -409,7 +487,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
     function scheduleSave() {
         el.saveStatus.innerText = '入力中... (2秒後に保存)';
         if (timer) clearTimeout(timer);
-        timer = setTimeout(doSave, 2000); // 2秒待ってから保存
+        timer = setTimeout(doSave, 2000); 
     }
 
     function doSave() {
@@ -417,7 +495,6 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         const n = notes.find(x => x.id === currentId);
         if(!n) return;
 
-        // データを更新
         n.title = el.title.value;
         n.content = el.body.innerHTML;
         const dVal = el.dateInput.value;
@@ -425,8 +502,8 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         n.updated_at = nowISO();
         n.mood = currentMood;
 
-        renderList(); // リスト更新（ローカル反映）
-        saveNoteToCloud(n); // クラウド送信
+        renderList(); 
+        saveNoteToCloud(n); 
     }
 
     // --- 描画 ---
