@@ -223,7 +223,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         </div>
 
         <div class="note-list" id="note-list">
-            <div class="loading-msg">読み込み中...<br>（時間がかかるよ）</div>
+            <div class="loading-msg">読み込み中...<br></div>
         </div>
 
         <button class="btn-restore" id="btn-restore">📤 メモを共有</button>
@@ -371,7 +371,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
                     updated_at: n.updated_at
                 })
             });
-            el.saveStatus.innerText = '保存完了 ✅（通知なし）';
+            el.saveStatus.innerText = '保存完了 ✅';
         } catch(e) {
             el.saveStatus.innerText = '保存エラー 😢';
         }
@@ -379,7 +379,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
     // --- ローカルデータの復活＆アップロード ---
     el.btnRestore.addEventListener('click', async () => {
-        if (!confirm('メモを、アップロードしますか？\n')) return;
+        if (!confirm('メモをアップロードしますか？\n')) return;
 
         let localNotes = [];
         // 全ての可能性のあるキーから収集
