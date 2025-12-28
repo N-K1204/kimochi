@@ -257,11 +257,11 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         </div>
 
         <div class="format-toolbar">
-            <button class="format-btn" onclick="execCmd('bold')" title="太字"><b>B</b></button>
-            <button class="format-btn" onclick="execCmd('underline')" title="下線"><u>U</u></button>
-            <button class="format-btn" onclick="execCmd('strikeThrough')" title="取り消し線"><s>S</s></button>
+            <button class="format-btn" onmousedown="saveSelection()" onclick="execCmd('bold')" title="太字"><b>B</b></button>
+            <button class="format-btn" onmousedown="saveSelection()" onclick="execCmd('underline')" title="下線"><u>U</u></button>
+            <button class="format-btn" onmousedown="saveSelection()" onclick="execCmd('strikeThrough')" title="取り消し線"><s>S</s></button>
             
-            <select class="format-select" onchange="execCmd('fontSize', this.value); this.value='';" title="文字サイズ">
+            <select class="format-select" onmousedown="saveSelection()" onchange="execCmd('fontSize', this.value); this.value='';" title="文字サイズ">
                 <option value="">サイズ</option>
                 <option value="3">ふつう</option>
                 <option value="5">おおきく</option>
@@ -269,9 +269,9 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
             </select>
 
             <div class="color-picker-wrapper" title="文字の色">
-                <input type="color" class="color-picker" onchange="execCmd('foreColor', this.value)">
+                <input type="color" class="color-picker" onmousedown="saveSelection()" onchange="execCmd('foreColor', this.value)">
             </div>
-            <button class="format-btn" onclick="execCmd('removeFormat')" title="装飾をクリア">クリア</button>
+            <button class="format-btn" onmousedown="saveSelection()" onclick="execCmd('removeFormat')" title="装飾をクリア">クリア</button>
         </div>
 
         <div class="input-body" id="memo-body" contenteditable="true" placeholder="ここに記入"></div>
@@ -285,7 +285,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
 <script>
 (function(){
-    // ★ここを元の名前に戻しました！これで以前のデータが表示されます
+    // ★保存場所は「memo_app_pro_v2」のままなのでデータは消えません
     const KEY = 'memo_app_pro_v2'; 
     let notes = [], currentId = null;
 
@@ -312,8 +312,28 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
         btnDelete: document.getElementById('btn-delete')
     };
 
+    // --- 【修正】選択範囲の保存・復元ロジック ---
+    let savedRange = null;
+
+    window.saveSelection = function() {
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0) {
+            savedRange = sel.getRangeAt(0);
+        }
+    };
+
+    window.restoreSelection = function() {
+        if (savedRange) {
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+        }
+    };
+
     // --- リッチテキスト操作用 ---
     window.execCmd = function(command, value = null) {
+        // コマンド実行前に、保存しておいた選択範囲を復元する
+        restoreSelection();
         document.execCommand(command, false, value);
         el.body.focus(); // フォーカスを戻す
         scheduleSave();  // 変更を保存
@@ -495,6 +515,7 @@ h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
     el.body.addEventListener('input', scheduleSave); // divのinputイベント
     el.dateInput.addEventListener('change', scheduleSave);
     
+    // 検索窓に入力があったらすぐ絞り込み
     el.searchKw.addEventListener('input', renderList);
     el.searchDt.addEventListener('change', renderList);
 
