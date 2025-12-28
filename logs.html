@@ -154,14 +154,6 @@
         }
         .btn-analyze { background-color: #ffecb3; border: 2px solid #ffca28; }
         .btn-memo    { background-color: #c8e6c9; border: 2px solid #81c784; }
-        
-        /* 読み込み中表示 */
-        #loading-msg {
-            text-align: center;
-            color: #888;
-            margin-top: 20px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -195,7 +187,6 @@
 
 <hr style="margin: 25px 0; border: 0; border-top: 1px dashed #ccc;">
 
-<div id="loading-msg">🔄 データをよみこんでるよ...</div>
 <div id="logs-container"></div>
 
 <div class="floating-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">⬆</div>
@@ -207,9 +198,8 @@
 
 <script>
     // ============================================
-    // 🌍 設定
+    // 🌍 設定：ここにGASのURLを貼ってください
     // ============================================
-    // ステップ1でコピーしたURLをここに貼ってください
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec"; 
     // ============================================
 
@@ -221,7 +211,7 @@
         "blue":   { label: "😢", main: "#7da6ff" },
         "black":  { label: "😴", main: "#8c8c8c" },
         "red":    { label: "😡", main: "#ff6f6f" },
-        "white":  { label: "😁", main: "#ffffff" }
+        "white":  { label: "😁", main: "#dcdcdc" } /* ★ここを少しだけ灰色に変更 */
     };
 
     let allLogs = [];
@@ -232,12 +222,19 @@
     Object.keys(SETTINGS).forEach(key => {
         const btn = document.createElement('div');
         btn.className = 'color-btn';
-        btn.style.backgroundColor = SETTINGS[key].main;
-        btn.innerText = SETTINGS[key].label; 
+        // whiteのときは背景を白にして枠線をつける
+        if (key === 'white') {
+            btn.style.backgroundColor = "#ffffff";
+            btn.style.border = "2px solid #ccc";
+            btn.style.color = "#444"; 
+        } else {
+            btn.style.backgroundColor = SETTINGS[key].main;
+            btn.style.color = "#fff";
+        }
+        
+        btn.innerText = SETTINGS[key].label; // 絵文字を表示
         btn.dataset.color = key;
         
-        if (key === 'white') btn.style.border = "2px solid #ccc";
-
         btn.onclick = () => {
             document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -247,36 +244,25 @@
         filterContainer.appendChild(btn);
     });
 
-    // ★★★ 機能追加：サーバーとローカルの両方からデータを読み込む ★★★
-    async function loadAllLogs() {
-        const loadingMsg = document.getElementById('loading-msg');
+    // データを取得
+    async function fetchLogs() {
         const container = document.getElementById('logs-container');
-        
+        container.innerHTML = '<p style="text-align:center; margin-top:30px;">🔄 データを読み込み中...</p>';
+
         try {
-            // 1. まずサーバー(GAS)に見に行く
-            const response = await fetch(GAS_URL + "?t=" + new Date().getTime());
-            const serverLogs = await response.json();
+            const url = GAS_URL + "?t=" + new Date().getTime();
+            const response = await fetch(url);
+            const data = await response.json();
             
-            if (Array.isArray(serverLogs)) {
-                allLogs = serverLogs;
-                console.log("Loaded from Server");
+            if (Array.isArray(data)) {
+                allLogs = data;
+                renderLogs();
             } else {
-                throw new Error("Invalid data");
+                throw new Error("データ形式エラー");
             }
         } catch (e) {
-            // 2. 失敗したら（電波がない時など）、自分の端末の保存データを見る
-            console.log("Server load failed, using local data", e);
-            const storedData = localStorage.getItem('emotion_logs');
-            if (storedData) {
-                allLogs = JSON.parse(storedData);
-            }
-        } finally {
-            loadingMsg.style.display = 'none';
-            if (allLogs.length === 0) {
-                container.innerHTML = '<p style="text-align:center; margin-top:30px;">まだ きろく がありません 📓</p>';
-            } else {
-                renderLogs();
-            }
+            console.error(e);
+            container.innerHTML = '<p style="text-align:center; color:red;">読み込み失敗😢<br>GASのURLを確認してね</p>';
         }
     }
 
@@ -289,8 +275,11 @@
         const keyVal = document.getElementById('keyword-input').value;
 
         const filtered = allLogs.filter(log => {
+            // 色フィルタ
             if (currentFilterColor && log.color !== currentFilterColor) return false;
+            // 日付フィルタ
             if (dateVal && !log.created_at.startsWith(dateVal)) return false;
+            // キーワードフィルタ
             if (keyVal) {
                 const text = (log.user_input + log.emotion_label).toLowerCase();
                 if (!text.includes(keyVal.toLowerCase())) return false;
@@ -299,22 +288,29 @@
         });
 
         if (filtered.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#888;">みつかりませんでした</p>';
+            container.innerHTML = '<p style="text-align:center; color:#888;">データが見つかりません</p>';
             return;
         }
 
         filtered.forEach(log => {
             const div = document.createElement('div');
             div.className = 'log-item';
+            
             const colorInfo = SETTINGS[log.color] || { main: '#ccc' };
+            
+            // ★ここがポイント：横のラインの色
             div.style.borderLeftColor = colorInfo.main;
 
+            // HTMLエスケープ
             const safeLabel = (log.emotion_label || "").replace(/</g, "&lt;");
             const safeText = (log.user_input || "").replace(/</g, "&lt;");
 
+            // ★文字の色：白のときは濃い色にする
+            const labelColor = (log.color === 'white') ? '#444444' : colorInfo.main;
+
             div.innerHTML = `
                 <div class="log-time">${log.created_at}</div>
-                <div class="log-label" style="color:${colorInfo.main}">${safeLabel}</div>
+                <div class="log-label" style="color:${labelColor}">${safeLabel}</div>
                 <div class="log-text">${safeText}</div>
             `;
             container.appendChild(div);
@@ -330,9 +326,8 @@
     }
 
     // 開始
-    loadAllLogs();
+    fetchLogs();
 </script>
 
 </body>
 </html>
-
