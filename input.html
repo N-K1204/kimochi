@@ -225,10 +225,58 @@
         .tab-btn.active { color: white; box-shadow: 0 3px 0 rgba(0,0,0,0.2); transform: translateY(0); }
         .tab-btn:active { transform: translateY(3px); box-shadow: none; }
 
+        /* ▼▼▼ 追加：ゲージエリアのスタイル ▼▼▼ */
+        .gauge-wrapper {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .gauge-section {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .gauge-section:last-child { margin-bottom: 0; }
+        
+        .gauge-label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .gauge-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .gauge-btn {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background: #fff;
+            color: #888;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        /* 選択されたときの色（JSで動的に色を変えますがデフォルト設定） */
+        .gauge-btn.selected {
+            background: #888;
+            color: white;
+            border-color: #888;
+            transform: scale(1.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+
         @media (max-width: 400px) {
             .container { padding: 15px; }
             .game-btn { font-size: 14px; width: 48%; }
             .tab-btn { font-size: 14px; padding: 10px 0; }
+            .gauge-btn { width: 38px; height: 38px; font-size: 16px; gap: 5px; }
         }
     </style>
 </head>
@@ -259,6 +307,29 @@
             <textarea id="user-input-free" placeholder="ここにかいてね"></textarea>
         </div>
 
+        <div class="gauge-wrapper">
+            <div class="gauge-section">
+                <span class="gauge-label">❤️ きもちの つよさ</span>
+                <div class="gauge-container" id="gauge-emotion">
+                    <div class="gauge-btn" data-val="1">1</div>
+                    <div class="gauge-btn" data-val="2">2</div>
+                    <div class="gauge-btn selected" data-val="3">3</div>
+                    <div class="gauge-btn" data-val="4">4</div>
+                    <div class="gauge-btn" data-val="5">5</div>
+                </div>
+            </div>
+            <div class="gauge-section">
+                <span class="gauge-label">🥱 ねむたさ</span>
+                <div class="gauge-container" id="gauge-sleep">
+                    <div class="gauge-btn selected" data-val="1">1</div>
+                    <div class="gauge-btn" data-val="2">2</div>
+                    <div class="gauge-btn" data-val="3">3</div>
+                    <div class="gauge-btn" data-val="4">4</div>
+                    <div class="gauge-btn" data-val="5">5</div>
+                </div>
+            </div>
+        </div>
+
         <br>
         <button id="submit-btn" class="btn">
             おくる <span class="send-icon">💌</span>
@@ -273,7 +344,6 @@
         // 🌍 設定（あなたのGASのURL）
         // ============================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec"; 
-        const GAS_CONTENT_TYPE = 'application/json'; 
         // ============================================
 
         const SETTINGS = {
@@ -300,12 +370,34 @@
         submitBtn.style.backgroundColor = theme.main;
 
         const style = document.createElement('style');
+        // 選択されたゲージボタンの色をテーマカラーに合わせる
         style.innerHTML = `
             .tab-btn.active { background-color: ${theme.main} !important; }
             .game-area { border-color: ${theme.main}; }
             .bubble-ai { border-color: ${theme.main}; }
+            .gauge-btn.selected { background-color: ${theme.main} !important; border-color: ${theme.main} !important; }
         `;
         document.head.appendChild(style);
+
+        // --- ゲージの動作 ---
+        let currentEmotionLevel = 3;
+        let currentSleepLevel = 1;
+
+        function setupGauge(id, onChange) {
+            const container = document.getElementById(id);
+            const btns = container.querySelectorAll('.gauge-btn');
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    onChange(btn.getAttribute('data-val'));
+                });
+            });
+        }
+
+        setupGauge('gauge-emotion', val => currentEmotionLevel = val);
+        setupGauge('gauge-sleep', val => currentSleepLevel = val);
+
 
         let currentMode = 'game'; 
         function switchMode(mode) {
@@ -558,49 +650,6 @@
             ]
         };
 
-        const EVENTS_MAP = {
-            "study": [{l:"💡 わかった", v:"わかった", p:true}, {l:"😵 わからない", v:"わからなかった", n:true}, {l:"🖊 まちがえた", v:"まちがえた", n:true}],
-            "challenge": [{l:"👏 ほめられた", v:"ほめられた", p:true}, {l:"😖 しっぱい", v:"しっぱいした", n:true}, {l:"😨 きんちょう", v:"きんちょうした", n:true}],
-            "endure": [{l:"🕰 ながかった", v:"ながかった", n:true}, {l:"😣 がまんした", v:"がまんできた", p:true}],
-            "eat": [{l:"😋 おいしい", v:"おいしかった", p:true}, {l:"🤢 きらい", v:"きらいなものだった", n:true}, {l:"🥛 こぼした", v:"こぼしちゃった", n:true}],
-            "social": [{l:"🤝 なかよし", v:"なかよくできた", p:true}, {l:"🗡 わるぐち", v:"わるぐちをいわれた", n:true}, {l:"🙉 むしされた", v:"むしされた", n:true}, {l:"🤥 うそ", v:"うそをつかれた", n:true}],
-            "social_family": [{l:"😄 わらった", v:"わらった", p:true}, {l:"😡 けんか", v:"けんかした", n:true}, {l:"😐 ふつう", v:"ふつうだった", p:true}],
-            "conflict": [{l:"😡 いいかえした", v:"いいかえした", n:true}, {l:"🤐 だまってた", v:"だまっていた", n:true}, {l:"😭 ないた", v:"ないてしまった", n:true}],
-            "conflict_family": [{l:"😡 いいかえした", v:"いいかえした", n:true}, {l:"🤐 シュンとした", v:"シュンとした", n:true}, {l:"🚪 こもった", v:"へやにこもった", n:true}],
-            "sport": [{l:"🏆 かった", v:"かった", p:true}, {l:"💔 まけた", v:"まけた", n:true}, {l:"✨ できた", v:"うまくできた", p:true}, {l:"🤕 ぶつかった", v:"ぶつかった", n:true}],
-            "competition": [{l:"🤝 きょうりょく", v:"きょうりょくした", p:true}, {l:"😤 ずるい", v:"あいてがずるした", n:true}, {l:"🦶 しっぱい", v:"あしをひっぱってしまった", n:true}],
-            "passive": [{l:"😌 おちつく", v:"おちついていた", p:true}, {l:"🥱 たいくつ", v:"たいくつだった", n:true}, {l:"💭 かんがえごと", v:"かんがえごとをしてた", p:true}],
-            "passive_active": [{l:"👀 じっとみる", v:"じっとみていた", p:true}, {l:"🥺 いれて", v:"いれてといえなかった", n:true}],
-            "move": [{l:"🛌 つかれた", v:"つかれた", n:true}, {l:"🌸 はっけん", v:"なにかみつけた", p:true}, {l:"🐕 ビックリ", v:"びっくりした", n:true}],
-            "play": [{l:"😆 たのしい", v:"たのしかった", p:true}, {l:"💥 けんか", v:"けんかした", n:true}, {l:"🧸 とられた", v:"とられた", n:true}, {l:"🧱 こわされた", v:"こわされた", n:true}],
-            "play_solitary": [{l:"✨ できた", v:"かんせいした", p:true}, {l:"🤔 むずかしい", v:"うまくいかなかった", n:true}, {l:"📢 じゃまされた", v:"じゃまされた", n:true}],
-            "play_group": [{l:"🏃 おいつけない", v:"おいつけなかった", n:true}, {l:"🤝 なかよし", v:"チームワークがよかった", p:true}, {l:"😨 ルール不明", v:"ルールがわからなかった", n:true}],
-            "escape": [{l:"😌 ホッとした", v:"ホッとした", p:true}, {l:"😨 みつかった", v:"みつかった", n:true}, {l:"😢 ひとりぼっち", v:"ひとりぼっちだった", n:true}],
-            "sensory": [{l:"✨ スッキリ", v:"スッキリした", p:true}, {l:"😖 イヤなかんじ", v:"カンショクがいやだった", n:true}, {l:"👃 くさい", v:"においがいやだった", n:true}],
-            "sensory_overload": [{l:"📢 うるさい", v:"おとがうるさすぎた", n:true}, {l:"💡 まぶしい", v:"まぶしかった", n:true}, {l:"😵 クラクラ", v:"クラクラした", n:true}],
-            "care": [{l:"✨ きれい", v:"きれいになった", p:true}, {l:"😖 めんどくさい", v:"めんどくさかった", n:true}, {l:"👔 キツイ", v:"フクがきつかった", n:true}],
-            "talk_deep": [{l:"👂 きいてくれた", v:"きいてくれた", p:true}, {l:"🙅‍♂️ わかってない", v:"わかってくれなかった", n:true}, {l:"🗣 いえた", v:"いいたいことがいえた", p:true}],
-            "relax": [{l:"😌 きもちいい", v:"きもちよかった", p:true}, {l:"🥵 のぼせた", v:"のぼせた", n:true}],
-            "rest": [{l:"🛌 かいふく", v:"げんきになった", p:true}, {l:"🤕 まだいたい", v:"まだいたかった", n:true}],
-            "sleep": [{l:"😴 ぐっすり", v:"よくねむれた", p:true}, {l:"😳 ねれない", v:"ねむれなかった", n:true}],
-            "nightmare": [{l:"😨 こわかった", v:"こわかった", n:true}, {l:"😭 ないておきた", v:"ないておきた", n:true}],
-            "wake": [{l:"😃 スッキリ", v:"スッキリおきた", p:true}, {l:"🥱 おきれない", v:"おきれなかった", n:true}],
-            "sick": [{l:"🤢 きもちわるい", v:"きもちわるかった", n:true}, {l:"🤒 ねつがある", v:"ねつがあった", n:true}],
-            "toilet": [{l:"🚽 スッキリ", v:"でてスッキリした", p:true}, {l:"😖 でない", v:"でなくてくるしかった", n:true}, {l:"👖 まにあわず", v:"まにあわなかった", n:true}],
-            "receive": [{l:"🎁 うれしい", v:"うれしかった", p:true}, {l:"🤔 いらない", v:"ほしくなかった", n:true}],
-            "shop_buy": [{l:"🎁 かえた", v:"かえた", p:true}, {l:"🙅‍♂️ ダメ", v:"ダメといわれた", n:true}, {l:"💸 うりきれ", v:"うりきれだった", n:true}],
-            "shop_look": [{l:"👀 ほしい", v:"ほしいものがあった", n:true}, {l:"📢 ガヤガヤ", v:"ガヤガヤしてつかれた", n:true}],
-            "request": [{l:"🙆‍♂️ OK", v:"いいよといわれた", p:true}, {l:"🙅‍♂️ ダメ", v:"ダメといわれた", n:true}, {l:"🙉 むし", v:"きいてもらえなかった", n:true}],
-            "wait": [{l:"🥱 ながい", v:"ながかった", n:true}, {l:"📱 スマホ", v:"スマホをみていた", p:true}, {l:"😖 イライラ", v:"イライラした", n:true}],
-            "ride": [{l:"🤢 よった", v:"よった", n:true}, {l:"🏞 けしき", v:"けしきがきれいだった", p:true}, {l:"👯 こんでた", v:"こんでてつらかった", n:true}],
-            "medical": [{l:"👨‍⚕️ やさしかった", v:"やさしかった", p:true}, {l:"😨 こわかった", v:"こわかった", n:true}],
-            "medical_pain": [{l:"😭 いたかった", v:"いたかった", n:true}, {l:"😐 へいき", v:"へいきだった", p:true}, {l:"😤 あばれた", v:"あばれてしまった", n:true}],
-            "talk_formal": [{l:"😳 きんちょう", v:"きんちょうした", n:true}, {l:"🗣 こたえられた", v:"ちゃんとはなせた", p:true}],
-            "test": [{l:"💯 できた", v:"できた", p:true}, {l:"😵 むずかしい", v:"むずかしかった", n:true}],
-            "search": [{l:"👀 みつかった", v:"みつかった", p:true}, {l:"😖 ない", v:"みつからなかった", n:true}],
-            "accident": [{l:"😭 いたかった", v:"いたかった", n:true}, {l:"🩸 ちがでた", v:"ちがでた", n:true}, {l:"😢 ビックリ", v:"びっくりした", n:true}]
-        };
-
         function getReasonChoices(isPositive) {
             if (isPositive) {
                 return [
@@ -754,7 +803,7 @@
                 text: "かなとくんと、でんわ📞したい？",
                 choices: [
                     { label: "📞 したい！", save: {want_call: "\n(かなとくんと電話：したい！)"}, p:true },
-                    { label: "😁 いましてる！", save: {want_call: "\n(かなとくんと電話：いましてる！)"}, p:true }, // ★追加！
+                    { label: "😁 いましてる！", save: {want_call: "\n(かなとくんと電話：いましてる！)"}, p:true },
                     { label: "🤔 あとで", save: {want_call: "\n(かなとくんと電話：あとで)"} },
                     { label: "🙅‍♂️ しない", save: {want_call: "\n(かなとくんと電話：しない)"} }
                 ],
@@ -1041,6 +1090,9 @@
                 finalInput = document.getElementById('game-final-text').value;
                 if(!finalInput) finalInput = "（おはなしの とちゅう）";
             }
+
+            // ★追加：ゲージの内容を末尾に追記
+            finalInput += `\n(きもち:${currentEmotionLevel}, ねむたさ:${currentSleepLevel})`;
             
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'おくってるよ... 🚀';
