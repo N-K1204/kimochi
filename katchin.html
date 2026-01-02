@@ -3,21 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🧊 かっちんかっちん</title>
+<title>🧊 かっちんかっちんDX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
-    --primary: #FF85A2; /* プレイヤー1（ピンク） */
-    --enemy: #4D96FF;   /* プレイヤー2/CPU（ブルー） */
-    --bg-color: #FFF9FB;
+    --primary: #FF85A2; /* P1 ピンク */
+    --enemy: #4D96FF;   /* P2 ブルー */
+    --bg-color: #FAFAFA;
     --board-bg: #fff;
     --text: #444;
-    --highlight: #fff9c4; 
+    --highlight: rgba(100, 255, 100, 0.5);
+    
+    /* ギミック色 */
+    --mud-color: #E0E0E0;
+    --center-color: #FFF9C4;
 }
 
-* { box-sizing: border-box; touch-action: manipulation; }
+* { box-sizing: border-box; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 body {
     font-family: "M PLUS Rounded 1c", sans-serif;
     margin: 0; padding: 0;
@@ -30,136 +34,153 @@ body {
 }
 
 header {
-    width: 100%; padding: 15px; text-align: center;
-    background: #fff; border-bottom: 2px dashed #ffcdd2;
+    width: 100%; padding: 10px; text-align: center;
+    background: #fff; border-bottom: 1px solid #eee;
 }
-h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
+h1 { margin: 0; font-size: 1.2rem; color: var(--primary); }
 
 .btn-home {
-    display: inline-block; margin-top: 5px;
-    text-decoration: none; background: #eee; color: #555;
-    padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;
+    display: inline-block; margin-top: 4px;
+    text-decoration: none; background: #f0f0f0; color: #666;
+    padding: 4px 12px; border-radius: 15px; font-size: 11px; font-weight: bold;
 }
 
 /* --- 設定画面 --- */
 .setup-container {
-    flex: 1; width: 100%; max-width: 500px; padding: 30px;
-    display: flex; flex-direction: column; gap: 25px;
+    flex: 1; width: 100%; max-width: 450px; padding: 20px;
+    display: flex; flex-direction: column; gap: 20px;
     justify-content: center;
 }
-.setup-group {
+
+.setup-card {
     background: white; padding: 20px; border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    text-align: center;
 }
-.setup-label {
-    display: block; font-weight: bold; margin-bottom: 10px; font-size: 16px;
+.setup-title {
+    font-weight: bold; margin-bottom: 15px; font-size: 16px; color: #555;
 }
-.input-num {
-    width: 100%; padding: 10px; font-size: 18px; border-radius: 8px; border: 2px solid #ddd;
-    text-align: center; font-family: inherit;
+
+.diff-btns { display: flex; gap: 10px; justify-content: center; }
+.diff-btn {
+    flex: 1; padding: 15px 5px; border: 2px solid #eee; border-radius: 10px;
+    background: #fff; cursor: pointer; text-align: center;
+    font-weight: bold; color: #888; transition: .2s;
 }
-.radio-group {
-    display: flex; gap: 15px; justify-content: center;
-}
-.radio-label {
-    display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: bold;
-}
-.difficulty-select {
-    width: 100%; padding: 10px; font-size: 16px; border-radius: 8px; border: 2px solid #ddd;
-    margin-top: 10px; font-family: inherit;
+.diff-btn.selected {
+    border-color: var(--primary); background: #fff0f5; color: var(--primary);
 }
 
 .btn-start {
     width: 100%; padding: 15px; font-size: 20px;
     background: var(--primary); color: white; border: none; border-radius: 30px;
-    font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #ff5c8d;
-    transition: .1s;
+    font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 133, 162, 0.4);
+    margin-top: 20px;
 }
-.btn-start:active { transform: translateY(4px); box-shadow: none; }
+.btn-start:active { transform: scale(0.98); }
 
 /* --- ゲーム画面 --- */
 .game-container {
-    flex: 1; display: none; /* 初期は非表示 */
-    flex-direction: column; justify-content: center; align-items: center;
-    width: 100%; max-width: 600px; padding: 20px;
+    flex: 1; display: none;
+    flex-direction: column; align-items: center;
+    width: 100%; max-width: 600px; padding: 10px;
 }
 
 .status-bar {
-    margin-bottom: 15px; font-size: 18px; font-weight: bold; height: 30px; color: #555;
+    width: 100%; text-align: center; margin-bottom: 10px;
+    background: white; padding: 10px; border-radius: 10px;
+    border: 1px solid #eee; min-height: 50px;
+    display: flex; flex-direction: column; justify-content: center;
 }
+.main-status { font-size: 18px; font-weight: bold; }
+.sub-status { font-size: 12px; color: #888; }
 
 /* 盤面 */
+.board-wrapper {
+    background: #fff; padding: 5px; border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 1px solid #ccc;
+    width: 100%; display: flex; justify-content: center;
+}
 .board {
-    display: grid; gap: 4px;
-    background-color: #ddd; border: 4px solid #ccc; border-radius: 8px;
+    display: grid; gap: 2px;
+    background-color: #ddd;
+    border: 2px solid #bbb;
     width: 100%; aspect-ratio: 1 / 1; 
-    max-height: 70vh; /* 画面に収まるように */
-    padding: 4px;
+    max-height: 65vh;
 }
 
 .cell {
-    background-color: var(--board-bg); border-radius: 4px;
+    background-color: var(--board-bg);
     position: relative; cursor: pointer;
     display: flex; justify-content: center; align-items: center;
 }
 
-/* 真ん中のマス */
-.cell.center-cell {
-    background-color: #fff0f5; border: 2px dashed gold;
+/* マス装飾 */
+.cell.center-cell { background-color: var(--center-color); }
+.cell.center-cell::before { content: ""; position: absolute; width: 100%; height: 100%; border: 2px dashed #FFD700; opacity: 0.5; box-sizing: border-box; }
+.cell.center-cell::after { content: "👑"; font-size: 1.5rem; opacity: 0.2; }
+
+.cell.mud { background-color: var(--mud-color); }
+.cell.mud::after { content: "::"; position: absolute; font-weight:bold; color:#999; opacity: 0.5; }
+
+/* 選択中 */
+.cell.selected { background-color: #fff3e0; }
+.cell.selected .piece { transform: scale(1.1); box-shadow: 0 5px 10px rgba(0,0,0,0.3); }
+.cell.selected .piece::before {
+    content: "↻"; position: absolute; font-size: 2.5rem; color: rgba(255,255,255,0.9); z-index: 21;
+    text-shadow: 0 0 3px rgba(0,0,0,0.5);
 }
-.cell.center-cell::before {
-    content: "★"; position: absolute; color: gold; font-size: 1.5rem; opacity: 0.5; z-index: 0;
+
+.cell.valid-move::after {
+    content: "◎"; position: absolute;
+    color: #4CAF50; font-size: 2rem; font-weight: bold;
+    opacity: 0.6; z-index: 20;
+    animation: pulse 1s infinite;
 }
+@keyframes pulse { 0% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 0.8; transform: scale(1.1); } 100% { opacity: 0.4; transform: scale(0.9); } }
 
 /* 駒 */
 .piece {
-    width: 80%; height: 80%; border-radius: 50%;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.2); z-index: 10;
-    transition: transform 0.2s; position: relative;
+    width: 85%; height: 85%; border-radius: 50%;
+    z-index: 10; position: relative;
+    display: flex; justify-content: center; align-items: center;
+    color: white; font-size: 1.8rem; font-weight: bold;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
-.piece::after { 
-    content: ""; position: absolute; top: 15%; left: 15%; width: 30%; height: 30%;
-    background: rgba(255,255,255,0.6); border-radius: 50%;
-}
-
-.piece.player { background-color: var(--primary); border: 2px solid #ff5c8d; }
-.piece.enemy { background-color: var(--enemy); border: 2px solid #2176ff; }
-
-/* 選択・移動可能 */
-.cell.selected { background-color: #ffe0b2; }
-.cell.valid-move { background-color: var(--highlight); border: 2px solid #ffd54f; }
-.cell.valid-move::after {
-    content: ""; width: 20%; height: 20%; background: #ffd54f; border-radius: 50%;
-}
+.piece.player { background: #FF85A2; border: 2px solid white; }
+.piece.enemy { background: #4D96FF; border: 2px solid white; }
 
 /* コントロール */
-.controls { margin-top: 20px; display: flex; gap: 15px; }
+.controls { margin-top: 15px; display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 400px; }
 .btn-mini {
-    padding: 10px 20px; border: none; border-radius: 20px;
+    flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
     font-weight: bold; cursor: pointer; font-size: 14px;
-    background: #eee; color: #555;
+    background: white; color: #555;
+    box-shadow: 0 2px 0 #eee;
 }
-.btn-mini:hover { background: #ddd; }
+.btn-mini:active { transform: translateY(2px); box-shadow: none; }
+.btn-undo { background: #fff8e1; border-color: #ffe082; color: #f57f17; }
 
 /* オーバーレイ */
 .overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); display: none;
+    background: rgba(255,255,255,0.9); display: none;
     justify-content: center; align-items: center; z-index: 100;
 }
 .msg-box {
-    background: white; padding: 30px; border-radius: 20px; text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 80%; max-width: 300px;
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: white; padding: 40px; border-radius: 20px; text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 85%; max-width: 320px;
+    border: 1px solid #eee;
 }
-.msg-title { font-size: 22px; font-weight: bold; margin-bottom: 15px; display: block;}
-@keyframes popIn { from{transform:scale(0.8);opacity:0;} to{transform:scale(1);opacity:1;} }
+.msg-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; display: block;}
 
-/* モバイル調整 */
-@media (max-width: 400px) {
-    .setup-container { padding: 15px; }
-    h1 { font-size: 1.2rem; }
-    .status-bar { font-size: 16px; }
+/* 小さい画面対応 */
+@media (max-height: 650px) {
+    .board { max-height: 60vh; }
+    .piece { font-size: 1.4rem; }
 }
 </style>
 </head>
@@ -167,105 +188,107 @@ h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
 
 <header>
     <h1>🧊 かっちんかっちん</h1>
-    <a href="index.html" class="btn-home">🏠 ホームにもどる</a>
+    <a href="index.html" class="btn-home">🏠 ホームへ</a>
 </header>
 
 <div id="setup-screen" class="setup-container">
-    <div class="setup-group">
-        <label class="setup-label">📏 ばんめんの おおきさ</label>
-        <input type="number" id="board-size" class="input-num" value="5" min="5" max="15" step="2">
-        <p style="font-size:12px; color:#888; margin-top:5px;">※ 5, 7, 9 などの きすう</p>
+    <div class="setup-card">
+        <div class="setup-title">🎮 モードをえらんでね</div>
+        
+        <div style="margin-bottom:20px; text-align:center;">
+            <label style="font-size:16px; font-weight:bold; color:#555; display:inline-flex; align-items:center; gap:8px; padding:15px; background:#f9f9f9; border-radius:10px; width:100%; justify-content:center; cursor:pointer; border:1px solid #eee;">
+                <input type="checkbox" id="mode-pvp" style="transform:scale(1.5);"> ふたりであそぶ
+            </label>
+        </div>
+
+        <div class="setup-title">🤖 CPUのつよさ</div>
+        <div class="diff-btns">
+            <div class="diff-btn" onclick="selectDiff(0, this)">
+                <span style="font-size:24px;">🐣</span><br>やさしい
+            </div>
+            <div class="diff-btn selected" onclick="selectDiff(1, this)">
+                <span style="font-size:24px;">🐥</span><br>ふつう
+            </div>
+            <div class="diff-btn" onclick="selectDiff(2, this)">
+                <span style="font-size:24px;">🐔</span><br>つよい
+            </div>
+        </div>
     </div>
 
-    <div class="setup-group">
-        <label class="setup-label">⚔️ たいせんモード</label>
-        <div class="radio-group">
-            <label class="radio-label"><input type="radio" name="mode" value="pvc" checked onchange="toggleDifficulty(true)"> ひとりで</label>
-            <label class="radio-label"><input type="radio" name="mode" value="pvp" onchange="toggleDifficulty(false)"> ふたりで</label>
-        </div>
-        
-        <div id="difficulty-area" style="margin-top:15px;">
-            <label class="setup-label" style="font-size:14px;">🤖 つよさ</label>
-            <select id="cpu-level" class="difficulty-select">
-                <option value="0">🐣 やさしい (ランダム)</option>
-                <option value="1" selected>🐥 ふつう (そこそこ)</option>
-                <option value="2">🐔 むずかしい (ガチ)</option>
-            </select>
-        </div>
+    <div style="text-align:center; font-size:12px; color:#aaa; margin-top:10px;">
+        盤面サイズ: 7×7 固定<br>
+        ギミック: どろ沼のみ
     </div>
 
     <button class="btn-start" onclick="startGameConfig()">ゲームスタート！</button>
 </div>
 
 <div id="game-screen" class="game-container">
-    <div class="status-bar" id="status-text"></div>
-    <div class="board" id="board"></div>
+    <div class="status-bar">
+        <span id="main-status" class="main-status"></span>
+        <span id="sub-status" class="sub-status"></span>
+    </div>
+    
+    <div class="board-wrapper">
+        <div class="board" id="board"></div>
+    </div>
+    
     <div class="controls">
-        <button class="btn-mini" onclick="backToSetup()">設定にもどる</button>
-        <button class="btn-mini" onclick="resetGame()">やりなおす</button>
+        <button class="btn-mini btn-undo" id="btn-undo" onclick="undoMove()">↩ 待った</button>
+        <button class="btn-mini" onclick="resetGame()">最初から</button>
+        <button class="btn-mini" onclick="backToSetup()">設定へ</button>
     </div>
 </div>
 
 <div class="overlay" id="overlay">
     <div class="msg-box">
         <span class="msg-title" id="msg-title"></span>
-        <button class="btn-start" onclick="resetGame()">もういっかい</button>
-        <br><br>
+        <button class="btn-start" onclick="resetGame()" style="margin-bottom:15px;">もういっかい</button>
         <button class="btn-mini" onclick="backToSetup()">設定にもどる</button>
     </div>
 </div>
 
 <script>
     // --- 定数 ---
-    const EMPTY = 0;
-    const P1 = 1; // ピンク (あなた / 先攻)
-    const P2 = 2; // ブルー (相手 / CPU / 後攻)
+    const EMPTY = 0, P1 = 1, P2 = 2, MUD = 3;
+    const UP=0, RIGHT=1, DOWN=2, LEFT=3;
+    const DIRS = [{dr:-1,dc:0}, {dr:0,dc:1}, {dr:1,dc:0}, {dr:0,dc:-1}];
+    const ARROWS = ['↑', '→', '↓', '←'];
 
-    // --- ゲーム状態 ---
-    let boardSize = 5;
-    let board = [];
+    const boardSize = 7;
+    let board=[], facing=[]; 
+    let mudMap = []; 
+
     let turn = P1;
-    let gameMode = 'pvc'; // 'pvc' or 'pvp'
-    let cpuLevel = 1; // 0, 1, 2
+    let gameMode = 'pvc';
+    let cpuLevel = 1;
+    
     let selectedPos = null;
     let isGameOver = false;
     let isCpuThinking = false;
+    let historyStack = [];
 
-    // --- DOM要素 ---
+    // --- DOM ---
     const setupScreen = document.getElementById('setup-screen');
     const gameScreen = document.getElementById('game-screen');
-    const difficultyArea = document.getElementById('difficulty-area');
     const boardEl = document.getElementById('board');
-    const statusEl = document.getElementById('status-text');
+    const mainStatus = document.getElementById('main-status');
+    const subStatus = document.getElementById('sub-status');
     const overlay = document.getElementById('overlay');
     const msgTitle = document.getElementById('msg-title');
+    const btnUndo = document.getElementById('btn-undo');
 
-    // --- 設定画面の制御 ---
-    function toggleDifficulty(show) {
-        difficultyArea.style.display = show ? 'block' : 'none';
+    // --- 設定UI ---
+    function selectDiff(lvl, el) {
+        cpuLevel = lvl;
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
     }
 
     function startGameConfig() {
-        const sizeInput = document.getElementById('board-size');
-        let size = parseInt(sizeInput.value);
-        
-        // 奇数チェック
-        if (size % 2 === 0) size++;
-        if (size < 5) size = 5;
-        if (size > 15) size = 15;
-        boardSize = size;
-
-        const modes = document.getElementsByName('mode');
-        for(let m of modes) {
-            if(m.checked) gameMode = m.value;
-        }
-
-        cpuLevel = parseInt(document.getElementById('cpu-level').value);
-
-        // 画面切り替え
+        gameMode = document.getElementById('mode-pvp').checked ? 'pvp' : 'pvc';
         setupScreen.style.display = 'none';
         gameScreen.style.display = 'flex';
-        
         resetGame();
     }
 
@@ -277,20 +300,38 @@ h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
 
     // --- ゲーム初期化 ---
     function resetGame() {
-        isGameOver = false;
-        isCpuThinking = false;
-        turn = P1;
-        selectedPos = null;
+        isGameOver = false; isCpuThinking = false;
+        selectedPos = null; historyStack = [];
         overlay.style.display = 'none';
 
-        // 盤面生成
-        board = Array.from({ length: boardSize }, () => Array(boardSize).fill(EMPTY));
+        turn = (Math.random() < 0.5) ? P1 : P2;
 
-        // 駒配置 (P2は上、P1は下)
-        for(let c=0; c<boardSize; c++) board[0][c] = P2;
-        for(let c=0; c<boardSize; c++) board[boardSize-1][c] = P1;
+        // 配列初期化
+        board = Array.from({length:boardSize}, ()=>Array(boardSize).fill(EMPTY));
+        facing = Array.from({length:boardSize}, ()=>Array(boardSize).fill(UP));
+        mudMap = Array.from({length:boardSize}, ()=>Array(boardSize).fill(false));
 
-        // グリッドスタイル更新
+        // 駒配置 (P2上、P1下)
+        for(let c=0; c<boardSize; c++) {
+            board[0][c] = P2; facing[0][c] = DOWN;
+            board[boardSize-1][c] = P1; facing[boardSize-1][c] = UP;
+        }
+
+        // 泥配置 (ランダム)
+        let mudCount = 8; 
+        let placed = 0;
+        const center = Math.floor(boardSize/2);
+        while(placed < mudCount) {
+            let r = Math.floor(Math.random() * (boardSize - 2)) + 1;
+            let c = Math.floor(Math.random() * boardSize);
+            if(board[r][c] === EMPTY && !(r===center && c===center) && !mudMap[r][c]) {
+                board[r][c] = MUD;
+                mudMap[r][c] = true;
+                placed++;
+            }
+        }
+
+        // CSSグリッド設定
         boardEl.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
         boardEl.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
 
@@ -298,241 +339,323 @@ h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
         updateStatus();
     }
 
-    // --- 画面描画 ---
+    // --- 履歴 (Undo) ---
+    function saveState() {
+        const state = {
+            board: board.map(r=>[...r]),
+            facing: facing.map(r=>[...r]),
+            mudMap: mudMap.map(r=>[...r]),
+            turn: turn
+        };
+        historyStack.push(state);
+        if(historyStack.length > 20) historyStack.shift();
+        updateUndoButton();
+    }
+
+    function undoMove() {
+        if(isCpuThinking || isGameOver || historyStack.length === 0) return;
+        let popCount = (gameMode === 'pvc') ? 2 : 1;
+        if(historyStack.length < popCount) popCount = historyStack.length;
+
+        let state = null;
+        for(let i=0; i<popCount; i++) state = historyStack.pop();
+
+        if(state) {
+            board = state.board; facing = state.facing; mudMap = state.mudMap; turn = state.turn;
+            selectedPos = null;
+            renderBoard(); updateStatus();
+        }
+        updateUndoButton();
+    }
+
+    function updateUndoButton() {
+        btnUndo.disabled = (historyStack.length === 0);
+        btnUndo.style.opacity = btnUndo.disabled ? 0.5 : 1;
+    }
+
+    // --- 描画 ---
     function renderBoard() {
         boardEl.innerHTML = '';
-        
-        // 移動可能マスの計算
-        let validMoves = [];
-        if (selectedPos) {
-            validMoves = getSlidingMoves(selectedPos.r, selectedPos.c);
-        }
-
         const center = Math.floor(boardSize / 2);
+        
+        let validMoves = [];
+        if (selectedPos) validMoves = getMoves(selectedPos.r, selectedPos.c);
 
         for (let r = 0; r < boardSize; r++) {
             for (let c = 0; c < boardSize; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                if (r === center && c === center) cell.classList.add('center-cell');
+                if(r===center && c===center) cell.classList.add('center-cell');
 
-                // クリックイベント
-                cell.onclick = () => onCellClick(r, c, validMoves);
+                // 泥
+                if(mudMap[r][c]) cell.classList.add('mud');
 
                 // 駒
                 const val = board[r][c];
-                if (val !== EMPTY) {
-                    const piece = document.createElement('div');
-                    piece.className = `piece ${val === P1 ? 'player' : 'enemy'}`;
-                    cell.appendChild(piece);
+                if(val === P1 || val === P2) {
+                    const pieceEl = document.createElement('div');
+                    pieceEl.className = `piece ${val===P1 ? 'player':'enemy'}`;
+                    pieceEl.innerText = ARROWS[facing[r][c]];
+                    cell.appendChild(pieceEl);
                 }
 
-                // ハイライト
-                if (selectedPos && selectedPos.r === r && selectedPos.c === c) {
-                    cell.classList.add('selected');
-                }
-                if (validMoves.some(m => m.r === r && m.c === c)) {
-                    cell.classList.add('valid-move');
-                }
+                // 選択中ハイライト
+                if(selectedPos && selectedPos.r===r && selectedPos.c===c) cell.classList.add('selected');
+                
+                // 移動可能ガイド
+                if(validMoves.some(m => m.r===r && m.c===c)) cell.classList.add('valid-move');
 
+                cell.onclick = () => onCellClick(r, c, validMoves);
                 boardEl.appendChild(cell);
             }
         }
+        updateUndoButton();
     }
 
     function updateStatus() {
-        if (isGameOver) return;
+        if(isGameOver) return;
+        let name = (turn===P1) ? "ピンク" : "ブルー";
+        let color = (turn===P1) ? "var(--primary)" : "var(--enemy)";
         
-        let name = (turn === P1) ? "ピンク" : "ブルー";
-        let color = (turn === P1) ? "var(--primary)" : "var(--enemy)";
-        
-        if (gameMode === 'pvc' && turn === P2) {
-            statusEl.innerText = "あいて(CPU) が考え中...";
-            statusEl.style.color = color;
+        if(gameMode === 'pvc' && turn === P2) {
+            mainStatus.innerText = "CPUの番です...";
+            mainStatus.style.color = color;
+            subStatus.innerText = "考え中...";
             isCpuThinking = true;
-            setTimeout(cpuMove, 800); // 思考タイム
+            btnUndo.disabled = true; btnUndo.style.opacity = 0.5;
+            setTimeout(cpuMove, 1000);
         } else {
-            statusEl.innerText = `${name} の番です`;
-            statusEl.style.color = color;
+            mainStatus.innerText = `${name} の番です`;
+            mainStatus.style.color = color;
+            subStatus.innerText = "駒をタップして選択・もう一度タップで回転";
             isCpuThinking = false;
+            updateUndoButton();
         }
     }
 
-    // --- ゲームロジック ---
+    // --- ロジック ---
     function onCellClick(r, c, validMoves) {
-        if (isGameOver || isCpuThinking) return;
-
-        // 自分の手番でない駒は触れない (PvPならターンに合わせる)
+        if(isGameOver || isCpuThinking) return;
         const val = board[r][c];
-        
-        // 1. 自分の駒を選択
-        if (val === turn) {
-            if (selectedPos && selectedPos.r === r && selectedPos.c === c) {
-                selectedPos = null; // 解除
+
+        // 自分の駒を選択
+        if(val === turn) {
+            if(selectedPos && selectedPos.r===r && selectedPos.c===c) {
+                // 回転
+                saveState();
+                rotatePiece(r, c);
             } else {
-                selectedPos = { r, c };
+                selectedPos = {r, c};
             }
             renderBoard();
             return;
         }
 
-        // 2. 移動
-        if (selectedPos) {
-            const move = validMoves.find(m => m.r === r && m.c === c);
-            if (move) {
+        // 移動
+        if(selectedPos) {
+            const move = validMoves.find(m => m.r===r && m.c===c);
+            if(move) {
+                saveState();
                 executeMove(selectedPos, move);
             }
         }
     }
 
-    function executeMove(from, to) {
-        const piece = board[from.r][from.c];
-        board[from.r][from.c] = EMPTY;
-        board[to.r][to.c] = piece;
-        
+    function rotatePiece(r, c) {
+        facing[r][c] = (facing[r][c] + 1) % 4;
         selectedPos = null;
         renderBoard();
+        toggleTurn();
+    }
 
-        // 勝利判定 (中心)
-        const center = Math.floor(boardSize / 2);
-        if (to.r === center && to.c === center) {
-            gameSet(piece);
-            return;
-        }
-
-        // ターン交代
+    function toggleTurn() {
         turn = (turn === P1) ? P2 : P1;
         updateStatus();
     }
 
-    function getSlidingMoves(r, c) {
+    // 移動先の計算
+    function getMoves(r, c) {
         const moves = [];
-        const dirs = [
-            {dr:-1, dc:0}, {dr:1, dc:0}, {dr:0, dc:-1}, {dr:0, dc:1}
-        ];
+        const d = DIRS[facing[r][c]];
+        let nr = r, nc = c;
+        let lastValid = null;
 
-        dirs.forEach(d => {
-            let nr = r + d.dr;
-            let nc = c + d.dc;
-            let lastValid = null;
+        while(true) {
+            let nextR = nr + d.dr;
+            let nextC = nc + d.dc;
 
-            // 盤面内かつ空きマスなら進み続ける
-            while(nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === EMPTY) {
-                lastValid = { r: nr, c: nc };
-                nr += d.dr;
-                nc += d.dc;
+            // 盤面外
+            if(nextR < 0 || nextR >= boardSize || nextC < 0 || nextC >= boardSize) break;
+            
+            // 駒（敵味方関係なく止まる）
+            const cellVal = board[nextR][nextC];
+            if(cellVal === P1 || cellVal === P2) break;
+
+            // 進める
+            nr = nextR; nc = nextC;
+            
+            // 泥判定
+            if(mudMap[nr][nc]) {
+                lastValid = {r: nr, c: nc};
+                break; 
             }
-            // 止まった場所があれば追加
-            if (lastValid) {
-                moves.push(lastValid);
-            }
-        });
+
+            // 通過点
+            lastValid = {r: nr, c: nc};
+        }
+
+        if(lastValid) moves.push(lastValid);
         return moves;
     }
 
-    // --- CPU思考ルーチン ---
-    function cpuMove() {
-        if (isGameOver) return;
+    function executeMove(from, to) {
+        const p = board[from.r][from.c];
+        const f = facing[from.r][from.c];
+
+        // 移動元をクリア（泥なら泥に戻す）
+        if(mudMap[from.r][from.c]) board[from.r][from.c] = MUD;
+        else board[from.r][from.c] = EMPTY;
+        facing[from.r][from.c] = UP; // リセット
+
+        // 移動先
+        board[to.r][to.c] = p;
+        facing[to.r][to.c] = f;
+
+        // 反転判定
+        // 泥で止まった場合は反転しない
+        if(!mudMap[to.r][to.c]) {
+            const d = DIRS[f];
+            const nextR = to.r + d.dr;
+            const nextC = to.c + d.dc;
+            let hit = false;
+
+            if(nextR < 0 || nextR >= boardSize || nextC < 0 || nextC >= boardSize) {
+                hit = true; // 壁
+            } else {
+                const nextVal = board[nextR][nextC];
+                if(nextVal === P1 || nextVal === P2) {
+                    if(nextVal !== p) hit = true; // 敵なら反転
+                }
+            }
+
+            if(hit) {
+                facing[to.r][to.c] = (f + 2) % 4; // 反転
+            }
+        }
+
+        selectedPos = null;
+        renderBoard();
 
         const center = Math.floor(boardSize / 2);
+        if(to.r === center && to.c === center) {
+            gameSet(p);
+            return;
+        }
+
+        toggleTurn();
+    }
+
+    // --- CPU (強化版) ---
+    function cpuMove() {
+        if(isGameOver) return;
+        const center = Math.floor(boardSize/2);
         let candidates = [];
 
-        // 全ての自分の駒の、全ての移動先を列挙
-        for (let r = 0; r < boardSize; r++) {
-            for (let c = 0; c < boardSize; c++) {
-                if (board[r][c] === P2) {
-                    const moves = getSlidingMoves(r, c);
-                    moves.forEach(m => {
-                        candidates.push({ from: {r, c}, to: m });
+        // 候補列挙
+        for(let r=0; r<boardSize; r++) {
+            for(let c=0; c<boardSize; c++) {
+                if(board[r][c] === P2) {
+                    // 移動手
+                    getMoves(r, c).forEach(to => {
+                        candidates.push({type:'move', from:{r,c}, to});
                     });
+                    // 回転手
+                    candidates.push({type:'rotate', r, c});
                 }
             }
         }
 
-        if (candidates.length === 0) {
-            // 動ける手がない（パス＝負けではないがターン交代）
-            turn = P1;
-            updateStatus();
-            return;
-        }
+        if(candidates.length === 0) { toggleTurn(); return; }
 
-        let bestMove = null;
-
-        // ★ 戦略 1: 勝利手があれば即実行
-        const winMove = candidates.find(m => m.to.r === center && m.to.c === center);
-        if (winMove) {
-            bestMove = winMove;
-        } 
-        else if (cpuLevel >= 1) {
-            // ★ 戦略 2: 相手の勝利を阻止 (Hardのみ、あるいはNormalでも少し考える)
-            // 相手が次にゴールできる位置にいるか？
-            // ※簡易実装: 相手の勝利を防ぐために「中央に乗る」ことはできない（自分がゴールしてしまうため）。
-            // 相手のラインを塞ぐ手を打つのは計算量が多いので、
-            // ここでは「中央へのマンハッタン距離」を評価基準にする。
-
-            // 評価関数付きソート
-            candidates.sort((a, b) => {
-                const distA = Math.abs(a.to.r - center) + Math.abs(a.to.c - center);
-                const distB = Math.abs(b.to.r - center) + Math.abs(b.to.c - center);
+        let bestAction = null;
+        
+        // 1. 勝利手があれば即実行 (Move)
+        const win = candidates.find(a => a.type === 'move' && a.to.r===center && a.to.c===center);
+        
+        if(win) {
+            bestAction = win;
+        } else if(cpuLevel >= 1) { // Normal, Hard
+            // 評価関数でソート（数値が小さいほど良い）
+            candidates.sort((a,b) => {
+                let scoreA = evalAction(a, center);
+                let scoreB = evalAction(b, center);
                 
-                // 距離が近い方を優先
-                if (distA !== distB) return distA - distB;
-                
-                // 距離が同じならランダム性を入れる
-                return Math.random() - 0.5;
+                // Normalなら少しランダム性を入れる
+                if (cpuLevel === 1) {
+                    scoreA += (Math.random() * 2 - 1); 
+                }
+                return scoreA - scoreB;
             });
-
-            if (cpuLevel === 2) {
-                // Hard: 上位の手から選ぶ（最も中心に近い手）
-                // さらに少し賢く: 自分が動くことで「相手の壁」になってあげてしまう利敵行為を避けたいが、
-                // 今回はシンプルに「中心に一番近づける手」を選ぶ。
-                bestMove = candidates[0];
-            } else {
-                // Normal: 上位半分からランダムに選ぶ（ミスもする）
-                const half = Math.ceil(candidates.length / 2);
-                const pick = Math.floor(Math.random() * half);
-                bestMove = candidates[pick];
-            }
+            bestAction = candidates[0];
         } else {
             // Easy: 完全ランダム
-            bestMove = candidates[Math.floor(Math.random() * candidates.length)];
+            bestAction = candidates[Math.floor(Math.random()*candidates.length)];
         }
 
-        executeMove(bestMove.from, bestMove.to);
+        saveState();
+        if(bestAction.type === 'move') executeMove(bestAction.from, bestAction.to);
+        else rotatePiece(bestAction.r, bestAction.c);
     }
 
-    // --- 終了処理 ---
-    function gameSet(winnerPiece) {
+    // 行動評価関数 (低いほど良い)
+    function evalAction(action, center) {
+        if (action.type === 'move') {
+            // 移動後の位置とゴールの距離
+            let dist = Math.abs(action.to.r - center) + Math.abs(action.to.c - center);
+            // 泥に止まる手は強いのでボーナス (距離を0.5減らす扱い)
+            if (mudMap[action.to.r][action.to.c]) dist -= 0.5;
+            return dist;
+        } 
+        else {
+            // 回転の評価: 「回転後にどこまで行けるか」をシミュレート
+            const r = action.r, c = action.c;
+            const originalFacing = facing[r][c];
+            
+            // 仮想的に回転
+            const nextFacing = (originalFacing + 1) % 4;
+            facing[r][c] = nextFacing;
+            const futureMoves = getMoves(r, c);
+            facing[r][c] = originalFacing; // 戻す
+
+            if (futureMoves.length === 0) {
+                return 999; // 回転しても動けないなら論外
+            }
+
+            // 回転後の最良到達点を探す
+            let bestFutureDist = 999;
+            for (let m of futureMoves) {
+                const d = Math.abs(m.r - center) + Math.abs(m.c - center);
+                if (d < bestFutureDist) bestFutureDist = d;
+            }
+
+            // 回転コスト (+1.2くらい) を加味して評価
+            // これにより「移動できるなら移動優先、でも回転したほうが圧倒的に近くなるなら回転」となる
+            return bestFutureDist + 1.2;
+        }
+    }
+
+    function gameSet(winner) {
         isGameOver = true;
-        statusEl.innerText = "";
+        mainStatus.innerText = ""; subStatus.innerText = "";
         overlay.style.display = 'flex';
-        
-        let msg = "";
-        if (gameMode === 'pvc') {
-            if (winnerPiece === P1) {
-                msg = "🎉 あなた の かち！";
-                msgTitle.style.color = "var(--primary)";
-            } else {
-                msg = "😭 あいて の かち...";
-                msgTitle.style.color = "var(--enemy)";
-            }
-        } else {
-            if (winnerPiece === P1) {
-                msg = "🎉 ピンク の かち！";
-                msgTitle.style.color = "var(--primary)";
-            } else {
-                msg = "🎉 ブルー の かち！";
-                msgTitle.style.color = "var(--enemy)";
-            }
-        }
-        msgTitle.innerText = msg;
+        let name = (winner===P1) ? "あなた(ピンク)" : "あいて(ブルー)";
+        msgTitle.innerText = `🎉 ${name} の かち！`;
+        msgTitle.style.color = (winner===P1) ? "var(--primary)" : "var(--enemy)";
     }
 
-    // 初期化（設定画面を表示）
     overlay.style.display = 'none';
     gameScreen.style.display = 'none';
     setupScreen.style.display = 'flex';
-
 </script>
 </body>
 </html>
