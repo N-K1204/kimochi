@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧊 かっちんかっちん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #FF85A2; /* プレイヤー1（ピンク） */
+    --enemy: #4D96FF;   /* プレイヤー2/CPU（ブルー） */
+    --bg-color: #FFF9FB;
+    --board-bg: #fff;
+    --text: #444;
+    --highlight: #fff9c4; 
+}
+
+* { box-sizing: border-box; touch-action: manipulation; }
+body {
+    font-family: "M PLUS Rounded 1c", sans-serif;
+    margin: 0; padding: 0;
+    background: var(--bg-color);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header {
+    width: 100%; padding: 15px; text-align: center;
+    background: #fff; border-bottom: 2px dashed #ffcdd2;
+}
+h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
+
+.btn-home {
+    display: inline-block; margin-top: 5px;
+    text-decoration: none; background: #eee; color: #555;
+    padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;
+}
+
+/* --- 設定画面 --- */
+.setup-container {
+    flex: 1; width: 100%; max-width: 500px; padding: 30px;
+    display: flex; flex-direction: column; gap: 25px;
+    justify-content: center;
+}
+.setup-group {
+    background: white; padding: 20px; border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.setup-label {
+    display: block; font-weight: bold; margin-bottom: 10px; font-size: 16px;
+}
+.input-num {
+    width: 100%; padding: 10px; font-size: 18px; border-radius: 8px; border: 2px solid #ddd;
+    text-align: center; font-family: inherit;
+}
+.radio-group {
+    display: flex; gap: 15px; justify-content: center;
+}
+.radio-label {
+    display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: bold;
+}
+.difficulty-select {
+    width: 100%; padding: 10px; font-size: 16px; border-radius: 8px; border: 2px solid #ddd;
+    margin-top: 10px; font-family: inherit;
+}
+
+.btn-start {
+    width: 100%; padding: 15px; font-size: 20px;
+    background: var(--primary); color: white; border: none; border-radius: 30px;
+    font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #ff5c8d;
+    transition: .1s;
+}
+.btn-start:active { transform: translateY(4px); box-shadow: none; }
+
+/* --- ゲーム画面 --- */
+.game-container {
+    flex: 1; display: none; /* 初期は非表示 */
+    flex-direction: column; justify-content: center; align-items: center;
+    width: 100%; max-width: 600px; padding: 20px;
+}
+
+.status-bar {
+    margin-bottom: 15px; font-size: 18px; font-weight: bold; height: 30px; color: #555;
+}
+
+/* 盤面 */
+.board {
+    display: grid; gap: 4px;
+    background-color: #ddd; border: 4px solid #ccc; border-radius: 8px;
+    width: 100%; aspect-ratio: 1 / 1; 
+    max-height: 70vh; /* 画面に収まるように */
+    padding: 4px;
+}
+
+.cell {
+    background-color: var(--board-bg); border-radius: 4px;
+    position: relative; cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+}
+
+/* 真ん中のマス */
+.cell.center-cell {
+    background-color: #fff0f5; border: 2px dashed gold;
+}
+.cell.center-cell::before {
+    content: "★"; position: absolute; color: gold; font-size: 1.5rem; opacity: 0.5; z-index: 0;
+}
+
+/* 駒 */
+.piece {
+    width: 80%; height: 80%; border-radius: 50%;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.2); z-index: 10;
+    transition: transform 0.2s; position: relative;
+}
+.piece::after { 
+    content: ""; position: absolute; top: 15%; left: 15%; width: 30%; height: 30%;
+    background: rgba(255,255,255,0.6); border-radius: 50%;
+}
+
+.piece.player { background-color: var(--primary); border: 2px solid #ff5c8d; }
+.piece.enemy { background-color: var(--enemy); border: 2px solid #2176ff; }
+
+/* 選択・移動可能 */
+.cell.selected { background-color: #ffe0b2; }
+.cell.valid-move { background-color: var(--highlight); border: 2px solid #ffd54f; }
+.cell.valid-move::after {
+    content: ""; width: 20%; height: 20%; background: #ffd54f; border-radius: 50%;
+}
+
+/* コントロール */
+.controls { margin-top: 20px; display: flex; gap: 15px; }
+.btn-mini {
+    padding: 10px 20px; border: none; border-radius: 20px;
+    font-weight: bold; cursor: pointer; font-size: 14px;
+    background: #eee; color: #555;
+}
+.btn-mini:hover { background: #ddd; }
+
+/* オーバーレイ */
+.overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none;
+    justify-content: center; align-items: center; z-index: 100;
+}
+.msg-box {
+    background: white; padding: 30px; border-radius: 20px; text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 80%; max-width: 300px;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.msg-title { font-size: 22px; font-weight: bold; margin-bottom: 15px; display: block;}
+@keyframes popIn { from{transform:scale(0.8);opacity:0;} to{transform:scale(1);opacity:1;} }
+
+/* モバイル調整 */
+@media (max-width: 400px) {
+    .setup-container { padding: 15px; }
+    h1 { font-size: 1.2rem; }
+    .status-bar { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>🧊 かっちんかっちん</h1>
+    <a href="index.html" class="btn-home">🏠 ホームへ</a>
+</header>
+
+<div id="setup-screen" class="setup-container">
+    <div class="setup-group">
+        <label class="setup-label">📏 ばんめんの おおきさ</label>
+        <input type="number" id="board-size" class="input-num" value="5" min="5" max="15" step="2">
+        <p style="font-size:12px; color:#888; margin-top:5px;">※ 5, 7, 9 などの きすう</p>
+    </div>
+
+    <div class="setup-group">
+        <label class="setup-label">⚔️ たいせんモード</label>
+        <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="mode" value="pvc" checked onchange="toggleDifficulty(true)"> ひとりで</label>
+            <label class="radio-label"><input type="radio" name="mode" value="pvp" onchange="toggleDifficulty(false)"> ふたりで</label>
+        </div>
+        
+        <div id="difficulty-area" style="margin-top:15px;">
+            <label class="setup-label" style="font-size:14px;">🤖 つよさ</label>
+            <select id="cpu-level" class="difficulty-select">
+                <option value="0">🐣 やさしい (ランダム)</option>
+                <option value="1" selected>🐥 ふつう (そこそこ)</option>
+                <option value="2">🐔 むずかしい (ガチ)</option>
+            </select>
+        </div>
+    </div>
+
+    <button class="btn-start" onclick="startGameConfig()">ゲームスタート！</button>
+</div>
+
+<div id="game-screen" class="game-container">
+    <div class="status-bar" id="status-text"></div>
+    <div class="board" id="board"></div>
+    <div class="controls">
+        <button class="btn-mini" onclick="backToSetup()">設定にもどる</button>
+        <button class="btn-mini" onclick="resetGame()">やりなおす</button>
+    </div>
+</div>
+
+<div class="overlay" id="overlay">
+    <div class="msg-box">
+        <span class="msg-title" id="msg-title"></span>
+        <button class="btn-start" onclick="resetGame()">もういっかい</button>
+        <br><br>
+        <button class="btn-mini" onclick="backToSetup()">設定にもどる</button>
+    </div>
+</div>
+
+<script>
+    // --- 定数 ---
+    const EMPTY = 0;
+    const P1 = 1; // ピンク (あなた / 先攻)
+    const P2 = 2; // ブルー (相手 / CPU / 後攻)
+
+    // --- ゲーム状態 ---
+    let boardSize = 5;
+    let board = [];
+    let turn = P1;
+    let gameMode = 'pvc'; // 'pvc' or 'pvp'
+    let cpuLevel = 1; // 0, 1, 2
+    let selectedPos = null;
+    let isGameOver = false;
+    let isCpuThinking = false;
+
+    // --- DOM要素 ---
+    const setupScreen = document.getElementById('setup-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const difficultyArea = document.getElementById('difficulty-area');
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('status-text');
+    const overlay = document.getElementById('overlay');
+    const msgTitle = document.getElementById('msg-title');
+
+    // --- 設定画面の制御 ---
+    function toggleDifficulty(show) {
+        difficultyArea.style.display = show ? 'block' : 'none';
+    }
+
+    function startGameConfig() {
+        const sizeInput = document.getElementById('board-size');
+        let size = parseInt(sizeInput.value);
+        
+        // 奇数チェック
+        if (size % 2 === 0) size++;
+        if (size < 5) size = 5;
+        if (size > 15) size = 15;
+        boardSize = size;
+
+        const modes = document.getElementsByName('mode');
+        for(let m of modes) {
+            if(m.checked) gameMode = m.value;
+        }
+
+        cpuLevel = parseInt(document.getElementById('cpu-level').value);
+
+        // 画面切り替え
+        setupScreen.style.display = 'none';
+        gameScreen.style.display = 'flex';
+        
+        resetGame();
+    }
+
+    function backToSetup() {
+        overlay.style.display = 'none';
+        gameScreen.style.display = 'none';
+        setupScreen.style.display = 'flex';
+    }
+
+    // --- ゲーム初期化 ---
+    function resetGame() {
+        isGameOver = false;
+        isCpuThinking = false;
+        turn = P1;
+        selectedPos = null;
+        overlay.style.display = 'none';
+
+        // 盤面生成
+        board = Array.from({ length: boardSize }, () => Array(boardSize).fill(EMPTY));
+
+        // 駒配置 (P2は上、P1は下)
+        for(let c=0; c<boardSize; c++) board[0][c] = P2;
+        for(let c=0; c<boardSize; c++) board[boardSize-1][c] = P1;
+
+        // グリッドスタイル更新
+        boardEl.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+        boardEl.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
+
+        renderBoard();
+        updateStatus();
+    }
+
+    // --- 画面描画 ---
+    function renderBoard() {
+        boardEl.innerHTML = '';
+        
+        // 移動可能マスの計算
+        let validMoves = [];
+        if (selectedPos) {
+            validMoves = getSlidingMoves(selectedPos.r, selectedPos.c);
+        }
+
+        const center = Math.floor(boardSize / 2);
+
+        for (let r = 0; r < boardSize; r++) {
+            for (let c = 0; c < boardSize; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (r === center && c === center) cell.classList.add('center-cell');
+
+                // クリックイベント
+                cell.onclick = () => onCellClick(r, c, validMoves);
+
+                // 駒
+                const val = board[r][c];
+                if (val !== EMPTY) {
+                    const piece = document.createElement('div');
+                    piece.className = `piece ${val === P1 ? 'player' : 'enemy'}`;
+                    cell.appendChild(piece);
+                }
+
+                // ハイライト
+                if (selectedPos && selectedPos.r === r && selectedPos.c === c) {
+                    cell.classList.add('selected');
+                }
+                if (validMoves.some(m => m.r === r && m.c === c)) {
+                    cell.classList.add('valid-move');
+                }
+
+                boardEl.appendChild(cell);
+            }
+        }
+    }
+
+    function updateStatus() {
+        if (isGameOver) return;
+        
+        let name = (turn === P1) ? "ピンク" : "ブルー";
+        let color = (turn === P1) ? "var(--primary)" : "var(--enemy)";
+        
+        if (gameMode === 'pvc' && turn === P2) {
+            statusEl.innerText = "あいて(CPU) が考え中...";
+            statusEl.style.color = color;
+            isCpuThinking = true;
+            setTimeout(cpuMove, 800); // 思考タイム
+        } else {
+            statusEl.innerText = `${name} の番です`;
+            statusEl.style.color = color;
+            isCpuThinking = false;
+        }
+    }
+
+    // --- ゲームロジック ---
+    function onCellClick(r, c, validMoves) {
+        if (isGameOver || isCpuThinking) return;
+
+        // 自分の手番でない駒は触れない (PvPならターンに合わせる)
+        const val = board[r][c];
+        
+        // 1. 自分の駒を選択
+        if (val === turn) {
+            if (selectedPos && selectedPos.r === r && selectedPos.c === c) {
+                selectedPos = null; // 解除
+            } else {
+                selectedPos = { r, c };
+            }
+            renderBoard();
+            return;
+        }
+
+        // 2. 移動
+        if (selectedPos) {
+            const move = validMoves.find(m => m.r === r && m.c === c);
+            if (move) {
+                executeMove(selectedPos, move);
+            }
+        }
+    }
+
+    function executeMove(from, to) {
+        const piece = board[from.r][from.c];
+        board[from.r][from.c] = EMPTY;
+        board[to.r][to.c] = piece;
+        
+        selectedPos = null;
+        renderBoard();
+
+        // 勝利判定 (中心)
+        const center = Math.floor(boardSize / 2);
+        if (to.r === center && to.c === center) {
+            gameSet(piece);
+            return;
+        }
+
+        // ターン交代
+        turn = (turn === P1) ? P2 : P1;
+        updateStatus();
+    }
+
+    function getSlidingMoves(r, c) {
+        const moves = [];
+        const dirs = [
+            {dr:-1, dc:0}, {dr:1, dc:0}, {dr:0, dc:-1}, {dr:0, dc:1}
+        ];
+
+        dirs.forEach(d => {
+            let nr = r + d.dr;
+            let nc = c + d.dc;
+            let lastValid = null;
+
+            // 盤面内かつ空きマスなら進み続ける
+            while(nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === EMPTY) {
+                lastValid = { r: nr, c: nc };
+                nr += d.dr;
+                nc += d.dc;
+            }
+            // 止まった場所があれば追加
+            if (lastValid) {
+                moves.push(lastValid);
+            }
+        });
+        return moves;
+    }
+
+    // --- CPU思考ルーチン ---
+    function cpuMove() {
+        if (isGameOver) return;
+
+        const center = Math.floor(boardSize / 2);
+        let candidates = [];
+
+        // 全ての自分の駒の、全ての移動先を列挙
+        for (let r = 0; r < boardSize; r++) {
+            for (let c = 0; c < boardSize; c++) {
+                if (board[r][c] === P2) {
+                    const moves = getSlidingMoves(r, c);
+                    moves.forEach(m => {
+                        candidates.push({ from: {r, c}, to: m });
+                    });
+                }
+            }
+        }
+
+        if (candidates.length === 0) {
+            // 動ける手がない（パス＝負けではないがターン交代）
+            turn = P1;
+            updateStatus();
+            return;
+        }
+
+        let bestMove = null;
+
+        // ★ 戦略 1: 勝利手があれば即実行
+        const winMove = candidates.find(m => m.to.r === center && m.to.c === center);
+        if (winMove) {
+            bestMove = winMove;
+        } 
+        else if (cpuLevel >= 1) {
+            // ★ 戦略 2: 相手の勝利を阻止 (Hardのみ、あるいはNormalでも少し考える)
+            // 相手が次にゴールできる位置にいるか？
+            // ※簡易実装: 相手の勝利を防ぐために「中央に乗る」ことはできない（自分がゴールしてしまうため）。
+            // 相手のラインを塞ぐ手を打つのは計算量が多いので、
+            // ここでは「中央へのマンハッタン距離」を評価基準にする。
+
+            // 評価関数付きソート
+            candidates.sort((a, b) => {
+                const distA = Math.abs(a.to.r - center) + Math.abs(a.to.c - center);
+                const distB = Math.abs(b.to.r - center) + Math.abs(b.to.c - center);
+                
+                // 距離が近い方を優先
+                if (distA !== distB) return distA - distB;
+                
+                // 距離が同じならランダム性を入れる
+                return Math.random() - 0.5;
+            });
+
+            if (cpuLevel === 2) {
+                // Hard: 上位の手から選ぶ（最も中心に近い手）
+                // さらに少し賢く: 自分が動くことで「相手の壁」になってあげてしまう利敵行為を避けたいが、
+                // 今回はシンプルに「中心に一番近づける手」を選ぶ。
+                bestMove = candidates[0];
+            } else {
+                // Normal: 上位半分からランダムに選ぶ（ミスもする）
+                const half = Math.ceil(candidates.length / 2);
+                const pick = Math.floor(Math.random() * half);
+                bestMove = candidates[pick];
+            }
+        } else {
+            // Easy: 完全ランダム
+            bestMove = candidates[Math.floor(Math.random() * candidates.length)];
+        }
+
+        executeMove(bestMove.from, bestMove.to);
+    }
+
+    // --- 終了処理 ---
+    function gameSet(winnerPiece) {
+        isGameOver = true;
+        statusEl.innerText = "";
+        overlay.style.display = 'flex';
+        
+        let msg = "";
+        if (gameMode === 'pvc') {
+            if (winnerPiece === P1) {
+                msg = "🎉 あなたの かち！";
+                msgTitle.style.color = "var(--primary)";
+            } else {
+                msg = "😭 あいての かち...";
+                msgTitle.style.color = "var(--enemy)";
+            }
+        } else {
+            if (winnerPiece === P1) {
+                msg = "🎉 ピンクの かち！";
+                msgTitle.style.color = "var(--primary)";
+            } else {
+                msg = "🎉 ブルーの かち！";
+                msgTitle.style.color = "var(--enemy)";
+            }
+        }
+        msgTitle.innerText = msg;
+    }
+
+    // 初期化（設定画面を表示）
+    overlay.style.display = 'none';
+    gameScreen.style.display = 'none';
+    setupScreen.style.display = 'flex';
+
+</script>
+</body>
+</html>
