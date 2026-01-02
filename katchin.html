@@ -167,7 +167,7 @@ h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
 
 <header>
     <h1>🧊 かっちんかっちん</h1>
-    <a href="index.html" class="btn-home">🏠 ホームへ</a>
+    <a href="index.html" class="btn-home">🏠 ホームにもどる</a>
 </header>
 
 <div id="setup-screen" class="setup-container">
@@ -510,18 +510,18 @@ h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
         let msg = "";
         if (gameMode === 'pvc') {
             if (winnerPiece === P1) {
-                msg = "🎉 あなたの かち！";
+                msg = "🎉 あなた の かち！";
                 msgTitle.style.color = "var(--primary)";
             } else {
-                msg = "😭 あいての かち...";
+                msg = "😭 あいて の かち...";
                 msgTitle.style.color = "var(--enemy)";
             }
         } else {
             if (winnerPiece === P1) {
-                msg = "🎉 ピンクの かち！";
+                msg = "🎉 ピンク の かち！";
                 msgTitle.style.color = "var(--primary)";
             } else {
-                msg = "🎉 ブルーの かち！";
+                msg = "🎉 ブルー の かち！";
                 msgTitle.style.color = "var(--enemy)";
             }
         }
