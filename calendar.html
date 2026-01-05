@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>カレンダー PRO</title>
+    <title>ときめき共有カレンダー PRO</title>
     <style>
         :root { --sweet-pink: #ff9dbd; --soft-purple: #b49cff; --main-text: #5d5d5d; }
         body { background: #fffcfd; font-family: 'Hiragino Sans', sans-serif; margin: 0; padding: 0; color: var(--main-text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* --- ヘッダー --- */
+        /* --- ヘッダー（ボタンを少し小さく調整） --- */
         .app-header { flex: 0 0 40px; padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 1px solid #fdf0f5; z-index: 100; position: relative; }
-        .btn-back { text-decoration: none; background: #f7f7f7; padding: 4px 12px; border-radius: 50px; color: #888; font-size: 11px; font-weight: bold; }
+        .btn-back { 
+            text-decoration: none; background: #f7f7f7; 
+            padding: 3px 10px; border-radius: 50px; 
+            color: #888; font-size: 10px; font-weight: bold;
+            display: flex; align-items: center; gap: 3px;
+        }
         .header-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 15px; font-weight: bold; color: var(--sweet-pink); }
 
         /* --- 上半分：ヒーローエリア（アニメ強化版） --- */
@@ -81,7 +86,7 @@
 <body>
 
     <header class="app-header">
-        <a href="index.html" class="btn-back">🏠 ホームにもどる</a>
+        <a href="index.html" class="btn-back">🏠 <small>HOME</small></a>
         <div class="header-title">みんなのカレンダー</div>
         <div style="width: 40px;"></div>
     </header>
@@ -113,7 +118,7 @@
     <div id="list-modal" class="modal"><div class="modal-content">
         <h3 id="list-date" style="margin:0; color:var(--sweet-pink);"></h3>
         <div id="list-container" style="margin-top:15px;"></div>
-        <button onclick="openAddModal()" class="btn-action btn-add-new">＋ あたらしいよていをかく</button>
+        <button onclick="openAddModal()" class="btn-action btn-add-new">＋ あたらしい予定をかく</button>
         <button onclick="closeModal('list-modal')" style="background:none; border:none; color:#bbb; margin-top:15px; cursor:pointer;">とじる</button>
     </div></div>
 
@@ -135,7 +140,7 @@
                 <input type="checkbox" id="ev-main">
             </label>
             <label class="setting-item">
-                <span class="setting-label">💬 みんなにつうち</span>
+                <span class="setting-label">💬 みんなに通知</span>
                 <input type="checkbox" id="ev-discord" checked>
             </label>
         </div>
@@ -223,7 +228,7 @@
             document.getElementById('list-date').innerText = dStr.replace(/-/g, '/');
             const container = document.getElementById('list-container');
             if (dayEvs.length === 0) { container.innerHTML = "<p style='color:#ccc'>よていはありません</p>"; }
-            else { container.innerHTML = dayEvs.map(e => `<div class="ev-list-item"><div class="ev-time-tag">⏰ ${e.time || '時間未定'}</div><div class="ev-title-text">${e.isMain === "TRUE" ? '🌟 ' : ''}${e.title}</div>${e.desc ? `<div class="ev-desc-text">${e.desc}</div>` : ''}<div style="margin-top:8px; display:flex; gap:10px;"><button onclick="editEvent('${e.id}')" class="btn-action" style="background:#eee;">しゅうせい</button><button onclick="deleteEvent('${e.id}')" class="btn-action" style="background:#ffeded; color:red;">けす</button></div></div>`).join(''); }
+            else { container.innerHTML = dayEvs.map(e => `<div class="ev-list-item"><div class="ev-time-tag">⏰ ${e.time || '時間未定'}</div><div class="ev-title-text">${String(e.isMain) === "TRUE" ? '🌟 ' : ''}${e.title}</div>${e.desc ? `<div class="ev-desc-text">${e.desc}</div>` : ''}<div style="margin-top:8px; display:flex; gap:10px;"><button onclick="editEvent('${e.id}')" class="btn-action" style="background:#eee;">しゅうせい</button><button onclick="deleteEvent('${e.id}')" class="btn-action" style="background:#ffeded; color:red;">けす</button></div></div>`).join(''); }
             document.getElementById('list-modal').style.display = 'block';
         }
 
