@@ -2,182 +2,76 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ときめき共有カレンダー</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ときめき共有カレンダー PRO</title>
     <style>
-        :root {
-            --sweet-pink: #ff9dbd;
-            --soft-purple: #b49cff;
-            --main-text: #5d5d5d;
-        }
+        :root { --sweet-pink: #ff9dbd; --soft-purple: #b49cff; --main-text: #5d5d5d; }
+        body { background: #fffcfd; font-family: 'Hiragino Sans', sans-serif; margin: 0; padding: 0; color: var(--main-text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .app-header { flex: 0 0 40px; padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 1px solid #fdf0f5; z-index: 100; position: relative; }
+        .btn-back { text-decoration: none; background: #f7f7f7; padding: 4px 12px; border-radius: 50px; color: #888; font-size: 11px; font-weight: bold; }
+        .header-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 15px; font-weight: bold; color: var(--sweet-pink); }
 
-        body { 
-            background: #fffcfd; 
-            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; 
-            margin: 0; padding: 0; 
-            color: var(--main-text); 
-            height: 100vh; 
-            display: flex; flex-direction: column; 
-            overflow: hidden; 
-        }
+        /* 上半分：ヒーローエリア */
+        .hero-section { flex: 0 0 20%; display: flex; align-items: center; justify-content: center; padding: 5px 10px; background: linear-gradient(to bottom, #fff, #fff8fb); }
+        .event-hero-card { width: 90%; max-width: 320px; background: white; border-radius: 20px; padding: 10px; text-align: center; box-shadow: 0 8px 20px rgba(255, 139, 176, 0.15); border: 2px solid white; position: relative; overflow: hidden; }
+        .hero-shine { position: absolute; top: -50%; left: -60%; width: 20%; height: 200%; background: rgba(255, 255, 255, 0.6); transform: rotate(30deg); animation: shine-move 4s infinite; z-index: 1; }
+        @keyframes shine-move { 0% { left: -60%; } 20% { left: 120%; } 100% { left: 120%; } }
+        .wakuwaku-max { animation: shake-shine 0.4s infinite alternate; border: 3px solid var(--sweet-pink); }
+        @keyframes shake-shine { 0% { transform: rotate(-1deg) scale(1.02); } 100% { transform: rotate(1deg) scale(1.02); } }
+        .hero-title-text { font-size: 17px; margin: 2px 0; color: #444; font-weight: 900; }
+        .hero-day-val { font-size: 32px; font-weight: 900; color: var(--sweet-pink); line-height: 1; }
 
-        /* --- ヘッダー（中央配置） --- */
-        .app-header {
-            padding: 10px 15px;
-            display: flex; align-items: center; justify-content: space-between;
-            background: white; border-bottom: 1px solid #fdf0f5;
-            z-index: 100;
-        }
-
-        .btn-back {
-            text-decoration: none; background: #f7f7f7;
-            padding: 8px 15px; border-radius: 50px;
-            color: #888; font-size: 13px; font-weight: bold;
-        }
-
-        .header-title { 
-            position: absolute; left: 50%; transform: translateX(-50%);
-            font-size: 18px; font-weight: bold; color: var(--sweet-pink); 
-        }
-
-        /* --- 上半分：ヒーローエリア --- */
-        .hero-section {
-            flex: 0.8;
-            display: flex; align-items: center; justify-content: center;
-            padding: 10px; background: linear-gradient(to bottom, #fff, #fff8fb);
-        }
-
-        .event-hero-card {
-            width: 100%; max-width: 380px;
-            background: white; border-radius: 35px;
-            padding: 20px 15px; text-align: center;
-            box-shadow: 0 15px 35px rgba(255, 139, 176, 0.12);
-            border: 2px solid white; position: relative;
-            overflow: hidden;
-            animation: breathe 4s infinite ease-in-out;
-        }
-
-        @keyframes breathe {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-5px) scale(1.02); }
-        }
-
-        .hero-label { font-size: 11px; color: var(--sweet-pink); font-weight: bold; letter-spacing: 2px; }
-        .hero-title-text { font-size: 22px; margin: 8px 0; color: #444; font-weight: 900; }
-        .hero-day-val { font-size: 48px; font-weight: 900; color: var(--sweet-pink); line-height: 1; }
-
-        /* --- 下半分：カレンダーエリア --- */
-        .calendar-section {
-            flex: 1.4;
-            padding: 10px 15px 20px;
-            background: white; border-top-left-radius: 40px; border-top-right-radius: 40px;
-            box-shadow: 0 -10px 30px rgba(255, 139, 176, 0.05);
-            display: flex; flex-direction: column;
-        }
-
-        .calendar-nav {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 5px 5px 10px;
-        }
-        .nav-month { font-size: 20px; font-weight: 900; color: #555; }
-        .btn-nav { 
-            background: #fff0f5; border: none; width: 40px; height: 40px; 
-            border-radius: 15px; font-size: 24px; cursor: pointer; color: var(--sweet-pink);
-        }
-
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .weekday { text-align: center; font-size: 11px; font-weight: bold; color: #ddd; padding-bottom: 5px; }
-        
-        .day-cell {
-            background: #fafafa; border-radius: 15px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; position: relative; cursor: pointer;
-            transition: 0.3s; height: 50px; border: 1px solid #f8f8f8;
-        }
-        .day-cell.empty { background: transparent; border: none; cursor: default; }
-        .day-num { font-size: 15px; font-weight: bold; color: #777; }
-        
+        /* 下半分：カレンダー */
+        .calendar-section { flex: 1; padding: 0 10px 10px; background: white; border-top-left-radius: 30px; border-top-right-radius: 30px; box-shadow: 0 -8px 25px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px 2px; }
+        .nav-month { font-size: 16px; font-weight: 900; color: #555; }
+        .btn-nav { background: #fff0f5; border: none; width: 30px; height: 30px; border-radius: 10px; color: var(--sweet-pink); font-size: 18px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; margin-top: 0; }
+        .weekday-wrap { height: 18px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 2px; }
+        .weekday { text-align: center; font-size: 10px; font-weight: bold; color: #ddd; line-height: 18px; }
+        .day-cell { background: #fafafa; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #f8f8f8; height: 100%; position: relative; }
         .has-event { background: #fff0f5; border: 1px solid #ffdeeb; }
-        .has-event .day-num {
-            background: var(--sweet-pink); color: white !important;
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 8px rgba(255, 157, 189, 0.3);
-        }
+        .has-event .day-num { background: var(--sweet-pink); color: white !important; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .day-num { font-size: 13px; font-weight: bold; color: #777; }
+        .today { border: 2px solid var(--soft-purple) !important; }
+        .multi-dot { position: absolute; bottom: 2px; display: flex; gap: 2px; }
+        .dot { width: 4px; height: 4px; background: var(--sweet-pink); border-radius: 50%; }
 
-        .today { border: 3px solid var(--soft-purple) !important; }
-
-        /* --- 魔法の追加ボタン --- */
-        .btn-add-float {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 65px; height: 65px; background: var(--soft-purple);
-            color: white; border: none; border-radius: 22px; font-size: 40px;
-            box-shadow: 0 10px 20px rgba(180, 156, 255, 0.4); z-index: 200;
-        }
-
-        /* --- モーダル --- */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; z-index: 1000; backdrop-filter: blur(10px); }
-        .modal-content { 
-            background: white; width: 85%; max-width: 380px; margin: 12vh auto; 
-            padding: 30px 25px; border-radius: 45px; text-align: center; 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.1); animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        input, textarea { 
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 20px; 
-            border: 2px solid #fdf0f5; font-size: 16px; background: #fffcfd; 
-            outline: none; box-sizing: border-box; color: #555;
-        }
-        textarea { height: 80px; resize: none; }
+        /* モーダル */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; z-index: 1000; backdrop-filter: blur(8px); }
+        .modal-content { background: white; width: 85%; max-width: 340px; margin: 5vh auto; padding: 20px; border-radius: 30px; text-align: center; max-height: 90vh; overflow-y: auto; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border-radius: 10px; border: 1px solid #fdf0f5; font-size: 14px; outline: none; box-sizing: border-box; font-family: inherit; }
         
-        /* ★【修正】通知スイッチをきれいに横並びにする */
-        .discord-switch {
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 12px; 
-            margin: 15px auto; 
-            padding: 12px 20px;
-            background: #f0f4ff; 
-            border-radius: 20px; 
-            cursor: pointer;
-            width: fit-content; /* 中身に合わせる */
-        }
-        .discord-switch input { 
-            width: auto; margin: 0; 
-            transform: scale(1.3);
-        }
-        .discord-switch span { font-size: 14px; font-weight: bold; color: #5865F2; }
+        /* 予定リストの表示 */
+        .ev-list-item { background: #fff9fb; padding: 10px; border-radius: 15px; text-align: left; margin-bottom: 10px; border: 1px solid #ffeff5; }
+        .ev-time-tag { font-size: 11px; color: var(--sweet-pink); font-weight: bold; }
+        .ev-title-text { font-size: 15px; font-weight: bold; margin: 3px 0; }
+        .ev-desc-text { font-size: 12px; color: #888; white-space: pre-wrap; }
 
-        .btn-save { 
-            width: 100%; padding: 18px; background: var(--soft-purple); color: white; 
-            border: none; border-radius: 20px; font-size: 18px; font-weight: bold; 
-            margin-top: 15px;
-        }
-
-        .detail-desc-box {
-            background: #f9f9f9; padding: 15px; border-radius: 15px;
-            text-align: left; font-size: 14px; white-space: pre-wrap;
-            margin: 10px 0; color: #666; border: 1px dashed var(--sweet-pink);
-        }
-
+        .btn-action { padding: 8px 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .btn-add-new { background: var(--soft-purple); color: white; width: 100%; padding: 12px; margin-top: 10px; }
+        .btn-save { width: 100%; padding: 14px; background: var(--soft-purple); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        
+        .toggle-box { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0; font-size: 13px; font-weight: bold; color: #5865F2; }
+        .main-flag-box { color: #ff8b00; background: #fff8e1; padding: 8px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <header class="app-header">
-        <a href="index.html" class="btn-back">🏠 ホーム</a>
+        <a href="index.html" class="btn-back">🏠 HOME</a>
         <div class="header-title">みんなのカレンダー</div>
-        <div style="width: 60px;"></div>
+        <div style="width: 40px;"></div>
     </header>
 
     <div class="hero-section">
         <div id="hero-card" class="event-hero-card">
-            <div class="hero-label">NEXT HAPPY EVENT</div>
+            <div class="hero-shine"></div>
+            <div class="hero-label">NEXT MAIN EVENT</div>
             <div id="hero-title" class="hero-title-text">よみこみちゅう...</div>
             <div id="hero-days-wrap">
                 <span id="hero-day-num" class="hero-day-val">-</span>
-                <span id="hero-day-unit" style="font-size:24px; color:var(--sweet-pink); font-weight:900;">日</span>
+                <span id="hero-day-unit" style="font-size:14px; color:var(--sweet-pink); font-weight:900;">日</span>
             </div>
         </div>
     </div>
@@ -188,155 +82,173 @@
             <div id="month-display" class="nav-month"></div>
             <button class="btn-nav" onclick="changeMonth(1)">›</button>
         </div>
-        <div class="calendar-grid">
-            <div class="weekday" style="color:#ff9dbd">日</div><div class="weekday">月</div><div class="weekday">火</div><div class="weekday">水</div><div class="weekday">木</div><div class="weekday">金</div><div class="weekday" style="color:#7da6ff">土</div>
+        <div class="weekday-wrap">
+            <div class="weekday" style="color:#ff9dbd">日</div><div class="weekday">月</div><div class="weekday" >火</div><div class="weekday">水</div><div class="weekday">木</div><div class="weekday">金</div><div class="weekday" style="color:#7da6ff">土</div>
         </div>
         <div id="calendar-body" class="calendar-grid"></div>
     </div>
 
-    <button class="btn-add-float" onclick="openAddModal()">＋</button>
+    <div id="list-modal" class="modal"><div class="modal-content">
+        <h3 id="list-date" style="margin:0; color:var(--sweet-pink);"></h3>
+        <div id="list-container" style="margin-top:15px;"></div>
+        <button onclick="openAddModal()" class="btn-action btn-add-new">＋ あたらしい予定をかく</button>
+        <button onclick="closeModal('list-modal')" style="background:none; border:none; color:#bbb; margin-top:15px; cursor:pointer;">とじる</button>
+    </div></div>
 
-    <div id="detail-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="detail-date" style="margin-top:0; color: var(--sweet-pink); font-size:22px;"></h3>
-            <h2 id="detail-title" style="margin: 10px 0; color: #333;"></h2>
-            <div id="detail-body" class="detail-desc-box"></div>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="openAddFromDetail()" style="flex:1; padding:12px; border:none; background:#f7f7f7; border-radius:15px; font-weight:bold; color:#888;">しゅうせい</button>
-                <button onclick="deleteEventCheck()" style="flex:1; padding:12px; border:none; background:#ffeded; border-radius:15px; font-weight:bold; color:#ff8b8b;">けす</button>
-            </div>
-            <button onclick="closeModal('detail-modal')" style="background:none; border:none; color:#bbb; margin-top:20px; cursor:pointer; font-weight:bold;">とじる</button>
+    <div id="add-modal" class="modal"><div class="modal-content">
+        <h3 id="add-modal-title" style="margin:0; color:var(--soft-purple);">よていをかこう</h3>
+        <input type="hidden" id="ev-id">
+        <input type="date" id="ev-date">
+        <div style="display:flex; gap:5px;">
+            <input type="time" id="ev-time-start" style="flex:1">
+            <span style="line-height:40px;">〜</span>
+            <input type="time" id="ev-time-end" style="flex:1">
         </div>
-    </div>
-
-    <div id="add-modal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-top:0; color: var(--soft-purple); font-size:22px;">よていをかこう</h3>
-            <input type="date" id="ev-date">
-            <input type="text" id="ev-title" placeholder="イベントのなまえ">
-            <textarea id="ev-desc" placeholder="しおり（じかんなど）"></textarea>
-            
-            <label class="discord-switch">
-                <input type="checkbox" id="ev-discord" checked>
-                <span>つうちする</span>
-            </label>
-
-            <button onclick="saveEvent()" id="save-btn" class="btn-save">みんなにおしえる</button>
-            <button onclick="closeModal('add-modal')" style="background:none; border:none; color:#bbb; margin-top:15px; cursor:pointer; font-weight:bold;">やめる</button>
+        <input type="text" id="ev-title" placeholder="イベントのなまえ">
+        <textarea id="ev-desc" placeholder="しおり（もちものなど）"></textarea>
+        
+        <div class="toggle-box main-flag-box">
+            <input type="checkbox" id="ev-main"> 🌟 これをメインにする
         </div>
-    </div>
+        <div class="toggle-box">
+            <input type="checkbox" id="ev-discord" checked> 💬 Discordにつうちする
+        </div>
+
+        <button onclick="saveEvent()" id="save-btn" class="btn-save">みんなにおしえる</button>
+        <button onclick="closeModal('add-modal'); openListModal(selectedDateStr);" style="background:none; border:none; color:#bbb; margin-top:10px; cursor:pointer;">もどる</button>
+    </div></div>
 
     <script>
-        // ★ここに自分のGASのURLを貼り付けてください
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec"; 
-
         let allEvents = [];
         let currentDate = new Date(); 
         let selectedDateStr = "";
 
-        function formatDate(date) {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        }
-
         async function loadData() {
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({type: 'get_calendar'}) });
-                const rawData = await res.json();
-                allEvents = rawData.map(e => ({ ...e, dateStr: formatDate(new Date(e.date)) }));
+                allEvents = await res.json();
                 updateHero();
                 renderCalendar();
-            } catch (e) { 
-                console.error("Error"); 
-                document.getElementById('hero-title').innerText = "エラーがおきたよ😢";
-            }
+            } catch (e) { document.getElementById('hero-title').innerText = "エラー😢"; }
         }
 
         function updateHero() {
-            const nowStr = formatDate(new Date());
-            const now = new Date(nowStr);
-            const futureEvents = allEvents.map(e => ({ ...e, diff: Math.ceil((new Date(e.dateStr) - now) / 86400000) }))
-                                          .filter(e => e.diff >= 0).sort((a, b) => a.diff - b.diff);
+            const now = new Date(); now.setHours(0,0,0,0);
+            // メインフラグがついているものを優先、なければ一番近いもの
+            let target = allEvents.find(e => String(e.isMain) === "TRUE");
+            if (!target) {
+                const future = allEvents.map(e => ({ ...e, diff: Math.ceil((new Date(e.date)-now)/86400000) }))
+                                        .filter(e => e.diff >= 0).sort((a,b) => a.diff-b.diff);
+                target = future[0];
+            } else {
+                target.diff = Math.ceil((new Date(target.date)-now)/86400000);
+            }
 
+            const card = document.getElementById('hero-card');
             const titleEl = document.getElementById('hero-title');
             const dayNumEl = document.getElementById('hero-day-num');
-            const unitEl = document.querySelector('.hero-day-unit');
 
-            if (!futureEvents.length) { titleEl.innerText = "予定はないよ"; dayNumEl.innerText = "0"; return; }
-            const next = futureEvents[0];
-            titleEl.innerText = next.title;
-            dayNumEl.innerText = next.diff === 0 ? "今日" : next.diff;
-            document.getElementById('hero-day-unit').style.display = next.diff === 0 ? "none" : "inline";
+            if(!target) { titleEl.innerText = "予定はないよ"; dayNumEl.innerText = "-"; return; }
+            titleEl.innerText = target.title;
+            dayNumEl.innerText = target.diff <= 0 ? "今日" : target.diff;
+            document.getElementById('hero-day-unit').style.display = target.diff <= 0 ? "none" : "inline";
+            
+            card.className = "event-hero-card " + (target.diff <= 1 ? "wakuwaku-max" : "");
         }
 
         function renderCalendar() {
             const body = document.getElementById('calendar-body');
-            const disp = document.getElementById('month-display');
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            disp.innerText = `${year}年 ${month + 1}月`;
+            const year = currentDate.getFullYear(); const month = currentDate.getMonth();
+            document.getElementById('month-display').innerText = `${year}年 ${month + 1}月`;
             body.innerHTML = "";
+            const first = new Date(year, month, 1).getDay(); const last = new Date(year, month + 1, 0).getDate();
+            const todayStr = new Date().toISOString().split('T')[0];
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            const todayStr = formatDate(new Date());
-
-            for (let i = 0; i < firstDay; i++) body.innerHTML += `<div class="day-cell empty"></div>`;
-            for (let i = 1; i <= lastDate; i++) {
+            for(let i=0; i<first; i++) body.innerHTML += `<div class="day-cell empty"></div>`;
+            for(let i=1; i<=last; i++) {
                 const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                const isToday = (dStr === todayStr) ? "today" : "";
-                const hasEvent = allEvents.some(e => e.dateStr === dStr);
-                body.innerHTML += `<div class="day-cell ${isToday} ${hasEvent ? 'has-event' : ''}" onclick="showDetail('${dStr}', ${i})"><span class="day-num">${i}</span></div>`;
+                const dayEvs = allEvents.filter(e => e.date.includes(dStr));
+                const isToday = (new Date().toLocaleDateString() === new Date(year, month, i).toLocaleDateString()) ? "today" : "";
+                
+                let dots = dayEvs.map(() => '<div class="dot"></div>').join('');
+                body.innerHTML += `<div class="day-cell ${isToday} ${dayEvs.length?'has-event':''}" onclick="openListModal('${dStr}')">
+                    <span class="day-num">${i}</span>
+                    <div class="multi-dot">${dots}</div>
+                </div>`;
             }
         }
 
-        function changeMonth(diff) { currentDate.setMonth(currentDate.getMonth() + diff); renderCalendar(); }
-
-        function showDetail(dStr, dayNum) {
+        function openListModal(dStr) {
             selectedDateStr = dStr;
-            const ev = allEvents.find(e => e.dateStr === dStr);
-            if (ev) {
-                document.getElementById('detail-date').innerText = `${currentDate.getMonth()+1}月${dayNum}日のよてい`;
-                document.getElementById('detail-title').innerText = ev.title;
-                document.getElementById('detail-body').innerText = ev.desc || "しおりはないよ";
-                document.getElementById('detail-modal').style.display = 'block';
-            } else { openAddModal(dStr); }
+            const dayEvs = allEvents.filter(e => e.date.includes(dStr)).sort((a,b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+            document.getElementById('list-date').innerText = dStr.replace(/-/g, '/');
+            const container = document.getElementById('list-container');
+            
+            if (dayEvs.length === 0) {
+                container.innerHTML = "<p style='color:#ccc'>よていはありません</p>";
+            } else {
+                container.innerHTML = dayEvs.map(e => `
+                    <div class="ev-list-item">
+                        <div class="ev-time-tag">⏰ ${e.time || '時間未定'}</div>
+                        <div class="ev-title-text">${e.isMain === "TRUE" ? '🌟 ' : ''}${e.title}</div>
+                        ${e.desc ? `<div class="ev-desc-text">${e.desc}</div>` : ''}
+                        <div style="margin-top:8px; display:flex; gap:10px;">
+                            <button onclick="editEvent('${e.id}')" class="btn-action" style="background:#eee;">しゅうせい</button>
+                            <button onclick="deleteEvent('${e.id}')" class="btn-action" style="background:#ffeded; color:red;">けす</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('list-modal').style.display = 'block';
         }
 
-        function openAddModal(dStr) {
-            const target = dStr || formatDate(new Date());
-            document.getElementById('ev-date').value = target;
-            const ev = allEvents.find(e => e.dateStr === target);
+        function openAddModal(id = "") {
+            const ev = allEvents.find(e => e.id === id);
+            document.getElementById('ev-id').value = id;
+            document.getElementById('ev-date').value = selectedDateStr;
             document.getElementById('ev-title').value = ev ? ev.title : "";
             document.getElementById('ev-desc').value = ev ? ev.desc : "";
-            document.getElementById('add-modal').style.display = 'block'; 
+            const times = (ev && ev.time) ? ev.time.split('〜') : ["", ""];
+            document.getElementById('ev-time-start').value = times[0].trim();
+            document.getElementById('ev-time-end').value = times[1] ? times[1].trim() : "";
+            document.getElementById('ev-main').checked = ev ? ev.isMain === "TRUE" : false;
+            
+            document.getElementById('list-modal').style.display = 'none';
+            document.getElementById('add-modal').style.display = 'block';
         }
 
-        function openAddFromDetail() { closeModal('detail-modal'); openAddModal(selectedDateStr); }
-
-        async function deleteEventCheck() {
-            if(confirm("この予定を消してもいい？")) {
-                if(confirm("ほんとうに消しちゃうよ？")) {
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({type: 'delete_event', date: selectedDateStr}) });
-                    closeModal('detail-modal'); loadData();
-                }
-            }
-        }
-
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        
         async function saveEvent() {
             const title = document.getElementById('ev-title').value;
-            if(!title) return alert("なまえをかいてね！");
+            if(!title) return alert("なまえを入れてね");
+            const time = document.getElementById('ev-time-start').value + (document.getElementById('ev-time-end').value ? " 〜 " + document.getElementById('ev-time-end').value : "");
+            
             document.getElementById('save-btn').innerText = "かきこみちゅう...";
             await fetch(GAS_URL, { 
                 method: 'POST', 
-                body: JSON.stringify({type: 'save_event', date: document.getElementById('ev-date').value, title, desc: document.getElementById('ev-desc').value, sendDiscord: document.getElementById('ev-discord').checked}) 
+                body: JSON.stringify({
+                    type: 'save_event', 
+                    id: document.getElementById('ev-id').value,
+                    date: document.getElementById('ev-date').value, 
+                    title, 
+                    time,
+                    desc: document.getElementById('ev-desc').value, 
+                    isMain: document.getElementById('ev-main').checked,
+                    sendDiscord: document.getElementById('ev-discord').checked
+                }) 
             });
-            closeModal('add-modal'); document.getElementById('save-btn').innerText = "みんなにおしえる"; loadData();
+            closeModal('add-modal'); loadData();
         }
+
+        async function deleteEvent(id) {
+            if(!confirm("本当にけしてもいい？")) return;
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({type: 'delete_event', id}) });
+            loadData().then(() => openListModal(selectedDateStr));
+        }
+
+        function editEvent(id) { openAddModal(id); }
+        function changeMonth(n) { currentDate.setMonth(currentDate.getMonth()+n); renderCalendar(); }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
         loadData();
     </script>
