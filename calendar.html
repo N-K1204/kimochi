@@ -7,28 +7,42 @@
     <style>
         :root { --sweet-pink: #ff9dbd; --soft-purple: #b49cff; --main-text: #5d5d5d; }
         body { background: #fffcfd; font-family: 'Hiragino Sans', sans-serif; margin: 0; padding: 0; color: var(--main-text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* --- ヘッダー --- */
         .app-header { flex: 0 0 40px; padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 1px solid #fdf0f5; z-index: 100; position: relative; }
         .btn-back { text-decoration: none; background: #f7f7f7; padding: 4px 12px; border-radius: 50px; color: #888; font-size: 11px; font-weight: bold; }
         .header-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 15px; font-weight: bold; color: var(--sweet-pink); }
 
-        /* 上半分：ヒーローエリア */
-        .hero-section { flex: 0 0 20%; display: flex; align-items: center; justify-content: center; padding: 5px 10px; background: linear-gradient(to bottom, #fff, #fff8fb); }
-        .event-hero-card { width: 90%; max-width: 320px; background: white; border-radius: 20px; padding: 10px; text-align: center; box-shadow: 0 8px 20px rgba(255, 139, 176, 0.15); border: 2px solid white; position: relative; overflow: hidden; }
+        /* --- 上半分：ヒーローエリア（アニメ強化版） --- */
+        .hero-section { flex: 0 0 22%; display: flex; align-items: center; justify-content: center; padding: 5px 10px; background: linear-gradient(to bottom, #fff, #fff8fb); }
+        .event-hero-card { width: 90%; max-width: 320px; background: white; border-radius: 20px; padding: 10px 15px; text-align: center; box-shadow: 0 8px 20px rgba(255, 139, 176, 0.15); border: 2px solid white; position: relative; overflow: hidden; transition: all 0.5s ease; }
+
+        /* ランク別アニメーション */
+        .wakuwaku-normal { animation: float-cute 3s infinite ease-in-out; }
+        @keyframes float-cute { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .wakuwaku-mid { animation: heartbeat 1s infinite ease-in-out; border-color: #ffc2d4; box-shadow: 0 8px 25px rgba(255, 139, 176, 0.3); }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 10% { transform: scale(1.05); } 20% { transform: scale(1); } }
+        .wakuwaku-max { animation: shake-shine 0.4s infinite alternate; border: 3px solid var(--sweet-pink); }
+        @keyframes shake-shine { 0% { transform: rotate(-1deg) scale(1.05); } 100% { transform: rotate(1deg) scale(1.05); box-shadow: 0 10px 30px rgba(255, 139, 176, 0.5); } }
+
         .hero-shine { position: absolute; top: -50%; left: -60%; width: 20%; height: 200%; background: rgba(255, 255, 255, 0.6); transform: rotate(30deg); animation: shine-move 4s infinite; z-index: 1; }
         @keyframes shine-move { 0% { left: -60%; } 20% { left: 120%; } 100% { left: 120%; } }
-        .wakuwaku-max { animation: shake-shine 0.4s infinite alternate; border: 3px solid var(--sweet-pink); }
-        @keyframes shake-shine { 0% { transform: rotate(-1deg) scale(1.02); } 100% { transform: rotate(1deg) scale(1.02); } }
-        .hero-title-text { font-size: 17px; margin: 2px 0; color: #444; font-weight: 900; }
-        .hero-day-val { font-size: 32px; font-weight: 900; color: var(--sweet-pink); line-height: 1; }
 
-        /* 下半分：カレンダー */
+        .hero-label { position: relative; z-index: 2; font-size: 9px; color: var(--sweet-pink); font-weight: bold; letter-spacing: 1.5px; }
+        .hero-title-text { position: relative; z-index: 2; font-size: 18px; margin: 3px 0; color: #444; font-weight: 900; }
+        .hero-days-wrap { position: relative; z-index: 2; }
+        .hero-day-val { font-size: 38px; font-weight: 900; color: var(--sweet-pink); line-height: 1; }
+
+        /* --- 下半分：カレンダー --- */
         .calendar-section { flex: 1; padding: 0 10px 10px; background: white; border-top-left-radius: 30px; border-top-right-radius: 30px; box-shadow: 0 -8px 25px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
         .calendar-nav { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px 2px; }
         .nav-month { font-size: 16px; font-weight: 900; color: #555; }
         .btn-nav { background: #fff0f5; border: none; width: 30px; height: 30px; border-radius: 10px; color: var(--sweet-pink); font-size: 18px; }
+
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; margin-top: 0; }
         .weekday-wrap { height: 18px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 2px; }
         .weekday { text-align: center; font-size: 10px; font-weight: bold; color: #ddd; line-height: 18px; }
+        
         .day-cell { background: #fafafa; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #f8f8f8; height: 100%; position: relative; }
         .has-event { background: #fff0f5; border: 1px solid #ffdeeb; }
         .has-event .day-num { background: var(--sweet-pink); color: white !important; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
@@ -37,23 +51,31 @@
         .multi-dot { position: absolute; bottom: 2px; display: flex; gap: 2px; }
         .dot { width: 4px; height: 4px; background: var(--sweet-pink); border-radius: 50%; }
 
-        /* モーダル */
+        /* --- モーダル --- */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; z-index: 1000; backdrop-filter: blur(8px); }
-        .modal-content { background: white; width: 85%; max-width: 340px; margin: 5vh auto; padding: 20px; border-radius: 30px; text-align: center; max-height: 90vh; overflow-y: auto; }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border-radius: 10px; border: 1px solid #fdf0f5; font-size: 14px; outline: none; box-sizing: border-box; font-family: inherit; }
-        
-        /* 予定リストの表示 */
+        .modal-content { background: white; width: 85%; max-width: 340px; margin: 5vh auto; padding: 20px; border-radius: 30px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-height: 85vh; overflow-y: auto; }
+        input, textarea { width: 100%; padding: 10px; margin: 6px 0; border-radius: 12px; border: 2px solid #fdf0f5; font-size: 14px; outline: none; box-sizing: border-box; font-family: inherit; }
+        textarea { height: 60px; resize: none; }
+
+        /* 設定グループ（バリデーション対応済み） */
+        .settings-group { background: #f8f9fa; border-radius: 20px; padding: 10px; margin: 15px 0; border: 1px solid #eee; }
+        .setting-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; cursor: pointer; }
+        .setting-item:first-child { border-bottom: 1px solid #eee; }
+        .setting-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: bold; color: #666; }
+        .setting-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--soft-purple); }
+
+        /* リスト表示 */
         .ev-list-item { background: #fff9fb; padding: 10px; border-radius: 15px; text-align: left; margin-bottom: 10px; border: 1px solid #ffeff5; }
         .ev-time-tag { font-size: 11px; color: var(--sweet-pink); font-weight: bold; }
         .ev-title-text { font-size: 15px; font-weight: bold; margin: 3px 0; }
         .ev-desc-text { font-size: 12px; color: #888; white-space: pre-wrap; }
+        .detail-desc-box { background: #f9f9f9; padding: 10px; border-radius: 12px; text-align: left; font-size: 13px; margin: 8px 0; border: 1px dashed var(--sweet-pink); color: #666; white-space: pre-wrap; }
 
+        /* ボタン */
         .btn-action { padding: 8px 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 12px; }
         .btn-add-new { background: var(--soft-purple); color: white; width: 100%; padding: 12px; margin-top: 10px; }
-        .btn-save { width: 100%; padding: 14px; background: var(--soft-purple); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; margin-top: 10px; }
-        
-        .toggle-box { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0; font-size: 13px; font-weight: bold; color: #5865F2; }
-        .main-flag-box { color: #ff8b00; background: #fff8e1; padding: 8px; border-radius: 10px; }
+        .btn-save { width: 100%; padding: 14px; background: var(--soft-purple); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; margin-top: 10px; box-shadow: 0 4px 0 #9575cd; }
+        .btn-save:active { transform: translateY(2px); box-shadow: none; }
     </style>
 </head>
 <body>
@@ -83,7 +105,7 @@
             <button class="btn-nav" onclick="changeMonth(1)">›</button>
         </div>
         <div class="weekday-wrap">
-            <div class="weekday" style="color:#ff9dbd">日</div><div class="weekday">月</div><div class="weekday" >火</div><div class="weekday">水</div><div class="weekday">木</div><div class="weekday">金</div><div class="weekday" style="color:#7da6ff">土</div>
+            <div class="weekday" style="color:#ff9dbd">日</div><div class="weekday">月</div><div class="weekday">火</div><div class="weekday">水</div><div class="weekday">木</div><div class="weekday">金</div><div class="weekday" style="color:#7da6ff">土</div>
         </div>
         <div id="calendar-body" class="calendar-grid"></div>
     </div>
@@ -101,21 +123,25 @@
         <input type="date" id="ev-date">
         <div style="display:flex; gap:5px;">
             <input type="time" id="ev-time-start" style="flex:1">
-            <span style="line-height:40px;">〜</span>
+            <span style="line-height:40px; color:#ccc;">〜</span>
             <input type="time" id="ev-time-end" style="flex:1">
         </div>
         <input type="text" id="ev-title" placeholder="イベントのなまえ">
         <textarea id="ev-desc" placeholder="しおり（もちものなど）"></textarea>
         
-        <div class="toggle-box main-flag-box">
-            <input type="checkbox" id="ev-main"> 🌟 これをメインにする
-        </div>
-        <div class="toggle-box">
-            <input type="checkbox" id="ev-discord" checked> 💬 Discordにつうちする
+        <div class="settings-group">
+            <label class="setting-item">
+                <span class="setting-label">🌟 メインにする</span>
+                <input type="checkbox" id="ev-main">
+            </label>
+            <label class="setting-item">
+                <span class="setting-label">💬 みんなに通知</span>
+                <input type="checkbox" id="ev-discord" checked>
+            </label>
         </div>
 
         <button onclick="saveEvent()" id="save-btn" class="btn-save">みんなにおしえる</button>
-        <button onclick="closeModal('add-modal'); openListModal(selectedDateStr);" style="background:none; border:none; color:#bbb; margin-top:10px; cursor:pointer;">もどる</button>
+        <button onclick="closeModal('add-modal'); openListModal(selectedDateStr);" style="background:none; border:none; color:#bbb; margin-top:15px; cursor:pointer;">もどる</button>
     </div></div>
 
     <script>
@@ -123,6 +149,13 @@
         let allEvents = [];
         let currentDate = new Date(); 
         let selectedDateStr = "";
+
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
 
         async function loadData() {
             try {
@@ -134,8 +167,8 @@
         }
 
         function updateHero() {
-            const now = new Date(); now.setHours(0,0,0,0);
-            // メインフラグがついているものを優先、なければ一番近いもの
+            const nowStr = formatDate(new Date());
+            const now = new Date(nowStr);
             let target = allEvents.find(e => String(e.isMain) === "TRUE");
             if (!target) {
                 const future = allEvents.map(e => ({ ...e, diff: Math.ceil((new Date(e.date)-now)/86400000) }))
@@ -149,12 +182,21 @@
             const titleEl = document.getElementById('hero-title');
             const dayNumEl = document.getElementById('hero-day-num');
 
-            if(!target) { titleEl.innerText = "予定はないよ"; dayNumEl.innerText = "-"; return; }
+            if(!target) { 
+                titleEl.innerText = "予定はないよ"; 
+                dayNumEl.innerText = "-"; 
+                card.className = "event-hero-card wakuwaku-normal";
+                return; 
+            }
+
             titleEl.innerText = target.title;
             dayNumEl.innerText = target.diff <= 0 ? "今日" : target.diff;
             document.getElementById('hero-day-unit').style.display = target.diff <= 0 ? "none" : "inline";
             
-            card.className = "event-hero-card " + (target.diff <= 1 ? "wakuwaku-max" : "");
+            card.className = "event-hero-card";
+            if (target.diff <= 1) card.classList.add("wakuwaku-max");
+            else if (target.diff === 2) card.classList.add("wakuwaku-mid");
+            else card.classList.add("wakuwaku-normal");
         }
 
         function renderCalendar() {
@@ -163,19 +205,15 @@
             document.getElementById('month-display').innerText = `${year}年 ${month + 1}月`;
             body.innerHTML = "";
             const first = new Date(year, month, 1).getDay(); const last = new Date(year, month + 1, 0).getDate();
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = formatDate(new Date());
 
             for(let i=0; i<first; i++) body.innerHTML += `<div class="day-cell empty"></div>`;
             for(let i=1; i<=last; i++) {
                 const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                 const dayEvs = allEvents.filter(e => e.date.includes(dStr));
-                const isToday = (new Date().toLocaleDateString() === new Date(year, month, i).toLocaleDateString()) ? "today" : "";
-                
+                const isToday = (dStr === todayStr) ? "today" : "";
                 let dots = dayEvs.map(() => '<div class="dot"></div>').join('');
-                body.innerHTML += `<div class="day-cell ${isToday} ${dayEvs.length?'has-event':''}" onclick="openListModal('${dStr}')">
-                    <span class="day-num">${i}</span>
-                    <div class="multi-dot">${dots}</div>
-                </div>`;
+                body.innerHTML += `<div class="day-cell ${isToday} ${dayEvs.length?'has-event':''}" onclick="openListModal('${dStr}')"><span class="day-num">${i}</span><div class="multi-dot">${dots}</div></div>`;
             }
         }
 
@@ -184,22 +222,8 @@
             const dayEvs = allEvents.filter(e => e.date.includes(dStr)).sort((a,b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
             document.getElementById('list-date').innerText = dStr.replace(/-/g, '/');
             const container = document.getElementById('list-container');
-            
-            if (dayEvs.length === 0) {
-                container.innerHTML = "<p style='color:#ccc'>よていはありません</p>";
-            } else {
-                container.innerHTML = dayEvs.map(e => `
-                    <div class="ev-list-item">
-                        <div class="ev-time-tag">⏰ ${e.time || '時間未定'}</div>
-                        <div class="ev-title-text">${e.isMain === "TRUE" ? '🌟 ' : ''}${e.title}</div>
-                        ${e.desc ? `<div class="ev-desc-text">${e.desc}</div>` : ''}
-                        <div style="margin-top:8px; display:flex; gap:10px;">
-                            <button onclick="editEvent('${e.id}')" class="btn-action" style="background:#eee;">しゅうせい</button>
-                            <button onclick="deleteEvent('${e.id}')" class="btn-action" style="background:#ffeded; color:red;">けす</button>
-                        </div>
-                    </div>
-                `).join('');
-            }
+            if (dayEvs.length === 0) { container.innerHTML = "<p style='color:#ccc'>よていはありません</p>"; }
+            else { container.innerHTML = dayEvs.map(e => `<div class="ev-list-item"><div class="ev-time-tag">⏰ ${e.time || '時間未定'}</div><div class="ev-title-text">${e.isMain === "TRUE" ? '🌟 ' : ''}${e.title}</div>${e.desc ? `<div class="ev-desc-text">${e.desc}</div>` : ''}<div style="margin-top:8px; display:flex; gap:10px;"><button onclick="editEvent('${e.id}')" class="btn-action" style="background:#eee;">しゅうせい</button><button onclick="deleteEvent('${e.id}')" class="btn-action" style="background:#ffeded; color:red;">けす</button></div></div>`).join(''); }
             document.getElementById('list-modal').style.display = 'block';
         }
 
@@ -209,11 +233,10 @@
             document.getElementById('ev-date').value = selectedDateStr;
             document.getElementById('ev-title').value = ev ? ev.title : "";
             document.getElementById('ev-desc').value = ev ? ev.desc : "";
-            const times = (ev && ev.time) ? ev.time.split('〜') : ["", ""];
+            const times = (ev && ev.time) ? ev.time.split(' 〜 ') : ["", ""];
             document.getElementById('ev-time-start').value = times[0].trim();
             document.getElementById('ev-time-end').value = times[1] ? times[1].trim() : "";
-            document.getElementById('ev-main').checked = ev ? ev.isMain === "TRUE" : false;
-            
+            document.getElementById('ev-main').checked = ev ? String(ev.isMain) === "TRUE" : false;
             document.getElementById('list-modal').style.display = 'none';
             document.getElementById('add-modal').style.display = 'block';
         }
@@ -222,21 +245,8 @@
             const title = document.getElementById('ev-title').value;
             if(!title) return alert("なまえを入れてね");
             const time = document.getElementById('ev-time-start').value + (document.getElementById('ev-time-end').value ? " 〜 " + document.getElementById('ev-time-end').value : "");
-            
             document.getElementById('save-btn').innerText = "かきこみちゅう...";
-            await fetch(GAS_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({
-                    type: 'save_event', 
-                    id: document.getElementById('ev-id').value,
-                    date: document.getElementById('ev-date').value, 
-                    title, 
-                    time,
-                    desc: document.getElementById('ev-desc').value, 
-                    isMain: document.getElementById('ev-main').checked,
-                    sendDiscord: document.getElementById('ev-discord').checked
-                }) 
-            });
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: 'save_event', id: document.getElementById('ev-id').value, date: document.getElementById('ev-date').value, title, time, desc: document.getElementById('ev-desc').value, isMain: document.getElementById('ev-main').checked, sendDiscord: document.getElementById('ev-discord').checked }) });
             closeModal('add-modal'); loadData();
         }
 
@@ -249,7 +259,6 @@
         function editEvent(id) { openAddModal(id); }
         function changeMonth(n) { currentDate.setMonth(currentDate.getMonth()+n); renderCalendar(); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
         loadData();
     </script>
 </body>
