@@ -13,19 +13,34 @@
         .btn-back { text-decoration: none; background: #f7f7f7; padding: 3px 10px; border-radius: 50px; color: #888; font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 3px; }
         .header-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 15px; font-weight: bold; color: var(--sweet-pink); }
 
-        /* --- ヒーローエリア --- */
+        /* --- ヒーローエリア（可愛いラベル追加） --- */
         .hero-section { flex: 0 0 22%; display: flex; align-items: center; justify-content: center; padding: 5px 10px; background: linear-gradient(to bottom, #fff, #fff8fb); }
-        .event-hero-card { width: 95%; max-width: 340px; background: white; border-radius: 20px; padding: 12px 10px; text-align: center; box-shadow: 0 8px 20px rgba(255, 139, 176, 0.15); border: 2px solid white; position: relative; overflow: hidden; }
+        .event-hero-card { width: 95%; max-width: 340px; background: white; border-radius: 20px; padding: 15px 10px; text-align: center; box-shadow: 0 8px 20px rgba(255, 139, 176, 0.15); border: 2px solid white; position: relative; overflow: hidden; }
+        
+        /* NEXT MAIN EVENT の可愛いラベル */
+        .hero-label { 
+            display: inline-block;
+            background: linear-gradient(135deg, #ff9dbd, #ffb7ce);
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 3px 12px;
+            border-radius: 50px;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            box-shadow: 0 3px 10px rgba(255, 157, 189, 0.4);
+            animation: float 2s infinite ease-in-out;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
         .wakuwaku-max { animation: shake-shine 0.4s infinite alternate; border: 3px solid var(--sweet-pink); }
         @keyframes shake-shine { 0% { transform: rotate(-0.5deg) scale(1.02); } 100% { transform: rotate(0.5deg) scale(1.02); } }
-        .hero-title-text { font-size: 16px; margin: 3px 0; color: #444; font-weight: 900; }
-        .hero-day-val { font-size: 34px; font-weight: 900; color: var(--sweet-pink); line-height: 1; }
+        
+        .hero-title-text { font-size: 18px; margin: 5px 0; color: #444; font-weight: 900; }
+        .hero-day-val { font-size: 38px; font-weight: 900; color: var(--sweet-pink); line-height: 1; }
 
         /* --- カレンダー --- */
         .calendar-section { flex: 1; padding: 0 5px 10px; background: white; border-top-left-radius: 30px; border-top-right-radius: 30px; box-shadow: 0 -8px 25px rgba(0,0,0,0.03); display: flex; flex-direction: column; overflow: hidden; }
-        .calendar-nav { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px 4px; }
-        .nav-month { font-size: 16px; font-weight: 900; color: #555; }
-        .btn-nav { background: #fff0f5; border: none; width: 30px; height: 30px; border-radius: 10px; color: var(--sweet-pink); font-size: 18px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; flex: 1; grid-auto-rows: 1fr; }
         .weekday-wrap { height: 18px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
         .weekday { text-align: center; font-size: 10px; font-weight: bold; color: #ddd; }
@@ -33,9 +48,7 @@
         .day-cell { background: #fafafa; border-radius: 6px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; cursor: pointer; border: 1px solid #f0f0f0; padding: 2px; overflow: hidden; position: relative; }
         .day-num { font-size: 11px; font-weight: bold; color: #aaa; margin-bottom: 1px; width: 100%; z-index: 2; }
         .today { border: 2px solid var(--soft-purple) !important; background: #fdfbff; }
-
         .day-cell.has-main { border: 2.5px solid var(--main-yellow) !important; background: var(--light-yellow); }
-        .day-cell.has-main .day-num { color: #ccac00; }
 
         .mini-event { width: 100%; font-size: 8px; line-height: 1.2; margin-bottom: 1px; padding: 2px 3px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; color: white; font-weight: bold; }
         .ev-pink { background-color: #ff9dbd; }
@@ -44,36 +57,21 @@
         .ev-orange { background-color: #ffb366; }
         .main-ev { background-color: #ffc107 !important; color: #fff; }
 
-        /* --- モーダル（右端のズレを完全に修正） --- */
+        /* --- モーダル --- */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; z-index: 1000; backdrop-filter: blur(8px); }
-        .modal-content { 
-            background: white; width: 90%; max-width: 340px; margin: 4vh auto; padding: 20px; border-radius: 25px; 
-            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; box-sizing: border-box; 
-        }
-
-        .input-group { width: 100%; box-sizing: border-box; margin-bottom: 8px; text-align: left; }
-        
-        /* 全ての入力欄の幅を揃える */
-        input[type="date"], input[type="text"], textarea, .time-wrap { width: 100% !important; box-sizing: border-box !important; }
-        input[type="date"], input[type="text"], textarea { padding: 12px; margin: 4px 0; border-radius: 12px; border: 2px solid #fdf0f5; font-size: 14px; display: block; }
-
-        .time-wrap { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
-        .time-wrap input[type="time"] { flex: 1; padding: 10px; border-radius: 12px; border: 2px solid #fdf0f5; font-size: 14px; box-sizing: border-box; min-width: 0; }
-
+        .modal-content { background: white; width: 90%; max-width: 340px; margin: 4vh auto; padding: 20px; border-radius: 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+        input[type="date"], input[type="text"], textarea { width: 100% !important; padding: 12px; margin: 4px 0; border-radius: 12px; border: 2px solid #fdf0f5; font-size: 14px; box-sizing: border-box; display: block; }
+        .time-wrap { display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; }
+        .time-wrap input[type="time"] { flex: 1; padding: 10px; border-radius: 12px; border: 2px solid #fdf0f5; font-size: 14px; box-sizing: border-box; }
         .settings-container { background: #f8f9fa; border-radius: 15px; padding: 12px; margin: 12px 0; border: 1px solid #eee; box-sizing: border-box; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
-        .setting-row:first-child { border-bottom: 1px solid #eee; }
-        .setting-label { font-size: 13px; font-weight: bold; color: #666; }
-        input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--soft-purple); cursor: pointer; margin: 0; }
-
-        .color-selector { display: flex; justify-content: space-around; margin: 10px 0; }
+        input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--soft-purple); margin: 0; }
         .color-dot { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s; }
         .color-dot[data-color="pink"] { background-color: #ff9dbd; }
         .color-dot[data-color="blue"] { background-color: #7da6ff; }
         .color-dot[data-color="green"] { background-color: #7fd4a3; }
         .color-dot[data-color="orange"] { background-color: #ffb366; }
         .color-dot.selected { transform: scale(1.15); border-color: #888; }
-
         .btn-save { width: 100%; padding: 15px; background: var(--soft-purple); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: bold; margin-top: 5px; box-shadow: 0 4px 0 #9575cd; }
         .ev-list-item { background: #fff9fb; padding: 10px; border-radius: 15px; text-align: left; margin-bottom: 10px; border: 1px solid #ffeff5; }
     </style>
@@ -88,7 +86,7 @@
 
     <div class="hero-section">
         <div id="hero-card" class="event-hero-card">
-            <div class="hero-label">NEXT MAIN EVENT</div>
+            <div class="hero-label">NEXT MAIN EVENT 🎀</div>
             <div id="hero-title" class="hero-title-text">よみこみちゅう...</div>
             <div id="hero-days-wrap">
                 <span id="hero-day-num" class="hero-day-val">-</span>
@@ -98,9 +96,9 @@
     </div>
 
     <div class="calendar-section">
-        <div class="calendar-nav">
+        <div class="calendar-nav" style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px 4px;">
             <button class="btn-nav" onclick="changeMonth(-1)">‹</button>
-            <div id="month-display" class="nav-month"></div>
+            <div id="month-display" style="font-size:16px; font-weight:900; color:#555;"></div>
             <button class="btn-nav" onclick="changeMonth(1)">›</button>
         </div>
         <div class="weekday-wrap">
@@ -118,47 +116,25 @@
 
     <div id="add-modal" class="modal"><div class="modal-content">
         <h3 id="modal-ui-title" style="margin:0 0 15px 0; color:var(--soft-purple); font-size:18px;">よていをかこう</h3>
-        
         <input type="hidden" id="ev-id">
-
-        <div class="input-group">
-            <input type="date" id="ev-date">
-        </div>
-
+        <div class="input-group"><input type="date" id="ev-date"></div>
         <div class="input-group">
             <div class="time-wrap">
-                <input type="time" id="ev-time-start">
-                <span style="color:#ccc; font-weight:bold;">〜</span>
-                <input type="time" id="ev-time-end">
+                <input type="time" id="ev-time-start"><span style="color:#ccc; font-weight:bold;">〜</span><input type="time" id="ev-time-end">
             </div>
         </div>
-
-        <div class="input-group">
-            <input type="text" id="ev-title" placeholder="イベントのなまえ">
-        </div>
-
-        <div class="color-selector" id="color-picker">
+        <div class="input-group"><input type="text" id="ev-title" placeholder="イベントのなまえ"></div>
+        <div class="color-selector" id="color-picker" style="display:flex; justify-content:space-around; margin:10px 0;">
             <div class="color-dot" data-color="pink" onclick="selectColor(this)"></div>
             <div class="color-dot" data-color="blue" onclick="selectColor(this)"></div>
             <div class="color-dot" data-color="green" onclick="selectColor(this)"></div>
             <div class="color-dot" data-color="orange" onclick="selectColor(this)"></div>
         </div>
-
-        <div class="input-group">
-            <textarea id="ev-desc" placeholder="詳細・しおりなど"></textarea>
-        </div>
-
+        <div class="input-group"><textarea id="ev-desc" placeholder="もちもの・しおりなど"></textarea></div>
         <div class="settings-container">
-            <div class="setting-row">
-                <span class="setting-label">🌟 メインにする</span>
-                <input type="checkbox" id="ev-main">
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">💬 みんなにつうち</span>
-                <input type="checkbox" id="ev-discord" checked>
-            </div>
+            <div class="setting-row"><span class="setting-label">🌟 メインにする</span><input type="checkbox" id="ev-main"></div>
+            <div class="setting-row" style="border-top:1px solid #eee; padding-top:8px; margin-top:8px;"><span class="setting-label">💬 みんなにつうち</span><input type="checkbox" id="ev-discord" checked></div>
         </div>
-
         <button onclick="saveEvent()" id="save-btn" class="btn-save">ほぞんする</button>
         <button onclick="closeAddModal()" style="background:none; border:none; color:#bbb; margin-top:12px; font-size:12px;">もどる</button>
     </div></div>
@@ -191,20 +167,17 @@
         function updateHero() {
             const nowStr = getSafeDateStr(new Date());
             let target = allEvents.find(e => String(e.isMain).trim().toUpperCase() === "TRUE");
-            const card = document.getElementById('hero-card');
             const dayNumEl = document.getElementById('hero-day-num');
             const dayUnit = document.getElementById('hero-day-unit');
-
             if(!target) { 
                 document.getElementById('hero-title').innerText = "おもなよていなし"; 
                 dayNumEl.innerText = "-"; dayUnit.style.display = "none";
-                card.className = "event-hero-card";
             } else {
                 const diff = Math.ceil((new Date(getSafeDateStr(new Date(target.date))).getTime() - new Date(nowStr).getTime()) / 86400000);
                 document.getElementById('hero-title').innerText = target.title;
                 dayNumEl.innerText = diff <= 0 ? "今日" : diff;
                 dayUnit.style.display = diff <= 0 ? "none" : "inline";
-                card.className = "event-hero-card " + (diff <= 1 ? "wakuwaku-max" : "");
+                document.getElementById('hero-card').className = "event-hero-card " + (diff <= 1 ? "wakuwaku-max" : "");
             }
         }
 
@@ -213,15 +186,13 @@
             const year = currentDate.getFullYear(); const month = currentDate.getMonth();
             document.getElementById('month-display').innerText = `${year}年 ${month + 1}月`;
             body.innerHTML = "";
-            const todayStr = getSafeDateStr(new Date());
             const first = new Date(year, month, 1).getDay(); const last = new Date(year, month + 1, 0).getDate();
+            const todayStr = getSafeDateStr(new Date());
             for(let i=0; i<first; i++) body.innerHTML += `<div class="day-cell" style="background:transparent; border:none;"></div>`;
             for(let i=1; i<=last; i++) {
                 const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                 const dayEvs = allEvents.filter(e => getSafeDateStr(new Date(e.date)) === dStr).sort((a,b) => (a.time || "").localeCompare(b.time || ""));
-                const isToday = (dStr === todayStr) ? "today" : "";
                 const hasMain = dayEvs.some(e => String(e.isMain).trim().toUpperCase() === "TRUE");
-                
                 let miniEvHtml = "";
                 dayEvs.forEach((e, idx) => {
                     if(idx < 2) {
@@ -229,16 +200,16 @@
                         miniEvHtml += `<div class="mini-event ev-${e.color||'pink'} ${String(e.isMain).toUpperCase()==='TRUE'?'main-ev':''}">${t ? '<span style="opacity:0.8;margin-right:1px;">'+t+'</span>' : ""}${e.title}</div>`;
                     } else if(idx === 2) miniEvHtml += `<div style="font-size:7px; color:#ccc; text-align:center;">+${dayEvs.length-2}</div>`;
                 });
-                body.innerHTML += `<div class="day-cell ${isToday} ${hasMain ? 'has-main' : ''}" onclick="openListModal('${dStr}')"><div class="day-num">${i}</div>${miniEvHtml}</div>`;
+                body.innerHTML += `<div class="day-cell ${dStr===todayStr?'today':''} ${hasMain?'has-main':''}" onclick="openListModal('${dStr}')"><div class="day-num">${i}</div>${miniEvHtml}</div>`;
             }
         }
 
         function openListModal(dStr) {
             selectedDateStr = dStr;
-            const dayEvs = allEvents.filter(e => getSafeDateStr(new Date(e.date)) === dStr).sort((a,b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+            const dayEvs = allEvents.filter(e => getSafeDateStr(new Date(e.date)) === dStr);
             document.getElementById('list-date').innerText = dStr.replace(/-/g, '/');
             const container = document.getElementById('list-container');
-            container.innerHTML = dayEvs.length === 0 ? "<p style='color:#ccc'>よていなし</p>" : dayEvs.map(ev => `
+            container.innerHTML = dayEvs.length === 0 ? "<p>よていなし</p>" : dayEvs.map(ev => `
                 <div class="ev-list-item" style="border-left: 5px solid ${getColorCode(ev.color)}">
                     <div style="font-size:11px; color:#888;">⏰ ${ev.time || '未定'}</div>
                     <div style="font-size:14px; font-weight:bold;">${String(ev.isMain).toUpperCase()==="TRUE" ? '🌟 ' : ''}${ev.title}</div>
@@ -252,29 +223,23 @@
 
         function getColorCode(c) { return { pink:'#ff9dbd', blue:'#7da6ff', green:'#7fd4a3', orange:'#ffb366' }[c] || '#ff9dbd'; }
 
-        // ★修正ボタンの動作
         function editEvent(id) {
             const ev = allEvents.find(e => String(e.id) === String(id));
             if(!ev) return;
-            
             document.getElementById('modal-ui-title').innerText = "よていをなおす";
             document.getElementById('ev-id').value = id;
             document.getElementById('ev-date').value = getSafeDateStr(new Date(ev.date));
             document.getElementById('ev-title').value = ev.title;
             document.getElementById('ev-desc').value = ev.desc || "";
-            
             const times = ev.time ? ev.time.split(' 〜 ') : ["", ""];
-            document.getElementById('ev-time-start').value = times[0] ? times[0].trim() : "";
+            document.getElementById('ev-time-start').value = times[0].trim();
             document.getElementById('ev-time-end').value = times[1] ? times[1].trim() : "";
             document.getElementById('ev-main').checked = String(ev.isMain).toUpperCase() === "TRUE";
-            
-            // 色のセット
             selectedColor = ev.color || "pink";
             document.querySelectorAll('.color-dot').forEach(d => {
                 d.classList.remove('selected');
                 if(d.dataset.color === selectedColor) d.classList.add('selected');
             });
-
             document.getElementById('list-modal').style.display = 'none';
             document.getElementById('add-modal').style.display = 'block';
         }
@@ -285,14 +250,11 @@
             document.getElementById('ev-date').value = selectedDateStr;
             document.getElementById('ev-title').value = "";
             document.getElementById('ev-desc').value = "";
-            document.getElementById('ev-time-start').value = "";
-            document.getElementById('ev-time-end').value = "";
+            document.getElementById('ev-time-start').value = ""; document.getElementById('ev-time-end').value = "";
             document.getElementById('ev-main').checked = false;
-            // デフォルト色のセット
             document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
             document.querySelector('.color-dot[data-color="pink"]').classList.add('selected');
             selectedColor = "pink";
-
             document.getElementById('list-modal').style.display = 'none';
             document.getElementById('add-modal').style.display = 'block';
         }
@@ -301,48 +263,23 @@
             const title = document.getElementById('ev-title').value; if(!title) return alert("なまえをいれてね");
             const time = document.getElementById('ev-time-start').value + (document.getElementById('ev-time-end').value ? " 〜 " + document.getElementById('ev-time-end').value : "");
             document.getElementById('save-btn').innerText = "ほぞんちゅう...";
-            
-            const payload = { 
-                type: 'save_event', 
-                id: document.getElementById('ev-id').value, 
-                date: document.getElementById('ev-date').value, 
-                title, 
-                time, 
-                color: selectedColor, 
-                desc: document.getElementById('ev-desc').value, 
-                isMain: document.getElementById('ev-main').checked, 
-                sendDiscord: document.getElementById('ev-discord').checked 
-            };
-
             try {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                closeModal('add-modal'); 
-                await loadData(); 
-                openListModal(selectedDateStr);
-            } catch(e) {
-                alert("エラーが発生しました");
-            } finally { 
-                document.getElementById('save-btn').innerText = "ほぞんする"; 
-            }
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: 'save_event', id: document.getElementById('ev-id').value, date: document.getElementById('ev-date').value, title, time, color: selectedColor, desc: document.getElementById('ev-desc').value, isMain: document.getElementById('ev-main').checked, sendDiscord: document.getElementById('ev-discord').checked }) });
+                closeModal('add-modal'); await loadData(); openListModal(selectedDateStr);
+            } finally { document.getElementById('save-btn').innerText = "ほぞんする"; }
         }
 
         async function deleteEvent(id) {
             if(!confirm("ほんとうに、けしてもいい？")) return;
             try {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({type: 'delete_event', id: String(id)}) });
-                await loadData(); 
-                openListModal(selectedDateStr);
+                await loadData(); openListModal(selectedDateStr);
             } catch(e) { alert("つうしんエラー"); }
         }
 
-        function closeAddModal() {
-            closeModal('add-modal');
-            openListModal(selectedDateStr);
-        }
-
+        function closeAddModal() { closeModal('add-modal'); openListModal(selectedDateStr); }
         function changeMonth(n) { currentDate.setMonth(currentDate.getMonth()+n); renderCalendar(); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        
         loadData();
     </script>
 </body>
