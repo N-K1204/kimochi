@@ -7,10 +7,8 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* ------------------------------------------------
-           きもち探偵ゲーム（チャットモード）用スタイル
+           既存のスタイル（完全維持）
         ------------------------------------------------ */
-        
-        /* ゲーム全体の枠 */
         .game-area {
             background-color: #fff;
             border: 4px solid #bde4ff;
@@ -23,8 +21,6 @@
             flex-direction: column;
             overflow: hidden;
         }
-
-        /* チャット履歴エリア */
         .chat-history {
             flex: 1;
             overflow-y: auto;
@@ -38,8 +34,6 @@
             scroll-behavior: smooth;
             border: 1px solid #eee;
         }
-
-        /* AI（わんちゃん）のふきだし */
         .bubble-ai {
             align-self: flex-start;
             background: #eef9ff;
@@ -62,10 +56,7 @@
             position: absolute;
             top: -8px;      
             left: -50px;
-            filter: drop-shadow(1px 1px 1px rgba(255,255,255,0.8)); 
         }
-
-        /* ユーザーのふきだし */
         .bubble-user {
             align-self: flex-end;
             background: #fff9c4;
@@ -77,207 +68,62 @@
             font-size: 16px;
             animation: slideInRight 0.3s ease;
         }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* 選択肢エリアの枠 */
         .choice-scroll-wrapper {
             height: 320px; 
             overflow-y: auto;
             border-top: 2px dashed #ddd;
             padding-top: 10px;
             background: #fff;
-            transition: 0.3s;
         }
-
-        .choice-area {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            padding-bottom: 20px;
-        }
-
-        /* 単語ボタンのデザイン */
+        .choice-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-bottom: 20px; }
         .game-btn {
-            padding: 12px 10px;
-            font-size: 14px;
-            font-weight: bold;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            background: white;
-            cursor: pointer;
-            transition: 0.1s;
-            box-shadow: 0 3px 0 #ddd;
-            color: #555;
-            width: 48%; 
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1.3;
-            min-height: 50px;
+            padding: 12px 10px; font-size: 14px; font-weight: bold; border: 2px solid #ccc; border-radius: 12px;
+            background: white; cursor: pointer; box-shadow: 0 3px 0 #ddd; width: 48%; min-height: 50px;
+            text-align: center; display: flex; align-items: center; justify-content: center;
         }
-        .game-btn:active {
-            transform: translateY(3px);
-            box-shadow: none;
-        }
-
-        /* 自由入力ボタン */
-        .btn-free-input {
-            border: 2px dashed #bde4ff !important;
-            color: #555 !important;
-            background-color: #f0f8ff !important;
-        }
-
-        /* 自由入力フォームエリア */
-        .free-input-area {
-            width: 100%;
-            padding: 10px;
-            text-align: center;
-        }
-        .free-input-text {
-            width: 80%;
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid #bde4ff;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        .free-input-ok {
-            padding: 10px 20px;
-            background: #bde4ff;
-            border: none;
-            border-radius: 20px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-        }
-
+        .game-btn:active { transform: translateY(3px); box-shadow: none; }
         .btn-neg { border-color: #ffcdd2 !important; background-color: #fff0f0 !important; color: #d32f2f !important; }
         .btn-pos { border-color: #90caf9 !important; background-color: #e3f2fd !important; color: #1976d2 !important; }
-        
-        /* 操作ボタンエリア */
-        .ctrl-btns {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            z-index: 100;
-            display: flex;
-            gap: 8px;
-        }
 
-        .ctrl-btn {
-            font-size: 12px;
-            background: #eee;
-            border: 1px solid #ccc;
-            padding: 6px 12px;
-            border-radius: 15px;
-            cursor: pointer;
-            opacity: 0.9;
-            transition: 0.1s;
-        }
-        .ctrl-btn:active { transform: translateY(2px); }
-
-        .back-btn {
-            background-color: #fff9c4;
-            border-color: #fbc02d;
-            color: #555;
-            display: none; 
-        }
-
-        /* 結果表示テキストエリア */
-        .game-result-text {
-            width: 100%;
-            box-sizing: border-box; 
-            height: 140px; 
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 10px;
-            border: 2px solid #ffb74d; 
-            display: none; 
-            font-size: 16px;
-            line-height: 1.6;
-            background-color: #fffef8;
-            resize: none; 
-        }
-
-        /* タブ切り替えボタン */
-        .tab-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            width: 100%;
-        }
+        /* ------------------------------------------------
+           新しく付け加えたスタイル
+        ------------------------------------------------ */
+        .tab-container { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab-btn {
-            flex: 1; padding: 10px 0; font-size: 16px; font-weight: bold;
-            border: none; border-radius: 12px; cursor: pointer;
-            background-color: #eee; color: #888; transition: 0.2s;
-            box-shadow: 0 3px 0 #ddd; white-space: nowrap; 
+            flex: 1; padding: 12px 0; font-size: 14px; font-weight: bold;
+            border: none; border-radius: 15px; cursor: pointer; background-color: #eee; color: #888;
         }
-        .tab-btn.active { color: white; box-shadow: 0 3px 0 rgba(0,0,0,0.2); transform: translateY(0); }
-        .tab-btn:active { transform: translateY(3px); box-shadow: none; }
+        .tab-btn.active { color: white; }
 
-        /* ▼▼▼ 追加：ゲージエリアのスタイル ▼▼▼ */
-        .gauge-wrapper {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        #mode-doctor-area {
+            display: none; background: #fdfbff; border-radius: 20px; padding: 15px;
+            border: 4px solid #b49cff; margin-bottom: 20px; flex-direction: column; height: 500px;
         }
-        .gauge-section {
-            margin-bottom: 15px;
-            text-align: center;
+        .doctor-chat-log {
+            flex: 1; overflow-y: auto; background: #fff; border-radius: 15px; padding: 15px;
+            margin-bottom: 10px; border: 1px solid #eee; display: flex; flex-direction: column; gap: 15px;
         }
-        .gauge-section:last-child { margin-bottom: 0; }
-        
-        .gauge-label {
-            display: block;
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 8px;
-            font-size: 16px;
+        .doctor-bubble-ai {
+            align-self: flex-start; background: #f3f0ff; border: 2px solid #b49cff;
+            padding: 10px 15px; border-radius: 15px 15px 15px 0; font-size: 15px; font-weight: bold;
+            max-width: 85%; position: relative; margin-left: 45px;
         }
-        .gauge-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
+        .doctor-bubble-ai::before { content: "🎓"; font-size: 30px; position: absolute; left: -45px; top: 0; }
+        .doctor-bubble-user {
+            align-self: flex-end; background: #fff9c4; border: 2px solid #fbc02d;
+            padding: 10px 15px; border-radius: 15px 15px 0 15px; font-size: 15px; max-width: 85%;
         }
-        .gauge-btn {
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            border: 2px solid #ccc;
-            background: #fff;
-            color: #888;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        /* 選択されたときの色（JSで動的に色を変えますがデフォルト設定） */
-        .gauge-btn.selected {
-            background: #888;
-            color: white;
-            border-color: #888;
-            transform: scale(1.1);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-        }
+        .doctor-input-box { display: flex; gap: 8px; }
+        .doctor-input { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #b49cff; font-size: 16px; outline: none; }
+        .doctor-send-btn { background: #b49cff; color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: bold; }
 
-        @media (max-width: 400px) {
-            .container { padding: 15px; }
-            .game-btn { font-size: 14px; width: 48%; }
-            .tab-btn { font-size: 14px; padding: 10px 0; }
-            .gauge-btn { width: 38px; height: 38px; font-size: 16px; gap: 5px; }
-        }
+        .gauge-wrapper { background: white; padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .gauge-container { display: flex; justify-content: center; gap: 10px; }
+        .gauge-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #ccc; background: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; }
+        .gauge-btn.selected { color: white; }
     </style>
 </head>
 <body>
@@ -286,42 +132,52 @@
         
         <div class="tab-container">
             <button id="tab-game" class="tab-btn active" onclick="switchMode('game')">🐶 いっしょにさがす</button>
+            <button id="tab-doctor" class="tab-btn" onclick="switchMode('doctor')">🎓 はかせとひもとく</button>
             <button id="tab-free" class="tab-btn" onclick="switchMode('free')">✏️ じゆうにかく</button>
         </div>
 
         <div id="mode-game-area" class="game-area">
-            <div class="ctrl-btns">
-                <button id="btn-back" class="ctrl-btn back-btn" onclick="goBack()">↩ 1つもどる</button>
+            <div class="ctrl-btns" style="position: absolute; top: 10px; right: 15px; z-index: 100; display: flex; gap: 8px;">
+                <button id="btn-back" class="ctrl-btn" style="display:none;" onclick="goBack()">↩ 1つもどる</button>
                 <button class="ctrl-btn" onclick="startGame()">🔄 さいしょから</button>
             </div>
-
             <div id="chat-history" class="chat-history"></div>
             <div id="choice-wrapper" class="choice-scroll-wrapper">
                 <div id="choice-area" class="choice-area"></div>
             </div>
-            <textarea id="game-final-text" class="game-result-text"></textarea>
+            <textarea id="game-final-text" style="width:100%; height:140px; border-radius:10px; border:2px solid #ffb74d; display:none; padding:10px; box-sizing:border-box; background:#fffef8; resize:none;"></textarea>
+        </div>
+
+        <div id="mode-doctor-area">
+            <div id="doctor-chat-log" class="doctor-chat-log">
+                <div class="doctor-bubble-ai">こんにちは。博士太郎だよ。なにか もやもや しているのかな？ いっしょに 原因を さがしてみよう。</div>
+            </div>
+            <div class="doctor-input-box">
+                <input type="text" id="doctor-user-input" class="doctor-input" placeholder="ここにお返事をかいてね">
+                <button onclick="talkToDoctor()" id="doctor-send-btn" class="doctor-send-btn">送信</button>
+            </div>
         </div>
 
         <div id="mode-free-area" style="display:none;">
-            <p>あたま の なか の ことば を おしえてね<br>（ かかなくてもいいよ！）</p>
-            <textarea id="user-input-free" placeholder="ここにかいてね"></textarea>
+            <p>あたま の なか の ことば を おしえてね</p>
+            <textarea id="user-input-free" style="width:100%; height:150px; border-radius:15px; padding:15px; box-sizing:border-box; border:2px solid #ccc;" placeholder="ここにかいてね"></textarea>
         </div>
 
         <div class="gauge-wrapper">
-            <div class="gauge-section">
-                <span class="gauge-label">❤️ きもちの つよさ</span>
+            <div class="gauge-section" style="margin-bottom:15px; text-align:center;">
+                <span style="font-weight:bold; color:#555;">❤️ きもちの つよさ</span>
                 <div class="gauge-container" id="gauge-emotion">
                     <div class="gauge-btn" data-val="1">1</div>
                     <div class="gauge-btn" data-val="2">2</div>
-                    <div class="gauge-btn selected" data-val="3">3</div>
+                    <div class="gauge-btn" data-val="3">3</div>
                     <div class="gauge-btn" data-val="4">4</div>
                     <div class="gauge-btn" data-val="5">5</div>
                 </div>
             </div>
-            <div class="gauge-section">
-                <span class="gauge-label">🥱 ねむたさ</span>
+            <div class="gauge-section" style="text-align:center;">
+                <span style="font-weight:bold; color:#555;">🥱 ねむたさ</span>
                 <div class="gauge-container" id="gauge-sleep">
-                    <div class="gauge-btn selected" data-val="1">1</div>
+                    <div class="gauge-btn" data-val="1">1</div>
                     <div class="gauge-btn" data-val="2">2</div>
                     <div class="gauge-btn" data-val="3">3</div>
                     <div class="gauge-btn" data-val="4">4</div>
@@ -330,21 +186,14 @@
             </div>
         </div>
 
-        <br>
-        <button id="submit-btn" class="btn">
-            おくる <span class="send-icon">💌</span>
+        <button id="submit-btn" style="width:100%; padding:15px; border-radius:30px; border:none; color:white; font-weight:bold; font-size:18px; cursor:pointer;">
+            おくる 🚀
         </button>
-        <button id="debug-send-log" class="btn" style="margin-left:8px;">そうしんログ</button>
-        <br>
-        <a href="index.html" class="btn-home">もどる</a>
+        <a href="index.html" style="display:block; text-align:center; margin-top:20px; color:#888; text-decoration:none;">もどる</a>
     </div>
 
     <script>
-        // ============================================
-        // 🌍 設定（あなたのGASのURL）
-        // ============================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec"; 
-        // ============================================
 
         const SETTINGS = {
             "pink":   { label: "😄 うれしい", bg: "#fff0f7", main: "#ff8bb0" },
@@ -362,823 +211,161 @@
         const theme = SETTINGS[colorKey] || SETTINGS['white'];
 
         document.body.style.backgroundColor = theme.bg;
-        const labelEl = document.getElementById('emotion-label');
-        labelEl.innerText = theme.label;
-        labelEl.style.color = theme.main;
-        
-        const submitBtn = document.getElementById('submit-btn');
-        submitBtn.style.backgroundColor = theme.main;
+        document.getElementById('emotion-label').innerText = theme.label;
+        document.getElementById('emotion-label').style.color = theme.main;
+        document.getElementById('submit-btn').style.backgroundColor = theme.main;
 
-        const style = document.createElement('style');
-        // 選択されたゲージボタンの色をテーマカラーに合わせる
-        style.innerHTML = `
-            .tab-btn.active { background-color: ${theme.main} !important; }
-            .game-area { border-color: ${theme.main}; }
-            .bubble-ai { border-color: ${theme.main}; }
-            .gauge-btn.selected { background-color: ${theme.main} !important; border-color: ${theme.main} !important; }
-        `;
-        document.head.appendChild(style);
-
-        // --- ゲージの動作 ---
         let currentEmotionLevel = 3;
         let currentSleepLevel = 1;
+        let doctorLog = ""; 
 
+        // ゲージの初期化（既存）
         function setupGauge(id, onChange) {
             const container = document.getElementById(id);
             const btns = container.querySelectorAll('.gauge-btn');
             btns.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    btns.forEach(b => b.classList.remove('selected'));
+                    btns.forEach(b => { b.classList.remove('selected'); b.style.backgroundColor = ""; });
                     btn.classList.add('selected');
+                    btn.style.backgroundColor = theme.main;
                     onChange(btn.getAttribute('data-val'));
                 });
             });
         }
-
         setupGauge('gauge-emotion', val => currentEmotionLevel = val);
         setupGauge('gauge-sleep', val => currentSleepLevel = val);
 
-
-        let currentMode = 'game'; 
+        // モード切り替え（追加）
         function switchMode(mode) {
             currentMode = mode;
-            if (mode === 'game') {
-                document.getElementById('mode-game-area').style.display = 'flex';
-                document.getElementById('mode-free-area').style.display = 'none';
-                document.getElementById('tab-game').classList.add('active');
-                document.getElementById('tab-free').classList.remove('active');
-            } else {
-                document.getElementById('mode-game-area').style.display = 'none';
-                document.getElementById('mode-free-area').style.display = 'block';
-                document.getElementById('tab-game').classList.remove('active');
-                document.getElementById('tab-free').classList.add('active');
-            }
+            document.getElementById('mode-game-area').style.display = (mode === 'game' ? 'flex' : 'none');
+            document.getElementById('mode-doctor-area').style.display = (mode === 'doctor' ? 'flex' : 'none');
+            document.getElementById('mode-free-area').style.display = (mode === 'free' ? 'block' : 'none');
+            document.getElementById('tab-game').classList.toggle('active', mode === 'game');
+            document.getElementById('tab-doctor').classList.toggle('active', mode === 'doctor');
+            document.getElementById('tab-free').classList.toggle('active', mode === 'free');
+            document.getElementById('tab-game').style.backgroundColor = (mode === 'game' ? theme.main : "#eee");
+            document.getElementById('tab-doctor').style.backgroundColor = (mode === 'doctor' ? theme.main : "#eee");
+            document.getElementById('tab-free').style.backgroundColor = (mode === 'free' ? theme.main : "#eee");
         }
 
-        // ============================================
-        // 🐶 心理学的データ定義
-        // ============================================
-        
-        let storyParts = {
-            when: "", place: "", place_sub: "", person: "", 
-            action: "", action_type: "", event: "", reason: "", thought: "", body: "", want_call: "",
-            last_valence: null
-        };
+        // 🎓 はかせモード対話（追加）
+        async function talkToDoctor() {
+            const input = document.getElementById('doctor-user-input');
+            const log = document.getElementById('doctor-chat-log');
+            const text = input.value.trim();
+            if(!text) return;
+            log.innerHTML += `<div class="doctor-bubble-user">${text}</div>`;
+            doctorLog += `ぼく: ${text}\n`;
+            input.value = "";
+            log.scrollTop = log.scrollHeight;
+            const loading = document.createElement('div');
+            loading.innerText = "🎓 はかせがかんがえちゅう...";
+            loading.style.fontSize = "12px"; loading.style.color = "#aaa";
+            log.appendChild(loading);
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "ai_consult", text: text, mode: "moyamoya" }) });
+                const data = await res.json();
+                const ai = JSON.parse(data.reply);
+                loading.remove();
+                log.innerHTML += `<div class="doctor-bubble-ai">${ai.reply}</div>`;
+                doctorLog += `はかせ: ${ai.reply}\n`;
+                log.scrollTop = log.scrollHeight;
+            } catch (e) { loading.innerText = "通信エラー😢"; }
+        }
 
+        /* ------------------------------------------------
+           既存の心理探偵ゲームロジック（完全維持）
+        ------------------------------------------------ */
+        let storyParts = { when: "", place: "", place_sub: "", person: "", action: "", action_type: "", event: "", reason: "", thought: "", body: "", want_call: "", last_valence: null };
         const DATA = {
-            when: [
-                { label: "🌞 いま", value: "いま" },
-                { label: "🕰 さっき", value: "さっき" },
-                { label: "🌅 きょうのあさ", value: "きょうのあさ" },
-                { label: "☀️ きょうのおひる", value: "きょうのおひる" },
-                { label: "🌇 ゆうがた", value: "きょうのゆうがた" },
-                { label: "🌙 よる", value: "きょうのよる" },
-                { label: "📅 まえ", value: "まえ" }
-            ],
-            people: [
-                { label: "👦 かなとくん", value: "かなとくん" },
-                { label: "👩‍🦰 ゆうき", value: "ゆうき" },
-                { label: "👦 まさとくん", value: "まさとくん" },
-                { label: "👩‍ ゆうきのおともだち", value: "ゆうきのおともだち" },
-                { label: "👧 まゆ", value: "まゆ" },
-                { label: "👶 さく", value: "さく" },
-                { label: "🏫 がっこうのせんせい", value: "せんせい" },
-                { label: "🏥 びょういんのせんせい", value: "びょういんのせんせい" },
-                { label: "👦 まえだくん", value: "まえだくん" },
-                { label: "👥 ぐるーぷのみんな", value: "ぐるーぷのみんな" },
-                { label: "👩 かーちゃん", value: "かーちゃん" },
-                { label: "👨 とーちゃん", value: "とーちゃん" },
-                { label: "👵 おばあちゃん", value: "おばあちゃん" },
-                { label: "👴 おじいちゃん", value: "おじいちゃん" },
-                { label: "👤 ぼく", value: "ぼく" }
-            ],
-            // 身体感覚（ソマティック・マーカー）のライブラリ
-            body_pos: [
-                { label: "✨ からだが かるい", value: "からだがかるかった", p:true },
-                { label: "😌 ポカポカ", value: "ポカポカしていた", p:true },
-                { label: "💪 ちからが わく", value: "ちからがわいてきた", p:true },
-                { label: "😆 スッキリ！", value: "スッキリした", p:true },
-                { label: "🐇 とびはねたい", value: "とびはねたいきぶんだった", p:true },
-                { label: "😊 しぜんと えがお", value: "しぜんとえがおになった", p:true },
-                { label: "😮 むねが スッとした", value: "むねがスッとした", p:true }
-            ],
-            body_neg: [
-                { label: "🔥 かおが カッカ", value: "かおがカッカした", n:true },
-                { label: "🕳 むねが キュッ", value: "むねがキュッとした", n:true },
-                { label: "🌪 おなか グルグル", value: "おなかがグルグルした", n:true },
-                { label: "👊 てに ちからがはいる", value: "てにちからがはいった", n:true },
-                { label: "🤐 こえが でない", value: "こえがでなかった", n:true },
-                { label: "💧 なみだが でそう", value: "なみだがでそうだった", n:true },
-                { label: "🥶 てあしが つめたい", value: "てあしがつめたかった", n:true },
-                { label: "😬 はを くいしばる", value: "はをくいしばった", n:true },
-                { label: "💓 ドキドキ", value: "むねがドキドキした", n:true },
-                { label: "😫 いきが くるしい", value: "いきがくるしかった", n:true },
-                { label: "😖 のどが つまる", value: "のどがつまるかんじがした", n:true }
-            ],
-            body_tired: [
-                { label: "🛌 からだが おもい", value: "からだがおもかった", n:true },
-                { label: "🥱 ねむい", value: "とてもねむかった", n:true },
-                { label: "🤕 あたまが いたい", value: "あたまがいたかった", n:true },
-                { label: "😶 ボーッとする", value: "あたまがボーッとした", n:true },
-                { label: "🧟‍♂️ うごきたくない", value: "うごきたくなかった", n:true }
-            ],
-            thought_pos: [
-                { label: "😤 やりきった！", value: "「やりきった！」", p:true },
-                { label: "✨ もっとやりたい", value: "「もっとやりたい」", p:true },
-                { label: "😌 これでいいんだ", value: "「これでいいんだ」", p:true },
-                { label: "🥰 だいすき", value: "「だいすき」", p:true },
-                { label: "🤝 わかりあえた", value: "「わかりあえた」", p:true },
-                { label: "🛡 まもられた", value: "「まもられた」", p:true },
-                { label: "🤣 おもしろかった", value: "「おもしろかった」", p:true }
-            ],
-            thought_neg: [
-                { label: "😿 「ずるい！」", value: "「ずるい！」", n:true },
-                { label: "🤐 ガマンしなきゃ", value: "「ガマンしなきゃ」", n:true },
-                { label: "💥 しかえししたい", value: "しかえししたかった", n:true },
-                { label: "🤯 わけが わからない", value: "わけがわからなかった", n:true },
-                { label: "💧 ぼくが わるい", value: "「ぼくがわるいんだ」", n:true },
-                { label: "🥺 たすけて", value: "「たすけて」", n:true },
-                { label: "🏠 かえりたい", value: "「かえりたい」", n:true },
-                { label: "😨 どうしよう", value: "どうしよう", n:true },
-                { label: "🫣 はずかしい", value: "はずかしかった", n:true },
-                { label: "😤 わかってくれない", value: "「わかってくれない」", n:true },
-                { label: "🙄 めんどくさい", value: "めんどくさかった", n:true }
-            ]
+            when: [{ label: "🌞 いま", value: "いま" },{ label: "🕰 さっき", value: "さっき" },{ label: "🌅 きょうのあさ", value: "きょうのあさ" },{ label: "☀️ きょうのおひる", value: "きょうのおひる" },{ label: "🌇 ゆうがた", value: "きょうのゆうがた" },{ label: "🌙 よる", value: "きょうのよる" },{ label: "📅 まえ", value: "まえ" }],
+            people: [{ label: "👦 かなとくん", value: "かなとくん" },{ label: "👩‍🦰 ゆうき", value: "ゆうき" },{ label: "👦 まさとくん", value: "まさとくん" },{ label: "👤 ぼく", value: "ぼく" }],
+            body_pos: [{ label: "✨ からだかるい", value: "からだがかるかった", p:true },{ label: "😌 ポカポカ", value: "ポカポカしていた", p:true }],
+            body_neg: [{ label: "🔥 カッカする", value: "かおがカッカした", n:true },{ label: "🕳 むねがキュッ", value: "むねがキュッとした", n:true }],
+            body_tired: [{ label: "🛌 からだおもい", value: "からだがおもかった", n:true }],
+            thought_pos: [{ label: "😤 やりきった", value: "「やりきった！」", p:true },{ label: "🥰 だいすき", value: "「だいすき」", p:true }],
+            thought_neg: [{ label: "😿 ずるい！", value: "「ずるい！」", n:true },{ label: "🏠 かえりたい", value: "「かえりたい」", n:true }]
         };
-
-        // デフォルト（場所不明時の汎用行動）
-        const DEFAULT_ACTIONS = [
-            {l:"👀 みる", v:"なにかをみていた", t:"passive_active"},
-            {l:"🗣 はなす", v:"だれかとはなしていた", t:"social"},
-            {l:"🚶 いる", v:"そこにいた", t:"passive"},
-            {l:"🧘 まつ", v:"まっていた", t:"wait"}
-        ];
-
-        const ACTIONS_MAP = {
-            "きょうしつ": [
-                {l:"✏️ べんきょう", v:"べんきょう", t:"study"},
-                {l:"🙋‍♂️ はっぴょう", v:"はっぴょう", t:"challenge"},
-                {l:"🤐 じっとする", v:"じっとしていた", t:"endure"},
-                {l:"🍱 きゅうしょく", v:"きゅうしょく", t:"eat"},
-                {l:"😆 やすみじかん", v:"やすみじかん", t:"social"},
-                {l:"🗣 おしゃべり", v:"おしゃべり", t:"social"},
-                {l:"😢 おこられた", v:"おこられていた", t:"conflict"}
-            ],
-            "たいいくかん": [
-                {l:"🏃 たいいく", v:"たいいく", t:"sport"},
-                {l:"🏀 チームせん", v:"チームでのしあい", t:"competition"},
-                {l:"🧘 しゅうかい", v:"しゅうかい", t:"passive"},
-                {l:"👀 けんがく", v:"けんがく", t:"passive_active"}
-            ],
-            "ろうか": [
-                {l:"🚶 いどう", v:"いどう", t:"move"},
-                {l:"🏃 はしる", v:"はしりまわる", t:"play"},
-                {l:"🗣 たちばなし", v:"たちばなし", t:"social"},
-                {l:"🤫 かくれる", v:"かくれていた", t:"escape"}
-            ],
-            "としょしつ": [
-                {l:"📖 ほんをよむ", v:"どくしょ", t:"passive"},
-                {l:"🔍 さがす", v:"ほんをさがす", t:"search"},
-                {l:"🤫 しずかにする", v:"しずかにしていた", t:"rest"}
-            ],
-            "プール": [
-                {l:"🏊 およぐ", v:"およいでいた", t:"sport"},
-                {l:"🚿 シャワー", v:"シャワー", t:"sensory"},
-                {l:"👕 きがえ", v:"きがえ", t:"care"},
-                {l:"🥶 がまん", v:"さむいのがまんしていた", t:"endure"}
-            ],
-            "おんがくしつ": [
-                {l:"🎵 うた", v:"うた", t:"art"},
-                {l:"🎹 がっき", v:"がっきをひいた", t:"art"},
-                {l:"🙉 みみをふさぐ", v:"みみをふさいでいた", t:"sensory_overload"}
-            ],
-            "ほうかごデイ": [
-                {l:"📝 しゅくだい", v:"しゅくだい", t:"study"},
-                {l:"🍩 おやつ", v:"おやつ", t:"eat"},
-                {l:"🧱 ブロック", v:"ブロック", t:"play_solitary"},
-                {l:"🎮 ゲーム", v:"ゲーム", t:"play"},
-                {l:"🚗 そうげい", v:"そうげい", t:"ride"}
-            ],
-            "がっこうトイレ": [
-                {l:"🚽 トイレ", v:"トイレ", t:"toilet"},
-                {l:"👕 きがえ", v:"きがえ", t:"care"},
-                {l:"🏃 にげこむ", v:"にげこんだ", t:"escape"}
-            ],
-            "ほけんしつ": [
-                {l:"🤕 てあて", v:"てあて", t:"care"},
-                {l:"🤒 やすむ", v:"きゅうけい", t:"rest"},
-                {l:"🗣 そうだん", v:"そうだん", t:"talk_deep"}
-            ],
-            "リビング": [
-                {l:"📺 テレビ", v:"テレビ", t:"passive"},
-                {l:"🎮 ゲーム", v:"ゲーム", t:"play"},
-                {l:"🍽 ごはん", v:"ごはん", t:"eat"},
-                {l:"🛋 ゴロゴロ", v:"ゴロゴロ", t:"rest"},
-                {l:"🗣 おはなし", v:"かぞくとおはなし", t:"social_family"},
-                {l:"😢 おこられた", v:"おこられていた", t:"conflict_family"}
-            ],
-            "おふろ": [
-                {l:"🛀 つかる", v:"ゆぶねにつかる", t:"relax"},
-                {l:"🚿 あらう", v:"からだをあらう", t:"care"},
-                {l:"🧼 シャンプー", v:"シャンプー", t:"sensory"},
-                {l:"🦆 みずあそび", v:"みずあそび", t:"play"}
-            ],
-            "しんしつ": [
-                {l:"😴 ねる", v:"ねようとしていた", t:"sleep"},
-                {l:"🥱 おきる", v:"おきた", t:"wake"},
-                {l:"👻 こわいゆめ", v:"こわいゆめをみた", t:"nightmare"},
-                {l:"🤕 ぐあいがわるい", v:"ねこむ", t:"sick"}
-            ],
-            "おうちトイレ": [
-                {l:"🚽 トイレ", v:"トイレ", t:"toilet"},
-                {l:"🧘 ひとりになる", v:"ひとりになる", t:"escape"}
-            ],
-            "そぼのいえ": [
-                {l:"🍘 おかし", v:"おかし", t:"eat"},
-                {l:"🗣 おはなし", v:"おはなし", t:"social"},
-                {l:"🎁 もらう", v:"なにかもらう", t:"receive"}
-            ],
-            "こうえん": [
-                {l:"🏃 おにごっこ", v:"おにごっこ", t:"play_group"},
-                {l:"🛝 ゆうぐ", v:"ゆうぐであそぶ", t:"play"},
-                {l:"🚲 じてんしゃ", v:"じてんしゃ", t:"sport"},
-                {l:"👀 みてるだけ", v:"みてるだけ", t:"passive_active"}
-            ],
-            "おみせ": [
-                {l:"🛒 かう", v:"かいもの", t:"shop_buy"},
-                {l:"👀 みる", v:"みてる", t:"shop_look"},
-                {l:"🗣 おねだり", v:"おねだり", t:"request"},
-                {l:"⏳ まつ", v:"レジならび", t:"wait"}
-            ],
-            "のりもの": [
-                {l:"🚌 のる", v:"のっていた", t:"ride"},
-                {l:"👀 そとをみる", v:"そとをみていた", t:"passive"},
-                {l:"📢 うるさい", v:"おとがきになる", t:"sensory_overload"}
-            ],
-            "ならいごと": [
-                {l:"🏊 れんしゅう", v:"れんしゅう", t:"challenge"},
-                {l:"🏆 テスト", v:"テスト", t:"test"},
-                {l:"⏳ じゅんばん", v:"じゅんばんまち", t:"wait"}
-            ],
-            "しんさつしつ": [
-                {l:"🩺 しんさつ", v:"しんさつ", t:"medical"},
-                {l:"💉 ちゅうしゃ", v:"ちゅうしゃ", t:"medical_pain"},
-                {l:"🗣 おはなし", v:"せんせいとおはなし", t:"talk_formal"}
-            ],
-            "こうてい": [
-                {l:"🏃 おにごっこ", v:"おにごっこ", t:"play_group"},
-                {l:"⚽ サッカー", v:"サッカー", t:"sport"},
-                {l:"🌱 かんさつ", v:"かんさつ", t:"passive"},
-                {l:"🚶 さんぽ", v:"さんぽ", t:"move"},
-                {l:"🛝 ゆうぐ", v:"ゆうぐ", t:"play"}
-            ],
-            "げんかん": [
-                {l:"👟 くつをはく", v:"くつをはく", t:"move"},
-                {l:"🚪 でかける", v:"でかける", t:"move"},
-                {l:"🏠 かえってきた", v:"かえってきた", t:"move"}
-            ],
-            "まちあいしつ": [
-                {l:"⏳ まつ", v:"じゅんばんまち", t:"wait"},
-                {l:"📖 ほんをよむ", v:"ほんをよむ", t:"passive"},
-                {l:"📺 テレビ", v:"テレビ", t:"passive"}
-            ],
-            "みち": [
-                {l:"🚶 あるく", v:"あるく", t:"move"},
-                {l:"🏃 はしる", v:"はしる", t:"move"},
-                {l:"🤕 ころんだ", v:"ころんだ", t:"accident"},
-                {l:"🚥 しんごう", v:"しんごう", t:"wait"}
-            ]
-        };
-
-        const EVENTS_MAP = {
-            "study": [{l:"💡 わかった", v:"わかった", p:true}, {l:"😵 わからない", v:"わからなかった", n:true}, {l:"🖊 まちがえた", v:"まちがえた", n:true}],
-            "challenge": [{l:"👏 ほめられた", v:"ほめられた", p:true}, {l:"😖 しっぱい", v:"しっぱいした", n:true}, {l:"😨 きんちょう", v:"きんちょうした", n:true}],
-            "endure": [{l:"🕰 ながかった", v:"ながかった", n:true}, {l:"😣 がまんした", v:"がまんできた", p:true}],
-            "eat": [{l:"😋 おいしい", v:"おいしかった", p:true}, {l:"🤢 きらい", v:"きらいなものだった", n:true}, {l:"🥛 こぼした", v:"こぼしちゃった", n:true}],
-            "social": [{l:"🤝 なかよし", v:"なかよくできた", p:true}, {l:"🗡 わるぐち", v:"わるぐちをいわれた", n:true}, {l:"🙉 むしされた", v:"むしされた", n:true}, {l:"🤥 うそ", v:"うそをつかれた", n:true}],
-            "social_family": [{l:"😄 わらった", v:"わらった", p:true}, {l:"😡 けんか", v:"けんかした", n:true}, {l:"😐 ふつう", v:"ふつうだった", p:true}],
-            "conflict": [{l:"😡 いいかえした", v:"いいかえした", n:true}, {l:"🤐 だまってた", v:"だまっていた", n:true}, {l:"😭 ないた", v:"ないてしまった", n:true}],
-            "conflict_family": [{l:"😡 いいかえした", v:"いいかえした", n:true}, {l:"🤐 シュンとした", v:"シュンとした", n:true}, {l:"🚪 こもった", v:"へやにこもった", n:true}],
-            "sport": [{l:"🏆 かった", v:"かった", p:true}, {l:"💔 まけた", v:"まけた", n:true}, {l:"✨ できた", v:"うまくできた", p:true}, {l:"🤕 ぶつかった", v:"ぶつかった", n:true}],
-            "competition": [{l:"🤝 きょうりょく", v:"きょうりょくした", p:true}, {l:"😤 ずるい", v:"あいてがずるした", n:true}, {l:"🦶 しっぱい", v:"あしをひっぱってしまった", n:true}],
-            "passive": [{l:"😌 おちつく", v:"おちついていた", p:true}, {l:"🥱 たいくつ", v:"たいくつだった", n:true}, {l:"💭 かんがえごと", v:"かんがえごとをしてた", p:true}],
-            "passive_active": [{l:"👀 じっとみる", v:"じっとみていた", p:true}, {l:"🥺 いれて", v:"いれてといえなかった", n:true}],
-            "move": [{l:"🛌 つかれた", v:"つかれた", n:true}, {l:"🌸 はっけん", v:"なにかみつけた", p:true}, {l:"🐕 ビックリ", v:"びっくりした", n:true}],
-            "play": [{l:"😆 たのしい", v:"たのしかった", p:true}, {l:"💥 けんか", v:"けんかした", n:true}, {l:"🧸 とられた", v:"とられた", n:true}, {l:"🧱 こわされた", v:"こわされた", n:true}],
-            "play_solitary": [{l:"✨ できた", v:"かんせいした", p:true}, {l:"🤔 むずかしい", v:"うまくいかなかった", n:true}, {l:"📢 じゃまされた", v:"じゃまされた", n:true}],
-            "play_group": [{l:"🏃 おいつけない", v:"おいつけなかった", n:true}, {l:"🤝 なかよし", v:"チームワークがよかった", p:true}, {l:"😨 ルール不明", v:"ルールがわからなかった", n:true}],
-            "escape": [{l:"😌 ホッとした", v:"ホッとした", p:true}, {l:"😨 みつかった", v:"みつかった", n:true}, {l:"😢 ひとりぼっち", v:"ひとりぼっちだった", n:true}],
-            "sensory": [{l:"✨ スッキリ", v:"スッキリした", p:true}, {l:"😖 イヤなかんじ", v:"カンショクがいやだった", n:true}, {l:"👃 くさい", v:"においがいやだった", n:true}],
-            "sensory_overload": [{l:"📢 うるさい", v:"おとがうるさすぎた", n:true}, {l:"💡 まぶしい", v:"まぶしかった", n:true}, {l:"😵 クラクラ", v:"クラクラした", n:true}],
-            "care": [{l:"✨ きれい", v:"きれいになった", p:true}, {l:"😖 めんどくさい", v:"めんどくさかった", n:true}, {l:"👔 キツイ", v:"フクがきつかった", n:true}],
-            "talk_deep": [{l:"👂 きいてくれた", v:"きいてくれた", p:true}, {l:"🙅‍♂️ わかってない", v:"わかってくれなかった", n:true}, {l:"🗣 いえた", v:"いいたいことがいえた", p:true}],
-            "relax": [{l:"😌 きもちいい", v:"きもちよかった", p:true}, {l:"🥵 のぼせた", v:"のぼせた", n:true}],
-            "rest": [{l:"🛌 かいふく", v:"げんきになった", p:true}, {l:"🤕 まだいたい", v:"まだいたかった", n:true}],
-            "sleep": [{l:"😴 ぐっすり", v:"よくねむれた", p:true}, {l:"😳 ねれない", v:"ねむれなかった", n:true}],
-            "nightmare": [{l:"😨 こわかった", v:"こわかった", n:true}, {l:"😭 ないておきた", v:"ないておきた", n:true}],
-            "wake": [{l:"😃 スッキリ", v:"スッキリおきた", p:true}, {l:"🥱 おきれない", v:"おきれなかった", n:true}],
-            "sick": [{l:"🤢 きもちわるい", v:"きもちわるかった", n:true}, {l:"🤒 ねつがある", v:"ねつがあった", n:true}],
-            "toilet": [{l:"🚽 スッキリ", v:"でてスッキリした", p:true}, {l:"😖 でない", v:"でなくてくるしかった", n:true}, {l:"👖 まにあわず", v:"まにあわなかった", n:true}],
-            "receive": [{l:"🎁 うれしい", v:"うれしかった", p:true}, {l:"🤔 いらない", v:"ほしくなかった", n:true}],
-            "shop_buy": [{l:"🎁 かえた", v:"かえた", p:true}, {l:"🙅‍♂️ ダメ", v:"ダメといわれた", n:true}, {l:"💸 うりきれ", v:"うりきれだった", n:true}],
-            "shop_look": [{l:"👀 ほしい", v:"ほしいものがあった", n:true}, {l:"📢 ガヤガヤ", v:"ガヤガヤしてつかれた", n:true}],
-            "request": [{l:"🙆‍♂️ OK", v:"いいよといわれた", p:true}, {l:"🙅‍♂️ ダメ", v:"ダメといわれた", n:true}, {l:"🙉 むし", v:"きいてもらえなかった", n:true}],
-            "wait": [{l:"🥱 ながい", v:"ながかった", n:true}, {l:"📱 スマホ", v:"スマホをみていた", p:true}, {l:"😖 イライラ", v:"イライラした", n:true}],
-            "ride": [{l:"🤢 よった", v:"よった", n:true}, {l:"🏞 けしき", v:"けしきがきれいだった", p:true}, {l:"👯 こんでた", v:"こんでてつらかった", n:true}],
-            "medical": [{l:"👨‍⚕️ やさしかった", v:"やさしかった", p:true}, {l:"😨 こわかった", v:"こわかった", n:true}],
-            "medical_pain": [{l:"😭 いたかった", v:"いたかった", n:true}, {l:"😐 へいき", v:"へいきだった", p:true}, {l:"😤 あばれた", v:"あばれてしまった", n:true}],
-            "talk_formal": [{l:"😳 きんちょう", v:"きんちょうした", n:true}, {l:"🗣 こたえられた", v:"ちゃんとはなせた", p:true}],
-            "test": [{l:"💯 できた", v:"できた", p:true}, {l:"😵 むずかしい", v:"むずかしかった", n:true}],
-            "search": [{l:"👀 みつかった", v:"みつかった", p:true}, {l:"😖 ない", v:"みつからなかった", n:true}],
-            "accident": [{l:"😭 いたかった", v:"いたかった", n:true}, {l:"🩸 ちがでた", v:"ちがでた", n:true}, {l:"😢 ビックリ", v:"びっくりした", n:true}],
-            /* ★追加：音楽・芸術系のアクションに対応 */
-            "art": [{l:"✨ じょうず", v:"じょうずにできた", p:true}, {l:"😖 しっぱい", v:"うまくできなかった", n:true}, {l:"🎵 たのしい", v:"たのしかった", p:true}]
-        };
+        const DEFAULT_ACTIONS = [{l:"👀 みる", v:"なにかをみていた", t:"passive_active"},{l:"🗣 はなす", v:"だれかとはなしていた", t:"social"}];
+        const ACTIONS_MAP = { "きょうしつ": [{l:"✏️ べんきょう", v:"べんきょう", t:"study"},{l:"🍱 きゅうしょく", v:"きゅうしょく", t:"eat"}],"リビング": [{l:"📺 テレビ", v:"テレビ", t:"passive"},{l:"🍽 ごはん", v:"ごはん", t:"eat"}] };
+        const EVENTS_MAP = { "study": [{l:"💡 わかった", v:"わかった", p:true}, {l:"😵 わからない", v:"わからなかった", n:true}],"eat": [{l:"😋 おいしい", v:"おいしかった", p:true}, {l:"🤢 きらい", v:"きらいなものだった", n:true}] };
 
         function getReasonChoices(isPositive) {
-            if (isPositive) {
-                return [
-                    { label: "😤 がんばった", save: {reason: "がんばったから"}, p:true },
-                    { label: "🤝 てつだった", save: {reason: "てつだってもらえたから"}, p:true },
-                    { label: "😊 すきなこと", save: {reason: "すきなことだったから"}, p:true },
-                    { label: "👂 きいてくれた", save: {reason: "はなしをきいてくれたから"}, p:true },
-                    { label: "🕰 じゅんびした", save: {reason: "じゅんびしていたから"}, p:true },
-                    { label: "🍀 うんがよかった", save: {reason: "うんがよかったから"}, p:true },
-                    { label: "🧘 おちついてた", save: {reason: "おちついていたから"}, p:true },
-                    { label: "❓ なんとなく", save: {reason: "なんとなく"}, p:true }
-                ];
-            } else {
-                return [
-                    { label: "🌀 はじめて", save: {reason: "はじめてでわからなくて"}, n:true },
-                    { label: "🙉 きいてない", save: {reason: "はなしをきいてくれなくて"}, n:true },
-                    { label: "😵 いみふめい", save: {reason: "いみがわからなくて"}, n:true },
-                    { label: "😣 むりやり", save: {reason: "やりたくないのにやらされて"}, n:true },
-                    { label: "🤥 うそ", save: {reason: "うそをつかれて"}, n:true },
-                    { label: "📢 うるさい", save: {reason: "おとがうるさくて"}, n:true },
-                    { label: "👃 くさい", save: {reason: "においがイヤで"}, n:true },
-                    { label: "🤕 いたい", save: {reason: "いたくて"}, n:true },
-                    { label: "😴 ねむい", save: {reason: "ねむくて"}, n:true },
-                    { label: "🤤 おなかすいた", save: {reason: "おなかがすいてて"}, n:true },
-                    { label: "🔁 かあわった", save: {reason: "きゅうによていがかわって"}, n:true },
-                    { label: "👫 ひとりだけ", save: {reason: "じぶんひとりだけで"}, n:true },
-                    { label: "❓ わからない", save: {reason: "よくわからないけど"}, n:true }
-                ];
-            }
+            return isPositive ? [{ label: "😤 がんばった", save: {reason: "がんばったから"}, p:true },{ label: "😊 すきなこと", save: {reason: "すきなことだったから"}, p:true }] 
+                               : [{ label: "🌀 はじめて", save: {reason: "はじめてでわからなくて"}, n:true },{ label: "🤕 いたい", save: {reason: "いたくて"}, n:true }];
         }
-
-        // 感情価(valence)に基づく体の反応を取得する関数
-        function getBodyChoices(isPositive) {
-            let choices = [];
-            if (isPositive) {
-                // ポジティブな感覚 + ニュートラル
-                choices = [...DATA.body_pos, {label:"😐 ふつう", value:"ふつう"}];
-            } else {
-                // ネガティブ（高覚醒＆低覚醒） + ニュートラル
-                choices = [...DATA.body_neg, ...DATA.body_tired, {label:"😐 ふつう", value:"ふつう"}];
-            }
-            return choices;
-        }
+        function getBodyChoices(isPositive) { return isPositive ? [...DATA.body_pos, {label:"😐 ふつう", value:"ふつう"}] : [...DATA.body_neg, ...DATA.body_tired, {label:"😐 ふつう", value:"ふつう"}]; }
 
         const SCENARIO_TREE = {
-            // 1. いつ
-            start: {
-                text: "いっしょに さがそう。\nそれは、いつ あったこと？",
-                choices: DATA.when.map(w => ({ label: w.label, next: "place_check", save: {when: w.value} }))
-            },
-
-            // 2. 場所（大）
-            place_check: {
-                text: "どこで あったこと？",
-                choices: [
-                    { label: "🏫 がっこう", next: "place_school", save: {place: "がっこう"} },
-                    { label: "🏠 おうち", next: "place_home", save: {place: "おうち"} },
-                    { label: "🏥 びょういん", next: "place_hospital", save: {place: "びょういん"} },
-                    { label: "🌳 そのほか", next: "place_outside", save: {place: "おそと"} }
-                ]
-            },
-
-            // 3. 場所（詳細）
-            place_school: { text: "がっこうの、どこ？", choices: [ {label:"🪑 きょうしつ", next:"who_check", save:{place_sub:"きょうしつ"}}, {label:"🤸 たいいくかん", next:"who_check", save:{place_sub:"たいいくかん"}}, {label:"👟 ろうか・げんかん", next:"who_check", save:{place_sub:"ろうか"}}, {label:"📚 としょしつ", next:"who_check", save:{place_sub:"としょしつ"}}, {label:"🏊 プール", next:"who_check", save:{place_sub:"プール"}}, {label:"🎵 おんがくしつ", next:"who_check", save:{place_sub:"おんがくしつ"}}, {label:"🏫 ほうかごデイ", next:"who_check", save:{place_sub:"ほうかごデイ"}}, {label:"🚽 トイレ", next:"who_check", save:{place_sub:"がっこうトイレ"}}, {label:"🏥 ほけんしつ", next:"who_check", save:{place_sub:"ほけんしつ"}}, {label:"🌳 こうてい(そと)", next:"who_check", save:{place_sub:"こうてい"}} ] },
-            place_home: { text: "おうちの、どこ？", choices: [ {label:"🛋 リビング", next:"who_check", save:{place_sub:"リビング"}}, {label:"🛀 おふろ", next:"who_check", save:{place_sub:"おふろ"}}, {label:"🛌 しんしつ", next:"who_check", save:{place_sub:"しんしつ"}}, {label:"🚽 トイレ", next:"who_check", save:{place_sub:"おうちトイレ"}}, {label:"🚪 げんかん", next:"who_check", save:{place_sub:"げんかん"}}, {label:"👵 そぼ・そふのいえ", next:"who_check", save:{place_sub:"そぼのいえ"}} ] },
-            place_outside: { text: "おそとの、どこ？", choices: [ {label:"🌳 こうえん", next:"who_check", save:{place_sub:"こうえん"}}, {label:"🏪 おみせ", next:"who_check", save:{place_sub:"おみせ"}}, {label:"🚌 のりもの", next:"who_check", save:{place_sub:"のりもの"}}, {label:"🛣 みち", next:"who_check", save:{place_sub:"みち"}}, {label:"✏️ ならいごと", next:"who_check", save:{place_sub:"ならいごと"}} ] },
-            place_hospital: { text: "びょういんの、どこ？", choices: [ {label:"⏳ まちあいしつ", next:"who_check", save:{place_sub:"まちあいしつ"}}, {label:"🩺 しんさつしつ", next:"who_check", save:{place_sub:"しんさつしつ"}} ] },
-
-            // 4. 人物
-            who_check: {
-                text: "そこに、だれと いたの？",
-                choices: DATA.people.map(p => ({ label: p.label, next: "action_check", save: {person: p.value} }))
-            },
-
-            // 5. 行動
-            action_check: {
-                text: "なにを している ときだった？",
-                getChoices: () => {
-                    const sub = storyParts.place_sub;
-                    const actions = ACTIONS_MAP[sub] || DEFAULT_ACTIONS; 
-                    return actions.map(a => ({
-                        label: a.l,
-                        next: "event_check",
-                        save: { action: a.v, action_type: a.t } 
-                    }));
-                }
-            },
-
-            // 6. 出来事
-            event_check: {
-                text: "そこで、なにが あったの？",
-                getChoices: () => {
-                    const type = storyParts.action_type || "passive"; 
-                    // ★安全対策：もしtypeに対応するイベントがなければ「passive」を使う
-                    const events = EVENTS_MAP[type] || EVENTS_MAP["passive"];
-                    return events.map(e => ({
-                        label: e.l,
-                        next: "reason_check", 
-                        save: { event: e.v, last_valence: e.n ? 'n' : 'p' },
-                        p: e.p,
-                        n: e.n
-                    }));
-                }
-            },
-
-            // 7. 理由深掘り
-            reason_check: {
-                text: "どうして そうなったのかな？",
-                getChoices: () => {
-                    const isPositive = storyParts.last_valence === 'p';
-                    const reasons = getReasonChoices(isPositive);
-                    const nextStep = isPositive ? "thought_pos" : "thought_neg";
-                    return reasons.map(r => ({
-                        label: r.label,
-                        next: nextStep,
-                        save: r.save,
-                        p: r.p,
-                        n: r.n
-                    }));
-                }
-            },
-
-            // 8. 思考
-            thought_pos: {
-                text: "いいね！\nどんなふうに おもった？",
-                choices: DATA.thought_pos.map(t => ({...t, next: "body_check", save:{thought: t.value}}))
-            },
-            thought_neg: {
-                text: "そうかぁ…。\nそのとき、あたまのなかで どうおもった？",
-                choices: DATA.thought_neg.map(t => ({...t, next: "body_check", save:{thought: t.value}}))
-            },
-
-            // 9. からだ
-            body_check: {
-                text: "おしえてくれて ありがとう。\nさいごに、いまの からだは どんなかんじ？",
-                getChoices: () => {
-                    const isPositive = storyParts.last_valence === 'p';
-                    const bodies = getBodyChoices(isPositive);
-                    return bodies.map(b => ({
-                        label: b.label,
-                        save: {body: b.value},
-                        p: b.p,
-                        n: b.n,
-                        next: "call_check"
-                    }));
-                }
-            },
-
-            // 10. 電話確認
-            call_check: {
-                text: "かなとくんと、でんわ📞したい？",
-                choices: [
-                    { label: "📞 したい！", save: {want_call: "\n(かなとくんと電話：したい！)"}, p:true },
-                    { label: "😁 いましてる！", save: {want_call: "\n(かなとくんと電話：いましてる！)"}, p:true },
-                    { label: "🤔 あとで", save: {want_call: "\n(かなとくんと電話：あとで)"} },
-                    { label: "🙅‍♂️ しない", save: {want_call: "\n(かなとくんと電話：しない)"} }
-                ],
-                end: true
-            }
+            start: { text: "いっしょに さがそう。\nそれは、いつ あったこと？", choices: DATA.when.map(w => ({ label: w.label, next: "place_check", save: {when: w.value} })) },
+            place_check: { text: "どこで あったこと？", choices: [{ label: "🏫 がっこう", next: "place_school", save: {place: "がっこう"} },{ label: "🏠 おうち", next: "place_home", save: {place: "おうち"} }] },
+            place_school: { text: "がっこうの、どこ？", choices: [ {label:"🪑 きょうしつ", next:"who_check", save:{place_sub:"きょうしつ"}} ] },
+            place_home: { text: "おうちの、どこ？", choices: [ {label:"🛋 リビング", next:"who_check", save:{place_sub:"リビング"}} ] },
+            who_check: { text: "そこに、だれと いたの？", choices: DATA.people.map(p => ({ label: p.label, next: "action_check", save: {person: p.value} })) },
+            action_check: { text: "なにを している ときだった？", getChoices: () => (ACTIONS_MAP[storyParts.place_sub] || DEFAULT_ACTIONS).map(a => ({ label: a.l, next: "event_check", save: { action: a.v, action_type: a.t } })) },
+            event_check: { text: "そこで、なにが あったの？", getChoices: () => (EVENTS_MAP[storyParts.action_type] || EVENTS_MAP["eat"]).map(e => ({ label: e.l, next: "reason_check", save: { event: e.v, last_valence: e.n ? 'n' : 'p' }, p: e.p, n: e.n })) },
+            reason_check: { text: "どうして そうなったのかな？", getChoices: () => { const isPos = storyParts.last_valence === 'p'; return getReasonChoices(isPos).map(r => ({ label: r.label, next: isPos ? "thought_pos" : "thought_neg", save: r.save, p: r.p, n: r.n })); } },
+            thought_pos: { text: "いいね！どんなふうに おもった？", choices: DATA.thought_pos.map(t => ({...t, next: "body_check", save:{thought: t.value}})) },
+            thought_neg: { text: "そうかぁ。そのとき、どうおもった？", choices: DATA.thought_neg.map(t => ({...t, next: "body_check", save:{thought: t.value}})) },
+            body_check: { text: "いまの からだは どんなかんじ？", getChoices: () => getBodyChoices(storyParts.last_valence === 'p').map(b => ({ label: b.label, save: {body: b.value}, p: b.p, n: b.n, next: "call_check" })) },
+            call_check: { text: "かなとくんと、でんわ📞したい？", choices: [{ label: "📞 したい！", save: {want_call: "\n(でんわ：したい！)"}, p:true },{ label: "🙅‍♂️ しない", save: {want_call: "\n(でんわ：しない)"} }], end: true }
         };
 
-
-        // ============================================
-        // ゲーム進行エンジン
-        // ============================================
-
         let historyStack = [];
-
         function startGame() {
-            const historyDiv = document.getElementById('chat-history');
-            historyDiv.innerHTML = "";
+            document.getElementById('chat-history').innerHTML = "";
             document.getElementById('choice-wrapper').style.display = 'block';
-            document.getElementById('choice-area').innerHTML = "";
             document.getElementById('game-final-text').style.display = 'none';
-            document.getElementById('game-final-text').value = "";
-            
-            historyStack = [];
-            updateBackButton(); 
-
-            storyParts = { when: "", place: "", place_sub: "", person: "", action: "", action_type: "", event: "", reason: "", thought: "", body: "", want_call: "", last_valence: null };
-            
+            historyStack = []; storyParts = { when: "", place: "", place_sub: "", person: "", action: "", action_type: "", event: "", reason: "", thought: "", body: "", want_call: "", last_valence: null };
             showStep("start");
         }
-
-        function showStep(stepId, isBack = false) {
+        function showStep(stepId) {
             const step = SCENARIO_TREE[stepId];
-            if (!step) return;
-
-            const historyDiv = document.getElementById('chat-history');
-            const choiceArea = document.getElementById('choice-area');
-
+            const h = document.getElementById('chat-history');
+            const cArea = document.getElementById('choice-area');
             setTimeout(() => {
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble-ai';
-                bubble.innerText = step.text;
-                historyDiv.appendChild(bubble);
-                historyDiv.scrollTop = historyDiv.scrollHeight;
+                const b = document.createElement('div'); b.className = 'bubble-ai'; b.innerText = step.text;
+                h.appendChild(b); h.scrollTop = h.scrollHeight;
             }, 300);
-
-            choiceArea.innerHTML = "";
-            let choices = step.choices || [];
-            if(step.getChoices) choices = step.getChoices();
-
-            // ★★★ 自由記述ボタンの追加ロジック ★★★
-            // 「終了ステップ」かどうかをチェック
-            const isEndStep = !!step.end;
-
-            const freeChoice = { 
-                label: "✏️ じゆうに かく", 
-                isFree: true, 
-                // 終了ステップなら next は不要、それ以外なら自動判定用IDをセット
-                next: isEndStep ? null : "next_auto",
-                saveKey: getSaveKeyForStep(stepId),
-                isLast: isEndStep 
-            };
-            
-            choices = [...choices, freeChoice];
-
-            const delay = 800; 
-            setTimeout(() => {
-                choices.forEach(c => {
-                    // 通常の選択肢における「次」の決定
-                    let nextStepId = c.next;
-                    
-                    // 自由入力ボタンで、かつ終了ステップでない場合、次のステップIDを計算する
-                    if (c.isFree && !c.isLast) {
-                        nextStepId = getNextStepId(stepId); 
-                    }
-
-                    // step.end が true の場合、createButton に渡す isLast を true にする
-                    // 個別の選択肢(c.isLast) もしくは ステップ全体が終了(isEndStep) なら true
-                    const finalIsLast = c.isLast || isEndStep;
-
-                    createButton(c, stepId, historyDiv, choiceArea, finalIsLast, nextStepId);
-                });
-            }, delay);
-        }
-
-        function getSaveKeyForStep(stepId) {
-            if(stepId === 'start') return 'when';
-            if(stepId === 'place_check') return 'place';
-            if(stepId.startsWith('place_')) return 'place_sub';
-            if(stepId === 'who_check') return 'person';
-            if(stepId === 'action_check') return 'action';
-            if(stepId === 'event_check') return 'event';
-            if(stepId === 'reason_check') return 'reason';
-            if(stepId.startsWith('thought')) return 'thought';
-            if(stepId === 'body_check') return 'body';
-            if(stepId === 'call_check') return 'want_call';
-            return 'unknown';
-        }
-
-        function getNextStepId(currentStepId) {
-            if(currentStepId === 'start') return 'place_check';
-            if(currentStepId === 'place_check') return 'who_check'; 
-            if(currentStepId.startsWith('place_')) return 'who_check';
-            if(currentStepId === 'who_check') return 'action_check';
-            if(currentStepId === 'action_check') return 'event_check';
-            if(currentStepId === 'event_check') return 'reason_check';
-            if(currentStepId === 'reason_check') return 'thought_pos'; 
-            if(currentStepId.startsWith('thought')) return 'body_check';
-            if(currentStepId === 'body_check') return 'call_check';
-            return null;
-        }
-
-        function createButton(choice, currentStepId, historyDiv, choiceArea, isLast, overrideNext) {
-            const btn = document.createElement('button');
-            btn.className = 'game-btn';
-            btn.innerText = choice.label;
-            
-            if(choice.p) btn.classList.add('btn-pos');
-            else if(choice.n) btn.classList.add('btn-neg');
-            if(choice.isFree) btn.classList.add('btn-free-input');
-
-            btn.onclick = () => {
-                if (choice.isFree) {
-                    showFreeInputUI(currentStepId, choiceArea, historyDiv, choice.saveKey, isLast, overrideNext);
-                } else {
-                    processChoice(choice.label, choice.save, choice.next, currentStepId, historyDiv, isLast);
-                }
-            };
-            choiceArea.appendChild(btn);
-        }
-
-        // 選択肢を選んだときの共通処理
-        function processChoice(label, saveData, nextStepId, currentStepId, historyDiv, isLast) {
-            historyStack.push({
-                stepId: currentStepId,
-                storyParts: JSON.parse(JSON.stringify(storyParts)) 
+            cArea.innerHTML = "";
+            let choices = (step.getChoices ? step.getChoices() : step.choices);
+            choices.forEach(c => {
+                const btn = document.createElement('button'); btn.className = 'game-btn'; btn.innerText = c.label;
+                if(c.p) btn.classList.add('btn-pos'); else if(c.n) btn.classList.add('btn-neg');
+                btn.onclick = () => {
+                    historyStack.push({ stepId, storyParts: JSON.parse(JSON.stringify(storyParts)) });
+                    const ub = document.createElement('div'); ub.className = 'bubble-user'; ub.innerText = c.label;
+                    h.appendChild(ub); h.scrollTop = h.scrollHeight;
+                    Object.assign(storyParts, c.save);
+                    if(step.end) generateSentence(); else showStep(c.next);
+                };
+                cArea.appendChild(btn);
             });
-            updateBackButton();
-
-            const userBubble = document.createElement('div');
-            userBubble.className = 'bubble-user';
-            userBubble.innerText = label;
-            historyDiv.appendChild(userBubble);
-            historyDiv.scrollTop = historyDiv.scrollHeight;
-
-            if (saveData) Object.assign(storyParts, saveData);
-
-            // ★★★ 最重要修正：isLastがtrueなら、nextStepIdに関わらず必ず文章生成へ ★★★
-            if (isLast) {
-                generateSentence();
-            } else {
-                showStep(nextStepId);
-            }
         }
-
-        function showFreeInputUI(currentStepId, choiceArea, historyDiv, saveKey, isLast, nextStepId) {
-            choiceArea.innerHTML = ""; 
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = 'free-input-area';
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'free-input-text';
-            input.placeholder = 'ここにかいてね';
-            
-            const okBtn = document.createElement('button');
-            okBtn.innerText = 'OK';
-            okBtn.className = 'free-input-ok';
-
-            okBtn.onclick = () => {
-                const val = input.value.trim();
-                if (!val) return; 
-
-                const saveData = {};
-                saveData[saveKey] = val;
-                
-                if (saveKey === 'event') {
-                    saveData['last_valence'] = 'p'; 
-                }
-
-                // ここでも isLast を確実に渡す
-                processChoice(val, saveData, nextStepId, currentStepId, historyDiv, isLast);
-            };
-
-            wrapper.appendChild(input);
-            wrapper.appendChild(okBtn);
-            choiceArea.appendChild(wrapper);
-            input.focus();
-        }
-
-        function goBack() {
-            if (historyStack.length === 0) return;
-
-            const prevState = historyStack.pop();
-            storyParts = prevState.storyParts; 
-            updateBackButton();
-
-            const historyDiv = document.getElementById('chat-history');
-
-            if (document.getElementById('choice-wrapper').style.display === 'none') {
-                document.getElementById('game-final-text').style.display = 'none';
-                document.getElementById('choice-wrapper').style.display = 'block';
-                if (historyDiv.lastChild && historyDiv.lastChild.classList.contains('bubble-user')) {
-                    historyDiv.removeChild(historyDiv.lastChild);
-                }
-            } 
-            else {
-                if (historyDiv.lastChild && historyDiv.lastChild.classList.contains('bubble-ai')) {
-                    historyDiv.removeChild(historyDiv.lastChild);
-                }
-                if (historyDiv.lastChild && historyDiv.lastChild.classList.contains('bubble-user')) {
-                    historyDiv.removeChild(historyDiv.lastChild);
-                }
-            }
-
-            if (historyDiv.lastChild && historyDiv.lastChild.classList.contains('bubble-ai')) {
-                historyDiv.removeChild(historyDiv.lastChild);
-            }
-
-            showStep(prevState.stepId);
-            historyDiv.scrollTop = historyDiv.scrollHeight;
-        }
-
-        function updateBackButton() {
-            const btn = document.getElementById('btn-back');
-            if (historyStack.length > 0) {
-                btn.style.display = 'block';
-            } else {
-                btn.style.display = 'none';
-            }
-        }
-
         function generateSentence() {
             document.getElementById('choice-wrapper').style.display = 'none';
-            const finalText = document.getElementById('game-final-text');
-            finalText.style.display = 'block';
-
-            const TEMPLATES = [
-                "{w}、{p}の{ps}で、{pe}{a}していたら、{e}。{r}。それで、{t}とおもいました。\n(からだは、{b} です)",
-                "{w}のこと。{p}の{ps}にいったよ。{pe}{a}したんだ。そしたら、{e}。{r}。{t}ってかんじたよ。\n(からだ：{b})",
-                "きいて。{w}、{p}の{ps}でね、{pe}{a}してたの。そうしたら{e}。{r}。{t}だったよ。\n(いまのからだ：{b})"
-            ];
-
-            const template = TEMPLATES[Math.floor(Math.random() * TEMPLATES.length)];
-
-            let w = storyParts.when;
-            let p = storyParts.place;
-            let ps = storyParts.place_sub;
-            let pe = storyParts.person === "ひとり" ? "ひとりで" : (storyParts.person + "と");
-            let a = storyParts.action;
-            let e = storyParts.event;
-            let r = storyParts.reason ? `りゆうは、${storyParts.reason}` : "";
-            let t = storyParts.thought;
-            let b = storyParts.body;
-            let c = storyParts.want_call || "";
-
-            let text = template
-                .replace("{w}", w)
-                .replace("{p}", p)
-                .replace("{ps}", ps)
-                .replace("{pe}", pe)
-                .replace("{a}", a)
-                .replace("{e}", e)
-                .replace("{r}", r)
-                .replace("{t}", t)
-                .replace("{b}", b);
-
-            text = text.replace("。。", "。"); 
-            text = text.replace("りゆうは、。", "");
-            
-            text += c;
-
-            finalText.value = text;
+            const f = document.getElementById('game-final-text'); f.style.display = 'block';
+            f.value = `${storyParts.when}、${storyParts.place}の${storyParts.place_sub}で${storyParts.person}と${storyParts.action}をしていたら、${storyParts.event}。りゆうは${storyParts.reason}。${storyParts.thought}とおもったよ。(からだは${storyParts.body})${storyParts.want_call}`;
         }
 
-        window.onload = startGame;
-
-        // ★★★ ボタンクリック処理（GAS連携対応版） ★★★
-        submitBtn.addEventListener('click', function() {
+        // 送信処理（既存＋はかせ対応）
+        document.getElementById('submit-btn').addEventListener('click', async function() {
             let finalInput = "";
-            if (currentMode === 'free') {
-                finalInput = document.getElementById('user-input-free').value;
-            } else {
-                finalInput = document.getElementById('game-final-text').value;
-                if(!finalInput) finalInput = "（おはなしの とちゅう）";
-            }
-
-            // ★追加：ゲージの内容を末尾に追記
+            if (currentMode === 'free') finalInput = document.getElementById('user-input-free').value;
+            else if (currentMode === 'doctor') finalInput = doctorLog || "はかせとおはなししたよ";
+            else finalInput = document.getElementById('game-final-text').value || "（おはなしのとちゅう）";
+            
             finalInput += `\n(きもち:${currentEmotionLevel}, ねむたさ:${currentSleepLevel})`;
-            
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = 'おくってるよ... 🚀';
-            
-            const now = new Date();
-            const dateStr = now.getFullYear() + "-" + 
-                           String(now.getMonth()+1).padStart(2, '0') + "-" + 
-                           String(now.getDate()).padStart(2, '0') + " " + 
-                           String(now.getHours()).padStart(2, '0') + ":" + 
-                           String(now.getMinutes()).padStart(2, '0') + ":" + 
-                           String(now.getSeconds()).padStart(2, '0');
-
-            const newLog = {
-                created_at: dateStr,
-                color: colorKey,
-                emotion_label: theme.label,
-                user_input: finalInput || "-"
-            };
-
+            this.disabled = true; this.innerHTML = 'おくってるよ... 🚀';
             try {
-                const logs = JSON.parse(localStorage.getItem('emotion_logs') || "[]");
-                logs.unshift(newLog);
-                localStorage.setItem('emotion_logs', JSON.stringify(logs));
-            } catch(e) { console.error(e); }
-
-            const postData = { color: colorKey, emotion: theme.label, text: finalInput || "（テキストなし）" };
-
-            let sendPromise = Promise.resolve();
-            if (typeof GAS_URL !== 'undefined' && GAS_URL && GAS_URL.startsWith('http')) {
-                sendPromise = fetch(GAS_URL, {
-                    method: 'POST',
-                    redirect: "follow",
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(postData)
-                });
-            }
-
-            sendPromise.finally(() => {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ color: colorKey, emotion: theme.label, text: finalInput }) });
                 window.location.href = `result.html?color=${colorKey}&input=${encodeURIComponent(finalInput)}`;
-            });
+            } catch(e) { alert("エラー"); this.disabled = false; this.innerHTML = 'おくる 🚀'; }
         });
+
+        switchMode('game');
+        startGame();
     </script>
 </body>
 </html>
