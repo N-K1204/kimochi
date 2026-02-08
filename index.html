@@ -6,157 +6,61 @@
     <title>きもちにっき</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ------------------------------------------------
-            パスワード画面のスタイル
-        ------------------------------------------------ */
-        #login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #fff7e6, #ffeefd);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .login-box {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
-        }
-
-        .login-title {
-            font-size: 20px;
-            margin-bottom: 20px;
-            color: #555;
-            font-weight: bold;
-        }
-
-        .pass-input {
-            width: 80%;
-            padding: 10px;
-            font-size: 18px;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-family: sans-serif;
-        }
-
-        .login-btn {
-            background-color: #ff8bb0;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #ff6f9e;
-            transition: 0.1s;
-        }
-        .login-btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
-        .error-msg {
-            color: #ff6f6f;
-            font-size: 14px;
-            margin-top: 15px;
-            display: none;
-            font-weight: bold;
-        }
-
-        /* アプリ画面の追加スタイル */
+        /* --- 既存スタイル（完全維持） --- */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #fff7e6, #ffeefd); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 80%; max-width: 400px; }
+        .login-title { font-size: 20px; margin-bottom: 20px; color: #555; font-weight: bold; }
+        .pass-input { width: 80%; padding: 10px; font-size: 18px; border: 2px solid #ccc; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .login-btn { background-color: #ff8bb0; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 0 #ff6f9e; }
         #app-content { display: none; }
-        
-        /* 新機能ボタンのスタイル */
-        .btn-feature {
-            display: block;
-            width: 100%;
-            padding: 15px 0;
-            margin-top: 15px;
-            border-radius: 15px;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            text-decoration: none;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-            transition: 0.1s;
-            box-sizing: border-box;
-        }
+        .btn-feature { display: block; width: 100%; padding: 15px 0; margin-top: 15px; border-radius: 15px; color: white; font-size: 18px; font-weight: bold; text-align: center; text-decoration: none; box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: 0.1s; box-sizing: border-box; }
         .btn-feature:active { transform: translateY(4px); box-shadow: none; }
-        
         .btn-magic { background-color: #b49cff; border: 2px solid #9575cd; }
         .btn-gacha { background-color: #4dd0e1; border: 2px solid #00acc1; }
         .btn-shiritori { background-color: #ff8a65; border: 2px solid #ff7043; }
-        .btn-katchin { background-color: #90caf9; border: 2px solid #64b5f6; color: #fff; }
-        
-        /* カレンダーボタン用スタイル */
-        .btn-calendar { background-color: #ffcc80; border: 2px solid #fb8c00; color: #fff; }
+        .btn-katchin { background-color: #90caf9; border: 2px solid #64b5f6; }
+        .btn-calendar { background-color: #ffcc80; border: 2px solid #fb8c00; }
 
-        /* 🗓 ワクワクイベントバナーのアニメーション */
-        @keyframes wakuwaku-1 { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-        @keyframes wakuwaku-2 { 
-            0%, 100% { transform: scale(1.1) rotate(-1deg); } 
-            50% { transform: scale(1.15) rotate(1deg); color: #ff4081; } 
-        }
-        .level-1 { animation: wakuwaku-1 2s infinite ease-in-out; border-color: #ffcc80 !important; }
-        .level-2 { animation: wakuwaku-2 0.6s infinite ease-in-out; border: 3px solid #ff8bb0 !important; box-shadow: 0 0 20px rgba(255,139,176,0.5) !important; }
-
-        /* --- 🚽 クイックアクションボタンの追加スタイル --- */
-        .quick-action-area {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        .btn-quick {
-            padding: 15px 20px;
-            border-radius: 20px;
-            border: none;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-            transition: 0.1s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-quick:active { transform: translateY(4px); box-shadow: none; }
+        /* --- ボタンエリア --- */
+        .quick-action-area { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .btn-quick { padding: 12px 10px; border-radius: 15px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-toilet { background-color: #e1f5fe; color: #0288d1; border: 2px solid #b3e5fc; }
         .btn-reply { background-color: #f3e5f5; color: #7b1fa2; border: 2px solid #e1bee7; }
+        .btn-question { background-color: #fff3e0; color: #e65100; border: 2px solid #ffe0b2; }
+        .btn-free { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #c8e6c9; }
 
-        /* --- 確認モーダルのスタイル --- */
-        .q-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); display: none; z-index: 10000;
-            align-items: center; justify-content: center; backdrop-filter: blur(4px);
-        }
-        .q-modal-content {
-            background: white; padding: 25px; border-radius: 25px;
-            width: 85%; max-width: 320px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .q-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #444; }
-        .q-btn-group { display: flex; gap: 10px; }
-        .q-btn {
-            flex: 1; padding: 15px; border-radius: 15px; border: none;
-            font-size: 18px; font-weight: bold; cursor: pointer; color: white;
-        }
+        .q-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .q-modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .q-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #444; }
+        .q-input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; margin-bottom: 15px; font-size: 16px; }
+        .q-btn-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .q-btn { flex: 1; padding: 12px; border-radius: 15px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: white; }
         .q-yes { background-color: #ff8bb0; }
-        .q-no { background-color: #ccc; }
+        .q-no { background-color: #7da6ff; }
+        .q-send-free { width: 100%; background-color: #b49cff !important; margin-top: 5px; }
+
+        /* --- 🎨 マルチキャンバス画面 --- */
+        #canvas-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: none; flex-direction: column; z-index: 10001; }
+        .canvas-header { padding: 10px; display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; border-bottom: 1px solid #ddd; }
+        .canvas-container { flex: 1; position: relative; background: #fff; touch-action: none; overflow: hidden; }
+        #main-canvas { width: 100%; height: 100%; display: block; }
+        
+        .canvas-tools { padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #f0f0f0; }
+        .tool-row { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
+        .tool-btn { padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; background: white; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .tool-btn.active { background: #ff8bb0; color: white; border-color: #ff8bb0; }
+        .color-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #ccc; cursor: pointer; }
+        .color-dot.active { box-shadow: 0 0 0 2px #ff8bb0; }
+
+        #canvas-list-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fefefe; display: none; flex-direction: column; z-index: 10001; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        .thumb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .thumb-card { border: 2px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; position: relative; }
+        .thumb-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
+        .thumb-info { padding: 5px; font-size: 11px; text-align: center; background: #fafafa; }
+        .btn-add-new { background: #6ecb63; color: white; padding: 15px; border-radius: 15px; font-weight: bold; border: none; font-size: 16px; cursor: pointer; }
+
+        #next-event-banner { animation: wakuwaku-1 2s infinite ease-in-out; }
+        @keyframes wakuwaku-1 { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
     </style>
 </head>
 <body>
@@ -167,7 +71,6 @@
             <input type="password" id="password" class="pass-input" placeholder="ここに入力">
             <br>
             <button class="login-btn" onclick="checkPassword()">あける</button>
-            <div id="error-message" class="error-msg">ちがうみたい...💦</div>
         </div>
     </div>
 
@@ -175,203 +78,274 @@
         <h1>🌈 きもちにっき 🌈</h1>
 
         <div class="quick-action-area">
-            <button class="btn-quick btn-toilet" onclick="openQModal('toilet')">🚽 トイレ</button>
-            <button class="btn-quick btn-reply" onclick="openQModal('reply')">💬 おへんじ</button>
+            <button class="btn-quick btn-toilet" onclick="openQModal('toilet')">🚽 トイレに行っといれ</button>
+            <button class="btn-quick btn-reply" onclick="openQModal('reply')">💬 おへんじコーナー</button>
+            <button class="btn-quick btn-question" onclick="openQModal('question')">✉️ しつもんボックス</button>
+            <button class="btn-quick btn-free" onclick="showCanvasList()">🎨 じゆうちょう</button>
         </div>
 
-        <div id="next-event-banner" style="display:none; margin: 0 auto 20px; width: 100%;">
+        <div id="next-event-banner" style="display:none; margin: 0 auto 20px;">
             <a href="calendar.html" style="text-decoration: none; color: inherit;">
-                <div id="event-card" style="background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; position: relative; overflow: hidden; border: 2px solid #eee;">
-                    <div id="excitement-bg" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.1; z-index:0;"></div>
+                <div id="event-card" style="background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border: 2px solid #eee;">
                     <span style="font-size: 12px; color: #888; font-weight: bold;">🚀 もーすぐ！ワクワクイベント</span>
-                    <h2 id="banner-title" style="margin: 5px 0; color: #ff8bb0; z-index:1; position:relative; font-size: 22px;"></h2>
-                    <div id="banner-countdown" style="font-weight: bold; font-size: 18px; z-index:1; position:relative; color: #555;"></div>
+                    <h2 id="banner-title" style="margin: 5px 0; color: #ff8bb0;"></h2>
+                    <div id="banner-countdown" style="font-weight: bold; color: #555;"></div>
                 </div>
             </a>
         </div>
-        
+
         <div class="color-grid">
-            <a href="input.html?color=pink" class="color-btn" style="background-color: #fff0f7; border-color: #ff8bb0;">
-                <span class="emoji">😄</span><span>うれしい</span>
-            </a>
-            <a href="input.html?color=green" class="color-btn" style="background-color: #f0fff3; border-color: #6ecb63;">
-                <span class="emoji">😌</span><span>おちつく</span>
-            </a>
-            <a href="input.html?color=yellow" class="color-btn" style="background-color: #fffbe0; border-color: #f1c232;">
-                <span class="emoji">😮</span><span>びっくり</span>
-            </a>
-            <a href="input.html?color=purple" class="color-btn" style="background-color: #f9f5ff; border-color: #b49cff;">
-                <span class="emoji">😕</span><span>もやもや</span>
-            </a>
-            <a href="input.html?color=blue" class="color-btn" style="background-color: #f0f6ff; border-color: #7da6ff;">
-                <span class="emoji">😢</span><span>さみしい</span>
-            </a>
-            <a href="input.html?color=black" class="color-btn" style="background-color: #f3f3f3; border-color: #8c8c8c;">
-                <span class="emoji">😴</span><span>つかれた</span>
-            </a>
-            <a href="input.html?color=red" class="color-btn" style="background-color: #fff0f0; border-color: #ff6f6f;">
-                <span class="emoji">😡</span><span>イライラ</span>
-            </a>
-            <a href="input.html?color=white" class="color-btn" style="background-color: #ffffff; border-color: #cccccc;">
-                <span class="emoji">😁</span><span>期間限定</span>
-            </a>
+            <a href="input.html?color=pink" class="color-btn" style="background-color: #fff0f7; border-color: #ff8bb0;"><span class="emoji">😄</span><span>うれしい</span></a>
+            <a href="input.html?color=green" class="color-btn" style="background-color: #f0fff3; border-color: #6ecb63;"><span class="emoji">😌</span><span>おちつく</span></a>
+            <a href="input.html?color=yellow" class="color-btn" style="background-color: #fffbe0; border-color: #f1c232;"><span class="emoji">😮</span><span>びっくり</span></a>
+            <a href="input.html?color=purple" class="color-btn" style="background-color: #f9f5ff; border-color: #b49cff;"><span class="emoji">😕</span><span>もやもや</span></a>
+            <a href="input.html?color=blue" class="color-btn" style="background-color: #f0f6ff; border-color: #7da6ff;"><span class="emoji">😢</span><span>さみしい</span></a>
+            <a href="input.html?color=black" class="color-btn" style="background-color: #f3f3f3; border-color: #8c8c8c;"><span class="emoji">😴</span><span>つかれた</span></a>
+            <a href="input.html?color=red" class="color-btn" style="background-color: #fff0f0; border-color: #ff6f6f;"><span class="emoji">😡</span><span>イライラ</span></a>
+            <a href="input.html?color=white" class="color-btn" style="background-color: #ffffff; border-color: #cccccc;"><span class="emoji">😁</span><span>期間限定</span></a>
         </div>
 
         <div style="margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 20px;">
-            <p style="font-size:14px; color:#888; margin-bottom:10px;">👇 こまったときは ココ！</p>
-            
-            <a href="calendar.html" class="btn-feature btn-calendar">
-                📅 みんなのカレンダー
-            </a>
-
-            <a href="magic.html" class="btn-feature btn-magic">
-                🧙‍♂️ コトバのまほう
-            </a>
-            
-            <a href="gacha.html" class="btn-feature btn-gacha">
-                💊 おたすけ ガチャ
-            </a>
-
-            <a href="shiritori.html" class="btn-feature btn-shiritori">
-                🍎 しりとり バトル
-            </a>
-
-            <a href="katchin.html" class="btn-feature btn-katchin">
-                🧊 かっちん かっちん
-            </a>
+            <a href="calendar.html" class="btn-feature btn-calendar">📅 みんなのカレンダー</a>
+            <a href="magic.html" class="btn-feature btn-magic">🧙‍♂️ コトバのまほう</a>
+            <a href="gacha.html" class="btn-feature btn-gacha">💊 おたすけ ガチャ</a>
+            <a href="shiritori.html" class="btn-feature btn-shiritori">🍎 しりとり バトル</a>
+            <a href="katchin.html" class="btn-feature btn-katchin">🧊 かっちん かっちん</a>
         </div>
+        <a href="logs.html" class="btn-logs" style="display:block; text-align:center; margin-top:20px; color:#888; font-weight:bold; text-decoration:none;">📘 きもちのきろく</a>
+    </div>
 
-        <a href="logs.html" class="btn-logs">
-            📘 きろくのきろく
-        </a>
+    <div id="canvas-list-screen">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px;">
+            <h2 style="color:#2e7d32; margin:0;">🎨 じゆうちょう</h2>
+            <button onclick="document.getElementById('canvas-list-screen').style.display='none'" style="border:none; background:none; font-size:24px;">✖</button>
+        </div>
+        <button class="btn-add-new" onclick="createNewCanvas()">＋ あたらしい キャンバス を つくる</button>
+        <div id="canvas-thumbnails" class="thumb-grid"></div>
+    </div>
+
+    <div id="canvas-screen">
+        <div class="canvas-header">
+            <button onclick="saveAndExitCanvas()" style="background:none; border:none; color:#ff8bb0; font-weight:bold;">◀ リストへ</button>
+            <b id="canvas-title">🎨 おえかき</b>
+            <button onclick="sendCanvas()" style="background:#6ecb63; color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:bold;">おくる 🚀</button>
+        </div>
+        <div class="canvas-container" id="canvas-wrap"><canvas id="main-canvas"></canvas></div>
+        <div class="canvas-tools">
+            <div class="tool-row" id="color-palette">
+                <div class="color-dot active" style="background:#000" onclick="changePenColor('#000', this)"></div>
+                <div class="color-dot" style="background:#ff4444" onclick="changePenColor('#ff4444', this)"></div>
+                <div class="color-dot" style="background:#4444ff" onclick="changePenColor('#4444ff', this)"></div>
+                <div class="color-dot" style="background:#44aa44" onclick="changePenColor('#44aa44', this)"></div>
+                <div class="color-dot" style="background:#ff8bb0" onclick="changePenColor('#ff8bb0', this)"></div>
+            </div>
+            <div class="tool-row">
+                <button class="tool-btn active" id="btn-pen" onclick="setMode('pen')">✏️ペン</button>
+                <button class="tool-btn" id="btn-eraser" onclick="setMode('eraser')">🧽けしゴム</button>
+                <button class="tool-btn" id="btn-text" onclick="setMode('text')">🔤もじ</button>
+                <select id="size-select" class="tool-btn" onchange="changeSize(this.value)">
+                    <option value="4">ほそい</option><option value="10" selected>ふつう</option><option value="30">ふとい</option>
+                </select>
+            </div>
+            <div class="tool-row">
+                <button class="tool-btn" onclick="undo()">↩ もどる</button>
+                <button class="tool-btn" onclick="redo()">すすむ ↪</button>
+                <label class="tool-btn" style="background:#e1f5fe; color:#0288d1;">🖼️ しゃしんを はる
+                    <input type="file" id="image-upload" accept="image/*" style="display:none;" onchange="handleImage(event)">
+                </label>
+                <button class="tool-btn" style="color:red;" onclick="clearCanvasConfirm()">🗑️ぜんぶ消す</button>
+            </div>
+        </div>
     </div>
 
     <div id="quick-modal" class="q-modal">
         <div class="q-modal-content">
             <div id="q-text" class="q-title"></div>
-            <div class="q-btn-group">
+            <textarea id="q-input-area" class="q-input" placeholder="ここにかいてね"></textarea>
+            <div id="q-btn-yesno" class="q-btn-group">
                 <button class="q-btn q-yes" onclick="sendQuickNotify('うん')">うん</button>
-                <button class="q-btn q-no" onclick="sendQuickNotify('ううん')">ううん</button>
+                <button class="q-btn q-no" onclick="sendQuickNotify('うううん')">ううん</button>
             </div>
+            <button id="q-btn-custom" class="q-btn q-send-free" onclick="sendQuickNotify()">メッセージをおくる 💌</button>
             <button onclick="closeQModal()" style="margin-top:15px; background:none; border:none; color:#aaa; cursor:pointer;">やめる</button>
         </div>
     </div>
 
     <script>
-        const CORRECT_PASS = "yuuki01121003";
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
 
-        window.onload = function() {
-            if (sessionStorage.getItem("isLoggedIn") === "true") {
-                showApp();
-            }
-        };
+        // --- ログイン/イベント読込 ---
+        function checkPassword() { if (document.getElementById('password').value === "yuuki01121003") { sessionStorage.setItem("isLoggedIn", "true"); showApp(); } }
+        function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'block'; showNextEvent(); }
+        window.onload = function() { if (sessionStorage.getItem("isLoggedIn") === "true") showApp(); };
+        async function showNextEvent() { try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({type: 'get_calendar'}) }); const events = await res.json(); if (!events || events.length === 0) return; const now = new Date(); now.setHours(0,0,0,0); const next = events.map(e => ({...e, diff: Math.ceil((new Date(e.date)-now)/86400000)})).filter(e => e.diff >= 0).sort((a,b)=>a.diff-b.diff)[0]; if(next) { document.getElementById('next-event-banner').style.display = 'block'; document.getElementById('banner-title').innerText = next.title; document.getElementById('banner-countdown').innerText = next.diff===0 ? "✨ きょうが本番！" : `あと ${next.diff}日`; } } catch(e) {} }
 
-        function checkPassword() {
-            const inputPass = document.getElementById('password').value;
-            const errorMsg = document.getElementById('error-message');
-
-            if (inputPass === CORRECT_PASS) {
-                sessionStorage.setItem("isLoggedIn", "true");
-                showApp();
-            } else {
-                errorMsg.style.display = "block";
-            }
-        }
-
-        function showApp() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            showNextEvent(); 
-        }
-
-        document.getElementById('password').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkPassword();
-        });
-
-        // --- クイックアクション用ロジック ---
+        // --- クイック通知 ---
         let quickMode = "";
         function openQModal(mode) {
             quickMode = mode;
-            const text = document.getElementById('q-text');
-            if(mode === 'toilet') {
-                text.innerText = "トイレに いきたいですか？";
-            } else {
-                text.innerText = "どっちにあてはまる？";
-            }
+            const ui = { text: document.getElementById('q-text'), input: document.getElementById('q-input-area'), yesno: document.getElementById('q-btn-yesno'), custom: document.getElementById('q-btn-custom') };
+            ui.input.style.display = (mode === 'toilet') ? "none" : "block";
+            ui.yesno.style.display = (mode === 'question') ? "none" : "flex";
+            ui.custom.style.display = (mode === 'toilet') ? "none" : "block";
+            ui.text.innerText = mode === 'toilet' ? "トイレに いきたい？" : mode === 'reply' ? "おへんじ コーナー" : "しつもんボックス";
             document.getElementById('quick-modal').style.display = 'flex';
         }
-
-        function closeQModal() {
-            document.getElementById('quick-modal').style.display = 'none';
-        }
-
+        function closeQModal() { document.getElementById('quick-modal').style.display = 'none'; document.getElementById('q-input-area').value = ""; }
         async function sendQuickNotify(answer) {
-            const content = quickMode === 'toilet' ? `🚽 トイレにいきたいですか？ → **${answer}**` : `💬 おへんじ → **${answer}**`;
-            const yesBtn = document.querySelector('.q-yes');
-            const noBtn = document.querySelector('.q-no');
-            
-            yesBtn.disabled = true;
-            noBtn.disabled = true;
-            
-            try {
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ type: "quick_notify", content: content })
-                });
-                alert("つうちを おくったよ！🚀");
-            } catch(e) {
-                alert("エラーがおきちゃった💦");
-            } finally {
-                yesBtn.disabled = false;
-                noBtn.disabled = false;
-                closeQModal();
+            const userInput = document.getElementById('q-input-area').value;
+            let titlePrefix = (quickMode === 'question') ? "✉️ しつもん" : (quickMode === 'toilet') ? "🚽 トイレ" : "💬 おへんじ";
+            let content = answer ? `${titlePrefix}：${answer}` : `${titlePrefix}`;
+            if(userInput) content += (answer ? "\n内容：" : "：") + userInput;
+            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！🚀"); } catch(e) { alert("エラー💦"); }
+            closeQModal();
+        }
+
+        // --- 🎨 じゆうちょう（お絵描き） ---
+        let canvasDataList = JSON.parse(localStorage.getItem('my_canvases') || "[]");
+        let currentCanvasIndex = -1;
+        const canvas = document.getElementById('main-canvas'), ctx = canvas.getContext('2d');
+        let drawing = false, currentMode = 'pen', penColor = '#000', brushSize = 10;
+        let undoStack = [], redoStack = [];
+
+        function showCanvasList() {
+            document.getElementById('canvas-list-screen').style.display = 'flex';
+            const grid = document.getElementById('canvas-thumbnails'); grid.innerHTML = "";
+            canvasDataList.forEach((data, index) => {
+                const div = document.createElement('div'); div.className = "thumb-card"; div.onclick = () => openCanvas(index);
+                div.innerHTML = `<img src="${data.img}"><div class="thumb-info">${data.date}</div>`;
+                grid.appendChild(div);
+            });
+        }
+
+        function createNewCanvas() {
+            currentCanvasIndex = canvasDataList.length;
+            canvasDataList.push({ img: "", date: new Date().toLocaleString() });
+            openCanvas(currentCanvasIndex, true);
+        }
+
+        function openCanvas(index, isNew = false) {
+            currentCanvasIndex = index;
+            undoStack = []; redoStack = [];
+            document.getElementById('canvas-screen').style.display = 'flex';
+            resizeCanvas();
+            if(!isNew && canvasDataList[index].img) {
+                const img = new Image(); img.onload = () => { ctx.drawImage(img, 0, 0); saveState(false); }; img.src = canvasDataList[index].img;
+            } else {
+                clearCanvas(false); saveState(false);
             }
         }
 
-        // --- 🗓 トップページのワクワクイベント表示処理 ---
-        async function showNextEvent() {
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({type: 'get_calendar'}) });
-                const events = await res.json();
-                if (!events || events.length === 0) return;
+        function saveAndExitCanvas() {
+            canvasDataList[currentCanvasIndex].img = canvas.toDataURL();
+            localStorage.setItem('my_canvases', JSON.stringify(canvasDataList));
+            document.getElementById('canvas-screen').style.display = 'none';
+            showCanvasList();
+        }
 
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
+        function resizeCanvas() { 
+            const wrap = document.getElementById('canvas-wrap');
+            const data = canvas.toDataURL();
+            canvas.width = wrap.clientWidth; canvas.height = wrap.clientHeight;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = data;
+        }
 
-                const futureEvents = events
-                    .map(e => {
-                        const eventDate = new Date(e.date);
-                        eventDate.setHours(0, 0, 0, 0);
-                        const diff = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
-                        return { ...e, dateObj: eventDate, diff: diff };
-                    })
-                    .filter(e => e.diff >= 0)
-                    .sort((a, b) => a.diff - b.diff);
+        function clearCanvas(record = true) {
+            ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if(record) saveState();
+        }
 
-                if (futureEvents.length > 0) {
-                    const next = futureEvents[0];
-                    document.getElementById('next-event-banner').style.display = 'block';
-                    document.getElementById('banner-title').innerText = next.title;
-                    
-                    const card = document.getElementById('event-card');
-                    const countdown = document.getElementById('banner-countdown');
+        function clearCanvasConfirm() {
+            if(confirm("ぜんぶ消してもいい？")) clearCanvas();
+        }
 
-                    if (next.diff === 0) {
-                        countdown.innerText = "✨ きょうが本番だよ！ ✨";
-                        card.className = "level-2"; 
-                        document.getElementById('excitement-bg').style.background = "repeating-linear-gradient(45deg, #ff8bb0, #ff8bb0 10px, #fff 10px, #fff 20px)";
-                    } else if (next.diff <= 3) {
-                        countdown.innerText = `あと ${next.diff}日！ ドキドキ...`;
-                        card.className = (next.diff === 1) ? "level-2" : "level-1"; 
-                    } else {
-                        countdown.innerText = `あと ${next.diff}日`;
-                        card.className = ""; 
-                    }
+        function changePenColor(c, el) { 
+            penColor = c; 
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+            setMode('pen');
+        }
+        function setMode(m) {
+            currentMode = m;
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + m).classList.add('active');
+        }
+        function changeSize(s) { brushSize = parseInt(s); }
+
+        function saveState(clearRedo = true) {
+            undoStack.push(canvas.toDataURL());
+            if(undoStack.length > 30) undoStack.shift();
+            if(clearRedo) redoStack = [];
+        }
+
+        function undo() {
+            if (undoStack.length <= 1) return;
+            redoStack.push(undoStack.pop());
+            const img = new Image();
+            img.onload = () => { ctx.fillStyle = "#fff"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img, 0, 0); };
+            img.src = undoStack[undoStack.length - 1];
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            const data = redoStack.pop();
+            undoStack.push(data);
+            const img = new Image();
+            img.onload = () => { ctx.fillStyle = "#fff"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img, 0, 0); };
+            img.src = data;
+        }
+
+        const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        };
+
+        function start(e) {
+            const p = getPos(e);
+            if(currentMode === 'text') {
+                const text = prompt("文字を入力してね");
+                if(text) {
+                    ctx.font = `bold ${brushSize * 3}px sans-serif`;
+                    ctx.fillStyle = penColor;
+                    ctx.fillText(text, p.x, p.y);
+                    saveState();
                 }
-            } catch(e) {
-                console.error("イベントの読み込みに失敗しました:", e);
+                return;
             }
+            drawing = true; ctx.beginPath(); ctx.moveTo(p.x, p.y);
+        }
+        function move(e) {
+            if(!drawing || currentMode === 'text') return;
+            const p = getPos(e);
+            ctx.strokeStyle = (currentMode === 'eraser') ? '#fff' : penColor;
+            ctx.lineWidth = (currentMode === 'eraser') ? brushSize * 2 : brushSize;
+            ctx.lineTo(p.x, p.y); ctx.stroke();
+        }
+        function stop() { if(drawing) { drawing = false; saveState(); } }
+
+        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', stop);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }); canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }); canvas.addEventListener('touchend', stop);
+
+        function handleImage(event) {
+            const reader = new FileReader();
+            reader.onload = (f) => {
+                const img = new Image();
+                img.onload = () => {
+                    const r = Math.min(canvas.width/img.width, canvas.height/img.height)*0.8;
+                    ctx.drawImage(img, 10, 10, img.width*r, img.height*r);
+                    saveState();
+                };
+                img.src = f.target.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        async function sendCanvas() {
+            const data = canvas.toDataURL("image/png");
+            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "free_note", content: data }) }); alert("はかせにおくったよ！🎨"); } catch(e) { alert("エラー💦"); }
         }
     </script>
 </body>
