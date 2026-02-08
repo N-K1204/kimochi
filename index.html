@@ -113,6 +113,50 @@
         }
         .level-1 { animation: wakuwaku-1 2s infinite ease-in-out; border-color: #ffcc80 !important; }
         .level-2 { animation: wakuwaku-2 0.6s infinite ease-in-out; border: 3px solid #ff8bb0 !important; box-shadow: 0 0 20px rgba(255,139,176,0.5) !important; }
+
+        /* --- 🚽 クイックアクションボタンの追加スタイル --- */
+        .quick-action-area {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .btn-quick {
+            padding: 15px 20px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-quick:active { transform: translateY(4px); box-shadow: none; }
+        .btn-toilet { background-color: #e1f5fe; color: #0288d1; border: 2px solid #b3e5fc; }
+        .btn-reply { background-color: #f3e5f5; color: #7b1fa2; border: 2px solid #e1bee7; }
+
+        /* --- 確認モーダルのスタイル --- */
+        .q-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); display: none; z-index: 10000;
+            align-items: center; justify-content: center; backdrop-filter: blur(4px);
+        }
+        .q-modal-content {
+            background: white; padding: 25px; border-radius: 25px;
+            width: 85%; max-width: 320px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .q-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #444; }
+        .q-btn-group { display: flex; gap: 10px; }
+        .q-btn {
+            flex: 1; padding: 15px; border-radius: 15px; border: none;
+            font-size: 18px; font-weight: bold; cursor: pointer; color: white;
+        }
+        .q-yes { background-color: #ff8bb0; }
+        .q-no { background-color: #ccc; }
     </style>
 </head>
 <body>
@@ -128,7 +172,12 @@
     </div>
 
     <div id="app-content" class="container">
-        <h1>🌈 きもちにっき</h1>
+        <h1>🌈 きもちにっき 🌈</h1>
+
+        <div class="quick-action-area">
+            <button class="btn-quick btn-toilet" onclick="openQModal('toilet')">🚽 トイレ</button>
+            <button class="btn-quick btn-reply" onclick="openQModal('reply')">💬 おへんじ</button>
+        </div>
 
         <div id="next-event-banner" style="display:none; margin: 0 auto 20px; width: 100%;">
             <a href="calendar.html" style="text-decoration: none; color: inherit;">
@@ -193,13 +242,24 @@
         </div>
 
         <a href="logs.html" class="btn-logs">
-            📘 きもちのきろく
+            📘 きろくのきろく
         </a>
+    </div>
+
+    <div id="quick-modal" class="q-modal">
+        <div class="q-modal-content">
+            <div id="q-text" class="q-title"></div>
+            <div class="q-btn-group">
+                <button class="q-btn q-yes" onclick="sendQuickNotify('うん')">うん</button>
+                <button class="q-btn q-no" onclick="sendQuickNotify('ううん')">ううん</button>
+            </div>
+            <button onclick="closeQModal()" style="margin-top:15px; background:none; border:none; color:#aaa; cursor:pointer;">やめる</button>
+        </div>
     </div>
 
     <script>
         const CORRECT_PASS = "yuuki01121003";
-        const GAS_URL = "あなたのGASのURL"; // ★作成したGASのURLに書き換えてください
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
 
         window.onload = function() {
             if (sessionStorage.getItem("isLoggedIn") === "true") {
@@ -222,12 +282,52 @@
         function showApp() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            showNextEvent(); // ログイン後にイベント情報を読み込む
+            showNextEvent(); 
         }
 
         document.getElementById('password').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') checkPassword();
         });
+
+        // --- クイックアクション用ロジック ---
+        let quickMode = "";
+        function openQModal(mode) {
+            quickMode = mode;
+            const text = document.getElementById('q-text');
+            if(mode === 'toilet') {
+                text.innerText = "トイレに いきたいですか？";
+            } else {
+                text.innerText = "どっちにあてはまる？";
+            }
+            document.getElementById('quick-modal').style.display = 'flex';
+        }
+
+        function closeQModal() {
+            document.getElementById('quick-modal').style.display = 'none';
+        }
+
+        async function sendQuickNotify(answer) {
+            const content = quickMode === 'toilet' ? `🚽 トイレにいきたいですか？ → **${answer}**` : `💬 おへんじ → **${answer}**`;
+            const yesBtn = document.querySelector('.q-yes');
+            const noBtn = document.querySelector('.q-no');
+            
+            yesBtn.disabled = true;
+            noBtn.disabled = true;
+            
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: "quick_notify", content: content })
+                });
+                alert("つうちを おくったよ！🚀");
+            } catch(e) {
+                alert("エラーがおきちゃった💦");
+            } finally {
+                yesBtn.disabled = false;
+                noBtn.disabled = false;
+                closeQModal();
+            }
+        }
 
         // --- 🗓 トップページのワクワクイベント表示処理 ---
         async function showNextEvent() {
@@ -239,12 +339,10 @@
                 const now = new Date();
                 now.setHours(0, 0, 0, 0);
 
-                // 未来（今日含む）のイベントを計算
                 const futureEvents = events
                     .map(e => {
                         const eventDate = new Date(e.date);
                         eventDate.setHours(0, 0, 0, 0);
-                        // ミリ秒の差を日数に変換
                         const diff = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
                         return { ...e, dateObj: eventDate, diff: diff };
                     })
@@ -261,14 +359,14 @@
 
                     if (next.diff === 0) {
                         countdown.innerText = "✨ きょうが本番だよ！ ✨";
-                        card.className = "level-2"; // 激しいアニメーション
+                        card.className = "level-2"; 
                         document.getElementById('excitement-bg').style.background = "repeating-linear-gradient(45deg, #ff8bb0, #ff8bb0 10px, #fff 10px, #fff 20px)";
                     } else if (next.diff <= 3) {
                         countdown.innerText = `あと ${next.diff}日！ ドキドキ...`;
-                        card.className = (next.diff === 1) ? "level-2" : "level-1"; // 1日前なら激しく、3日前なら少し
+                        card.className = (next.diff === 1) ? "level-2" : "level-1"; 
                     } else {
                         countdown.innerText = `あと ${next.diff}日`;
-                        card.className = ""; // 通常
+                        card.className = ""; 
                     }
                 }
             } catch(e) {
@@ -278,4 +376,3 @@
     </script>
 </body>
 </html>
-
