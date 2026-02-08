@@ -29,6 +29,7 @@
         .btn-question { background-color: #fff3e0; color: #e65100; border: 2px solid #ffe0b2; }
         .btn-free { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #c8e6c9; }
 
+        /* --- モーダル --- */
         .q-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .q-modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .q-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #444; }
@@ -39,12 +40,11 @@
         .q-no { background-color: #7da6ff; }
         .q-send-free { width: 100%; background-color: #b49cff !important; margin-top: 5px; }
 
-        /* --- 🎨 マルチキャンバス画面 --- */
+        /* --- 🎨 じゆうちょう（キャンバス）画面 --- */
         #canvas-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: none; flex-direction: column; z-index: 10001; }
         .canvas-header { padding: 10px; display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; border-bottom: 1px solid #ddd; }
         .canvas-container { flex: 1; position: relative; background: #fff; touch-action: none; overflow: hidden; }
         #main-canvas { width: 100%; height: 100%; display: block; }
-        
         .canvas-tools { padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #f0f0f0; }
         .tool-row { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
         .tool-btn { padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; background: white; font-size: 12px; font-weight: bold; cursor: pointer; }
@@ -52,12 +52,13 @@
         .color-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #ccc; cursor: pointer; }
         .color-dot.active { box-shadow: 0 0 0 2px #ff8bb0; }
 
+        /* リスト画面スタイル */
         #canvas-list-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fefefe; display: none; flex-direction: column; z-index: 10001; overflow-y: auto; padding: 20px; box-sizing: border-box; }
         .thumb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
-        .thumb-card { border: 2px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; position: relative; }
-        .thumb-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
+        .thumb-card { border: 2px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .thumb-card img { width: 100%; height: 120px; object-fit: cover; display: block; background: #fff; }
         .thumb-info { padding: 5px; font-size: 11px; text-align: center; background: #fafafa; }
-        .btn-add-new { background: #6ecb63; color: white; padding: 15px; border-radius: 15px; font-weight: bold; border: none; font-size: 16px; cursor: pointer; }
+        .btn-add-new { background: #6ecb63; color: white; padding: 15px; border-radius: 15px; font-weight: bold; border: none; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0 #57a64e; }
 
         #next-event-banner { animation: wakuwaku-1 2s infinite ease-in-out; }
         @keyframes wakuwaku-1 { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
@@ -117,7 +118,7 @@
 
     <div id="canvas-list-screen">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px;">
-            <h2 style="color:#2e7d32; margin:0;">🎨 じゆうちょう</h2>
+            <h2 style="color:#2e7d32; margin:0;">🎨じゆうちょう</h2>
             <button onclick="document.getElementById('canvas-list-screen').style.display='none'" style="border:none; background:none; font-size:24px;">✖</button>
         </div>
         <button class="btn-add-new" onclick="createNewCanvas()">＋ あたらしい キャンバス を つくる</button>
@@ -126,9 +127,9 @@
 
     <div id="canvas-screen">
         <div class="canvas-header">
-            <button onclick="saveAndExitCanvas()" style="background:none; border:none; color:#ff8bb0; font-weight:bold;">◀ リストへ</button>
+            <button onclick="exitCanvas()" style="background:none; border:none; color:#ff8bb0; font-weight:bold;">◀ もどる</button>
             <b id="canvas-title">🎨 おえかき</b>
-            <button onclick="sendCanvas()" style="background:#6ecb63; color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:bold;">おくる 🚀</button>
+            <button onclick="sendCanvas()" id="canvas-send-btn" style="background:#6ecb63; color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:bold;">みんなに おくる 🚀</button>
         </div>
         <div class="canvas-container" id="canvas-wrap"><canvas id="main-canvas"></canvas></div>
         <div class="canvas-tools">
@@ -188,60 +189,53 @@
             ui.input.style.display = (mode === 'toilet') ? "none" : "block";
             ui.yesno.style.display = (mode === 'question') ? "none" : "flex";
             ui.custom.style.display = (mode === 'toilet') ? "none" : "block";
-            ui.text.innerText = mode === 'toilet' ? "トイレに いきたい？" : mode === 'reply' ? "おへんじ コーナー" : "しつもんボックス";
+            ui.text.innerText = mode === 'toilet' ? "トイレに いきたい？" : mode === 'reply' ? "おへんじ コーナー" : "しつもん ボックス";
             document.getElementById('quick-modal').style.display = 'flex';
         }
         function closeQModal() { document.getElementById('quick-modal').style.display = 'none'; document.getElementById('q-input-area').value = ""; }
         async function sendQuickNotify(answer) {
             const userInput = document.getElementById('q-input-area').value;
-            let titlePrefix = (quickMode === 'question') ? "✉️ しつもん" : (quickMode === 'toilet') ? "🚽 トイレ" : "💬 おへんじ";
+            let titlePrefix = (quickMode === 'question') ? "✉️ しつもん" : (quickMode === 'toilet') ? "🚽 トイレに行っといれ" : "💬 おへんじコーナー";
             let content = answer ? `${titlePrefix}：${answer}` : `${titlePrefix}`;
             if(userInput) content += (answer ? "\n内容：" : "：") + userInput;
-            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！🚀"); } catch(e) { alert("エラー💦"); }
+            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！"); } catch(e) { alert("エラー💦"); }
             closeQModal();
         }
 
-        // --- 🎨 じゆうちょう（お絵描き） ---
-        let canvasDataList = JSON.parse(localStorage.getItem('my_canvases') || "[]");
-        let currentCanvasIndex = -1;
+        // --- 🎨 じゆうちょう（リアルタイム共有システム） ---
+        let canvasDataList = [];
         const canvas = document.getElementById('main-canvas'), ctx = canvas.getContext('2d');
         let drawing = false, currentMode = 'pen', penColor = '#000', brushSize = 10;
         let undoStack = [], redoStack = [];
 
-        function showCanvasList() {
+        async function showCanvasList() {
             document.getElementById('canvas-list-screen').style.display = 'flex';
-            const grid = document.getElementById('canvas-thumbnails'); grid.innerHTML = "";
-            canvasDataList.forEach((data, index) => {
-                const div = document.createElement('div'); div.className = "thumb-card"; div.onclick = () => openCanvas(index);
-                div.innerHTML = `<img src="${data.img}"><div class="thumb-info">${data.date}</div>`;
-                grid.appendChild(div);
-            });
+            const grid = document.getElementById('canvas-thumbnails');
+            grid.innerHTML = "<p style='grid-column:1/3; text-align:center;'>読み込み中...</p>";
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "get_canvases" }) });
+                canvasDataList = await res.json();
+                grid.innerHTML = "";
+                canvasDataList.forEach((data, index) => {
+                    const div = document.createElement('div'); div.className = "thumb-card"; div.onclick = () => openCanvas(index);
+                    div.innerHTML = `<img src="${data.img}"><div class="thumb-info">${data.date}</div>`;
+                    grid.appendChild(div);
+                });
+            } catch(e) { grid.innerHTML = "読み込みに失敗しました💦"; }
         }
 
         function createNewCanvas() {
-            currentCanvasIndex = canvasDataList.length;
-            canvasDataList.push({ img: "", date: new Date().toLocaleString() });
-            openCanvas(currentCanvasIndex, true);
-        }
-
-        function openCanvas(index, isNew = false) {
-            currentCanvasIndex = index;
-            undoStack = []; redoStack = [];
             document.getElementById('canvas-screen').style.display = 'flex';
-            resizeCanvas();
-            if(!isNew && canvasDataList[index].img) {
-                const img = new Image(); img.onload = () => { ctx.drawImage(img, 0, 0); saveState(false); }; img.src = canvasDataList[index].img;
-            } else {
-                clearCanvas(false); saveState(false);
-            }
+            resizeCanvas(); clearCanvas(false); undoStack = []; redoStack = []; saveState(false);
         }
 
-        function saveAndExitCanvas() {
-            canvasDataList[currentCanvasIndex].img = canvas.toDataURL();
-            localStorage.setItem('my_canvases', JSON.stringify(canvasDataList));
-            document.getElementById('canvas-screen').style.display = 'none';
-            showCanvasList();
+        function openCanvas(index) {
+            document.getElementById('canvas-screen').style.display = 'flex';
+            resizeCanvas(); undoStack = []; redoStack = [];
+            const img = new Image(); img.onload = () => { ctx.drawImage(img, 0, 0); saveState(false); }; img.src = canvasDataList[index].img;
         }
+
+        function exitCanvas() { if(confirm("リストにもどる？（保存してない分は消えちゃうよ）")) { document.getElementById('canvas-screen').style.display = 'none'; showCanvasList(); } }
 
         function resizeCanvas() { 
             const wrap = document.getElementById('canvas-wrap');
@@ -256,21 +250,20 @@
             if(record) saveState();
         }
 
-        function clearCanvasConfirm() {
-            if(confirm("ぜんぶ消してもいい？")) clearCanvas();
-        }
+        function clearCanvasConfirm() { if(confirm("ぜんぶ消してもいい？")) clearCanvas(); }
 
         function changePenColor(c, el) { 
             penColor = c; 
             document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-            el.classList.add('active');
-            setMode('pen');
+            el.classList.add('active'); setMode('pen');
         }
+
         function setMode(m) {
             currentMode = m;
             document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + m).classList.add('active');
         }
+
         function changeSize(s) { brushSize = parseInt(s); }
 
         function saveState(clearRedo = true) {
@@ -307,12 +300,7 @@
             const p = getPos(e);
             if(currentMode === 'text') {
                 const text = prompt("文字を入力してね");
-                if(text) {
-                    ctx.font = `bold ${brushSize * 3}px sans-serif`;
-                    ctx.fillStyle = penColor;
-                    ctx.fillText(text, p.x, p.y);
-                    saveState();
-                }
+                if(text) { ctx.font = `bold ${brushSize * 3}px sans-serif`; ctx.fillStyle = penColor; ctx.fillText(text, p.x, p.y); saveState(); }
                 return;
             }
             drawing = true; ctx.beginPath(); ctx.moveTo(p.x, p.y);
@@ -335,8 +323,7 @@
                 const img = new Image();
                 img.onload = () => {
                     const r = Math.min(canvas.width/img.width, canvas.height/img.height)*0.8;
-                    ctx.drawImage(img, 10, 10, img.width*r, img.height*r);
-                    saveState();
+                    ctx.drawImage(img, 10, 10, img.width*r, img.height*r); saveState();
                 };
                 img.src = f.target.result;
             };
@@ -345,7 +332,12 @@
 
         async function sendCanvas() {
             const data = canvas.toDataURL("image/png");
-            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "free_note", content: data }) }); alert("はかせにおくったよ！🎨"); } catch(e) { alert("エラー💦"); }
+            const btn = document.getElementById('canvas-send-btn');
+            btn.innerText = "保存中..."; btn.disabled = true;
+            try {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "save_canvas", img: data }) });
+                alert("みんなの自由帳に保存したよ！🎨"); document.getElementById('canvas-screen').style.display = 'none'; showCanvasList();
+            } catch(e) { alert("エラー💦"); } finally { btn.innerText = "みんなに おくる 🚀"; btn.disabled = false; }
         }
     </script>
 </body>
