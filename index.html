@@ -6,299 +6,238 @@
     <title>きもちにっき</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- 既存スタイル（完全維持） --- */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #fff7e6, #ffeefd); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-        .login-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 80%; max-width: 400px; }
-        .login-title { font-size: 20px; margin-bottom: 20px; color: #555; font-weight: bold; }
-        .pass-input { width: 80%; padding: 10px; font-size: 18px; border: 2px solid #ccc; border-radius: 10px; margin-bottom: 20px; text-align: center; }
-        .login-btn { background-color: #ff8bb0; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 0 #ff6f9e; }
+        /* --- 基本レイアウト --- */
+        body { background: #fdfcfd; margin: 0; padding: 0; font-family: sans-serif; color: #444; overflow-x: hidden; }
+        .container { padding: 15px; padding-bottom: 30px; box-sizing: border-box; }
+        h1 { font-size: 20px; text-align: center; color: #ff8bb0; margin: 10px 0 20px; }
+        
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #fff7e6, #ffeefd); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 85%; max-width: 320px; }
+        .pass-input { width: 100%; padding: 12px; font-size: 18px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 20px; text-align: center; box-sizing: border-box; }
+        .login-btn { background-color: #ff8bb0; color: white; border: none; padding: 12px 40px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; }
         #app-content { display: none; }
-        .btn-feature { display: block; width: 100%; padding: 15px 0; margin-top: 15px; border-radius: 15px; color: white; font-size: 18px; font-weight: bold; text-align: center; text-decoration: none; box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: 0.1s; box-sizing: border-box; }
-        .btn-feature:active { transform: translateY(4px); box-shadow: none; }
-        .btn-magic { background-color: #b49cff; border: 2px solid #9575cd; }
-        .btn-gacha { background-color: #4dd0e1; border: 2px solid #00acc1; }
-        .btn-shiritori { background-color: #ff8a65; border: 2px solid #ff7043; }
-        .btn-katchin { background-color: #90caf9; border: 2px solid #64b5f6; }
-        .btn-calendar { background-color: #ffcc80; border: 2px solid #fb8c00; }
 
-        .quick-action-area { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
-        .btn-quick { padding: 12px 10px; border-radius: 15px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-toilet { background-color: #e1f5fe; color: #0288d1; border: 2px solid #b3e5fc; }
-        .btn-reply { background-color: #f3e5f5; color: #7b1fa2; border: 2px solid #e1bee7; }
-        .btn-question { background-color: #fff3e0; color: #e65100; border: 2px solid #ffe0b2; }
-        .btn-free { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #c8e6c9; }
+        .section-box { background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; transition: 0.3s; position: relative; }
+        .section-title { font-size: 13px; font-weight: bold; color: #bbb; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 
-        /* --- 🎨 キャンバス画面 --- */
-        #canvas-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: none; flex-direction: column; z-index: 10001; }
-        .canvas-header { padding: 10px; display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; border-bottom: 1px solid #ddd; }
-        .canvas-container { flex: 1; position: relative; background: #eee; touch-action: none; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        #main-canvas { background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 100%; max-height: 100%; }
-        
-        #photo-edit-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; pointer-events: none; z-index: 5; }
-        #moving-photo { position: absolute; border: 2px dashed #ff8bb0; cursor: move; pointer-events: auto; }
+        /* 1. 緊急エリア */
+        .sos-area { border: 2px solid #ffcdd2; background: #fff9f9; }
+        .btn-sos { background: #ff5252; color: white; width: 100%; font-size: 18px; padding: 16px; border-radius: 15px; border: none; box-shadow: 0 4px 0 #b71c1c; font-weight: bold; cursor: pointer; position: relative; z-index: 10; }
 
-        .canvas-tools { padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #f0f0f0; }
-        .tool-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .tool-btn { padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; background: white; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .tool-btn.active { background: #ff8bb0; color: white; border-color: #ff8bb0; }
-        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #ccc; cursor: pointer; }
-        .color-dot.active { box-shadow: 0 0 0 2px #ff8bb0; }
-        .color-picker-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #ccc; cursor: pointer; background: linear-gradient(45deg, red, orange, yellow, green, blue, purple); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        #custom-color-input { position: absolute; width: 100%; height: 100%; border: none; padding: 0; cursor: pointer; opacity: 0; }
+        /* 2. 状態・おねがいエリア（さらにスッキリ） */
+        .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; position: relative; z-index: 10; }
+        .btn-quick { padding: 12px 5px; border-radius: 12px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 3px 0 rgba(0,0,0,0.05); }
+        .btn-limit-toilet { background: #e1f5fe; color: #0288d1; }
+        .btn-limit-capa { background: #cfd8dc; color: #455a64; }
+        .btn-limit-bat { background: #fff9c4; color: #f57f17; }
+        .btn-limit-stop { background: #ffebee; color: #c62828; } /* できない・やめて（ここに脳の限界も統合） */
+        .btn-hope { background: #e8f5e9; color: #2e7d32; }
+        .btn-reply { background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
 
-        /* --- 🎨 じゆうちょうリスト画面（真ん中寄せ対応） --- */
-        #canvas-list-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fefefe; display: none; flex-direction: column; z-index: 10001; }
-        .list-header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-        .list-content { flex: 1; overflow-y: auto; padding: 0 20px 20px; position: relative; display: flex; flex-direction: column; }
-        
-        /* 読み込み中を真ん中に置くためのスタイル */
-        .list-status-msg { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            font-weight: bold; color: #888; font-size: 16px; text-align: center; width: 100%;
-        }
+        /* ⏱ タイマーUI */
+        .timer-setup { grid-column: 1 / 3; border-top: 1px dashed #eee; margin-top: 10px; padding-top: 10px; }
+        .timer-btn-group { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
+        .btn-timer { background: #f0f0f0; color: #666; border: 1px solid #ddd; padding: 8px; border-radius: 10px; font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; }
+        #cooldown-area { display: none; text-align: center; border-top: 2px solid #b49cff; padding-top: 10px; margin-top: 10px; width: 100%; grid-column: 1 / 3; }
+        .timer-bg { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        #cooldown-bar { width: 100%; height: 100%; background: #b49cff; }
 
-        .thumb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
-        .thumb-card { border: 2px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .thumb-card img { width: 100%; height: 120px; object-fit: cover; display: block; background: #fff; }
-        .thumb-info { padding: 5px; font-size: 11px; text-align: center; background: #fafafa; }
-        .btn-add-new { background: #6ecb63; color: white; padding: 15px; border-radius: 15px; font-weight: bold; border: none; font-size: 16px; cursor: pointer; width: 100%; margin-top: 10px; box-shadow: 0 4px 0 #57a64e; }
-        
-        .q-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .q-modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .q-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #444; }
-        .q-input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; margin-bottom: 15px; font-size: 16px; }
-        .q-btn-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        .q-btn { flex: 1; padding: 12px; border-radius: 15px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: white; }
+        /* オーバーレイ共通 */
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10002; display: none; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        .overlay-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .overlay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; overflow-y: auto; align-content: flex-start; }
+        .grid-btn { aspect-ratio: 1.8; border-radius: 15px; border: 2.5px solid; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 13px; font-weight: 900; color: #444; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); background: #fff; border-color: #eee; text-align: center; }
+
+        .btn-main-emotion { background: #ff8bb0; color: white; width: 100%; font-size: 18px; padding: 20px; border-radius: 18px; border: none; box-shadow: 0 5px 0 #ff6f9e; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 10; }
+        .feature-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; position: relative; z-index: 10; }
+        .btn-mini-feature { flex: 0 0 100px; padding: 12px 5px; border-radius: 12px; color: white; text-decoration: none; font-size: 12px; font-weight: bold; text-align: center; box-shadow: 0 3px 0 rgba(0,0,0,0.1); cursor: pointer; border: none; }
+
+        #rest-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); z-index: 9998; display: none; backdrop-filter: blur(2px); }
+        .active-cooldown { position: relative; z-index: 10000 !important; box-shadow: 0 0 30px rgba(0,0,0,0.15) !important; background: #fff !important; }
+        .lock-buttons button, .lock-buttons a { pointer-events: none !important; opacity: 0.4 !important; }
+
+        .q-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 10010; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .q-modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 320px; text-align: center; }
+        .q-input { width: 100%; height: 100px; padding: 12px; border-radius: 15px; border: 3px solid #eee; box-sizing: border-box; margin-bottom: 15px; font-size: 16px; resize: none; }
+        .canvas-thumb-card { background: #f9f9f9; border-radius: 12px; border: 1px solid #eee; padding: 5px; text-align: center; cursor: pointer; }
+        .canvas-thumb-card img { width: 100%; border-radius: 8px; background: white; }
     </style>
 </head>
 <body>
 
+    <div id="rest-overlay"></div>
+
     <div id="login-screen">
         <div class="login-box">
-            <div class="login-title">🔑 あいことば を いれてね</div>
-            <input type="password" id="password" class="pass-input" placeholder="ここに入力">
-            <br>
+            <div class="login-title">🔑 あいことば</div>
+            <input type="password" id="password" class="pass-input">
             <button class="login-btn" onclick="checkPassword()">あける</button>
         </div>
     </div>
 
     <div id="app-content" class="container">
         <h1>🌈 きもちにっき 🌈</h1>
-        <div class="quick-action-area">
-            <button class="btn-quick btn-toilet" onclick="openQModal('toilet')">🚽 トイレ</button>
-            <button class="btn-quick btn-reply" onclick="openQModal('reply')">💬 おへんじコーナー</button>
-            <button class="btn-quick btn-question" onclick="openQModal('question')">✉️ しつもんボックス</button>
-            <button class="btn-quick btn-free" onclick="showCanvasList()">🎨 じゆうちょう</button>
-        </div>
-        <div class="color-grid">
-            <a href="input.html?color=pink" class="color-btn" style="background-color: #fff0f7; border-color: #ff8bb0;">😄うれしい</a>
-            <a href="input.html?color=green" class="color-btn" style="background-color: #f0fff3; border-color: #6ecb63;">😌おちつく</a>
-            <a href="input.html?color=yellow" class="color-btn" style="background-color: #fffbe0; border-color: #f1c232;">😮びっくり</a>
-            <a href="input.html?color=purple" class="color-btn" style="background-color: #f9f5ff; border-color: #b49cff;">😕もやもや</a>
-            <a href="input.html?color=blue" class="color-btn" style="background-color: #f0f6ff; border-color: #7da6ff;">😢さみしい</a>
-            <a href="input.html?color=black" class="color-btn" style="background-color: #f3f3f3; border-color: #8c8c8c;">😴つかれた</a>
-            <a href="input.html?color=red" class="color-btn" style="background-color: #fff0f0; border-color: #ff6f6f;">😡イライラ</a>
-            <a href="input.html?color=white" class="color-btn" style="background-color: #ffffff; border-color: #cccccc;">😁期間限定</a>
-        </div>
-        <div style="margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 20px;">
-            <a href="calendar.html" class="btn-feature btn-calendar">📅 みんなのカレンダー</a>
-            <a href="magic.html" class="btn-feature btn-magic">🧙‍♂️ コトバのまほう</a>
-            <a href="gacha.html" class="btn-feature btn-gacha">💊 おたすけ ガチャ</a>
-        </div>
-        <a href="logs.html" class="btn-logs" style="display:block; text-align:center; margin-top:20px; color:#888; font-weight:bold; text-decoration:none;">📘 きもちのきろく</a>
-    </div>
 
-    <div id="canvas-list-screen">
-        <div class="list-header">
-            <h2 style="color:#2e7d32; margin:0;">🎨 みんなの じゆうちょう</h2>
-            <button onclick="document.getElementById('canvas-list-screen').style.display='none'" style="border:none; background:none; font-size:24px;">✖</button>
+        <div class="section-box sos-area">
+            <button class="btn-sos" onclick="sendSOS()">🚨 たすけて！</button>
         </div>
-        <div class="list-content">
-            <button class="btn-add-new" onclick="createNewCanvas()">＋ あたらしい キャンバス を つくる</button>
-            <div id="list-status" class="list-status-msg"></div>
-            <div id="canvas-thumbnails" class="thumb-grid"></div>
-        </div>
-    </div>
 
-    <div id="canvas-screen">
-        <div class="canvas-header">
-            <button onclick="exitCanvas()" style="background:none; border:none; color:#ff8bb0; font-weight:bold;">◀ もどる</button>
-            <b id="canvas-title">🎨 おえかき</b>
-            <button onclick="sendCanvas()" id="canvas-send-btn" style="background:#6ecb63; color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:bold;">みんなに おくる 🚀</button>
-        </div>
-        <div class="canvas-container" id="canvas-wrap">
-            <canvas id="main-canvas"></canvas>
-            <div id="photo-edit-layer">
-                <img id="moving-photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="調整中画像">
-            </div>
-        </div>
-        <div class="canvas-tools">
-            <div id="photo-tools" class="tool-row" style="display:none; background:#fff9c4; padding:10px; border-radius:10px;">
-                <button class="tool-btn" onclick="resizePhoto(-30)">➖ ちいさく</button>
-                <button class="tool-btn" onclick="resizePhoto(30)">➕ おおきく</button>
-                <button class="tool-btn" style="background:#6ecb63; color:white;" onclick="fixPhoto()">🆗 場所をきめる</button>
-            </div>
-            <div id="normal-tools">
-                <div class="tool-row">
-                    <div class="color-dot active" style="background:#000" onclick="changePenColor('#000', this)"></div>
-                    <div class="color-dot" style="background:#ff4444" onclick="changePenColor('#ff4444', this)"></div>
-                    <div class="color-dot" style="background:#4444ff" onclick="changePenColor('#4444ff', this)"></div>
-                    <div class="color-dot" style="background:#44aa44" onclick="changePenColor('#44aa44', this)"></div>
-                    <div class="color-dot" style="background:#ff8bb0" onclick="changePenColor('#ff8bb0', this)"></div>
-                    <div class="color-picker-btn" id="custom-color-btn">
-                        <input type="color" id="custom-color-input" oninput="changePenColor(this.value, document.getElementById('custom-color-btn'))">
+        <div class="section-box" id="status-section">
+            <div class="section-title">📢 いまの状態・おねがい</div>
+            <div class="quick-grid" id="quick-action-container">
+                <button class="btn-quick btn-limit-toilet" onclick="sendLimit('🚽 トイレにいきたいです')">🚽 トイレに行っといれ</button>
+                <button class="btn-quick btn-limit-capa" onclick="sendLimit('😵‍💫 キャパいっぱいです')">😵‍💫 キャパいっぱ</button>
+                <button class="btn-quick btn-limit-bat" onclick="sendLimit('🔋 つかれた・やすみたいです')">🔋 つかれ・やすみ</button>
+                
+                <button class="btn-quick btn-limit-stop" onclick="openStopMenu()">✋ できない・やめて</button>
+                <button class="btn-quick btn-hope" onclick="openHopeMenu()">🕊️ おねがい</button>
+                <button class="btn-quick btn-reply" onclick="openQModal()">💬 おへんじ・しつもん</button>
+
+                <div class="timer-setup" id="timer-setup-ui">
+                    <div style="font-size:10px; color:#aaa; text-align:center;">⏱ ひとやすみタイマー</div>
+                    <div class="timer-btn-group">
+                        <button class="btn-timer" onclick="startCooldown(10)">10秒</button>
+                        <button class="btn-timer" onclick="startCooldown(30)">30秒</button>
+                        <button class="btn-timer" onclick="startCooldown(60)">60秒</button>
                     </div>
                 </div>
-                <div class="tool-row">
-                    <button class="tool-btn active" id="btn-pen" onclick="setMode('pen')">✏️ペン</button>
-                    <button class="tool-btn" id="btn-eraser" onclick="setMode('eraser')">🧽けしゴム</button>
-                    <button class="tool-btn" id="btn-text" onclick="setMode('text')">🔤もじ</button>
-                    <select id="size-select" class="tool-btn" onchange="changeSize(this.value)">
-                        <option value="4">ほそい</option><option value="10" selected>ふつう</option><option value="30">ふとい</option>
-                    </select>
+
+                <div id="cooldown-area">
+                    <p style="font-weight:bold; color:#555; margin:0; font-size:11px;">いまは ひとやすみ中...🍵</p>
+                    <div class="timer-bg"><div id="cooldown-bar"></div></div>
                 </div>
-                <div class="tool-row">
-                    <button class="tool-btn" onclick="undo()">↩ もどる</button>
-                    <button class="tool-btn" onclick="redo()">すすむ ↪</button>
-                    <label class="tool-btn" style="background:#e1f5fe; color:#0288d1;">🖼️ しゃしんを はる
-                        <input type="file" id="image-upload" accept="image/*" style="display:none;" onchange="handleImage(event)">
-                    </label>
-                    <button class="tool-btn" style="color:red;" onclick="clearCanvasConfirm()">🗑️消す</button>
-                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <button class="btn-main-emotion" onclick="openEmotionMenu()">😄 きもち を えらぶ</button>
+        </div>
+
+        <div class="section-box">
+            <div class="section-title">🎡 きぶんてんかん</div>
+            <div class="feature-row" id="feature-container">
+                <button class="btn-mini-feature" style="background:#6ecb63;" onclick="showCanvasList()">🎨 自由帳</button>
+                <a href="shiritori.html" class="btn-mini-feature" style="background:#ff8a65;">🍎 しりとり</a>
+                <a href="katchin.html" class="btn-mini-feature" style="background:#90caf9;">🧊 かっちん</a>
+                <a href="calendar.html" class="btn-mini-feature" style="background:#ffcc80;">📅 予定</a>
+                <a href="logs.html" class="btn-mini-feature" style="background:#888;">📘 記録</a>
             </div>
         </div>
     </div>
 
-    <div id="quick-modal" class="q-modal"><div class="q-modal-content"><div id="q-text" class="q-title"></div><textarea id="q-input-area" class="q-input"></textarea><div id="q-btn-yesno" class="q-btn-group"><button class="q-btn q-yes" style="background:#ff8bb0;" onclick="sendQuickNotify('うん')">うん</button><button class="q-btn q-no" style="background:#7da6ff;" onclick="sendQuickNotify('うううん')">ううん</button></div><button id="q-btn-custom" class="q-btn" style="background:#b49cff; width:100%;" onclick="sendQuickNotify()">メッセージをおくる 💌</button><button onclick="closeQModal()" style="margin-top:15px; background:none; border:none; color:#aaa;">やめる</button></div></div>
+    <div id="emotion-menu" class="overlay-screen">
+        <div class="overlay-header"><h2 style="margin:0; font-size:18px; color:#888;">いま どんなきもち？</h2><button onclick="closeEmotionMenu()" style="border:none; background:none; font-size:28px; color:#ccc;">✖</button></div>
+        <div class="overlay-grid">
+            <a href="input.html?color=pink" class="grid-btn" style="border-color:#ff8bb0; background:#fff0f7;">😄 うれしい</a>
+            <a href="input.html?color=green" class="grid-btn" style="border-color:#6ecb63; background:#f0fff3;">😌 おちつく</a>
+            <a href="input.html?color=yellow" class="grid-btn" style="border-color:#f1c232; background:#fffbe0;">😮 びっくり</a>
+            <a href="input.html?color=purple" class="grid-btn" style="border-color:#b49cff; background:#f9f5ff;">😕 もやもや</a>
+            <a href="input.html?color=blue" class="grid-btn" style="border-color:#7da6ff; background:#f0f6ff;">😢 さみしい</a>
+            <a href="input.html?color=black" class="grid-btn" style="border-color:#8c8c8c; background:#f3f3f3;">😴 つかれた</a>
+            <a href="input.html?color=red" class="grid-btn" style="border-color:#ff6f6f; background:#fff0f0;">😡 イライラ</a>
+            <a href="input.html?color=white" class="grid-btn" style="border-color:#cccccc; background:#ffffff;">😁 期間限定</a>
+        </div>
+    </div>
+
+    <div id="hope-menu" class="overlay-screen">
+        <div class="overlay-header"><h2 style="margin:0; font-size:18px; color:#2e7d32;">🕊️ おねがい</h2><button onclick="closeHopeMenu()" style="border:none; background:none; font-size:28px; color:#ccc;">✖</button></div>
+        <div class="overlay-grid">
+            <button class="grid-btn" onclick="sendLimit('👀 そばにいてほしいです')">👀 そばにいて</button>
+            <button class="grid-btn" onclick="sendLimit('🍃 ほうっておいてほしいです')">🍃 ほうっておいて</button>
+            <button class="grid-btn" onclick="sendLimit('⏰ あとでゆっくり話したいです')">⏰ あとで話したい</button>
+            <button class="grid-btn" onclick="sendLimit('🧸 ギュッとしてほしいです')">🧸 ギュッとして</button>
+            <button class="grid-btn" onclick="sendLimit('💧 お水がのみたいです')">💧 お水がほしい</button>
+            <button class="grid-btn" onclick="sendLimit('🧃 ジュースがのみたいです')">🧃 ジュース</button>
+            <button class="grid-btn" onclick="sendLimit('🌡️ 暑いです')">🌡️ あつい</button>
+            <button class="grid-btn" onclick="sendLimit('🌡️ 寒いです')">🌡️ さむい</button>
+        </div>
+    </div>
+
+    <div id="stop-menu" class="overlay-screen">
+        <div class="overlay-header"><h2 style="margin:0; font-size:18px; color:#c62828;">✋ できない・やめて</h2><button onclick="closeStopMenu()" style="border:none; background:none; font-size:28px; color:#ccc;">✖</button></div>
+        <div class="overlay-grid">
+            <button class="grid-btn" onclick="sendLimit('🧠 考えるのが無理です（しんどい）')">🧠 考えるのムリ</button>
+            <button class="grid-btn" onclick="sendLimit('🔇 いまは声がだせません')">🔇 話せない</button>
+            <button class="grid-btn" onclick="sendLimit('🚫 答えられません')">🚫 答えられない</button>
+            <button class="grid-btn" onclick="sendLimit('🧩 説明できません')">🧩 説明できない</button>
+            <button class="grid-btn" onclick="sendLimit('🔥 話題を変えてほしいです')">🔥 話題がキツい</button>
+            <button class="grid-btn" onclick="sendLimit('👥 ひとりにさせてください')">👥 ひとりにさせて</button>
+        </div>
+    </div>
+
+    <div id="quick-modal" class="q-modal">
+        <div class="q-modal-content">
+            <div class="q-title">おへんじ・しつもん</div>
+            <textarea id="q-input-area" class="q-input" placeholder="ここにかいてね"></textarea>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button class="login-btn" style="background:#ff8bb0; flex:1; padding:12px;" onclick="sendQuickNotify('うん')">うん</button>
+                <button class="login-btn" style="background:#7da6ff; flex:1; padding:12px;" onclick="sendQuickNotify('ううん')">ううん</button>
+            </div>
+            <button class="login-btn" style="background:#b49cff; width:100%;" onclick="sendQuickNotify()">おくる 💌</button>
+            <button onclick="closeQModal()" style="margin-top:15px; border:none; background:none; color:#aaa;">やめる</button>
+        </div>
+    </div>
+
+    <div id="canvas-list-screen" class="overlay-screen" style="z-index: 10015;">
+        <div class="overlay-header"><h3>🎨 じゆうちょう</h3><button onclick="document.getElementById('canvas-list-screen').style.display='none'" style="border:none; background:none; font-size:24px;">✖</button></div>
+        <button onclick="window.location.href='canvas.html'" style="background:#6ecb63; color:white; padding:15px; border-radius:15px; border:none; font-weight:bold; width:100%; margin-bottom:20px;">＋ あたらしい絵をかく</button>
+        <div id="canvas-thumbnails" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;"></div>
+    </div>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
 
         function checkPassword() { if (document.getElementById('password').value === "yuuki01121003") { sessionStorage.setItem("isLoggedIn", "true"); showApp(); } }
-        function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'block'; showNextEvent(); }
+        function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'block'; }
         window.onload = function() { if (sessionStorage.getItem("isLoggedIn") === "true") showApp(); };
-        async function showNextEvent() { try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({type: 'get_calendar'}) }); const events = await res.json(); if(events && events.length>0){ const next = events.map(e => ({...e, diff: Math.ceil((new Date(e.date)-new Date().setHours(0,0,0,0))/86400000)})).filter(e => e.diff >= 0).sort((a,b)=>a.diff-b.diff)[0]; if(next){ document.getElementById('next-event-banner').style.display = 'block'; document.getElementById('banner-title').innerText = next.title; document.getElementById('banner-countdown').innerText = `あと ${next.diff}日`; } } } catch(e){} }
 
-        function openQModal(mode) { quickMode = mode; const ui = { text: document.getElementById('q-text'), input: document.getElementById('q-input-area'), yesno: document.getElementById('q-btn-yesno'), custom: document.getElementById('q-btn-custom') }; ui.input.style.display = (mode === 'toilet') ? "none" : "block"; ui.yesno.style.display = (mode === 'question') ? "none" : "flex"; ui.custom.style.display = (mode === 'toilet') ? "none" : "block"; ui.text.innerText = mode === 'toilet' ? "トイレに いきたい？" : mode === 'reply' ? "おへんじ コーナー" : "しつもんボックス"; document.getElementById('quick-modal').style.display = 'flex'; }
+        async function sendSOS() { if(!confirm("「たすけて」をつうち する？")) return; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "sos" }) }); alert("おくったよ。"); } catch(e) {} }
+        async function sendLimit(content) { if(!confirm(content + " を つたえる？")) return; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ。"); closeHopeMenu(); closeStopMenu(); } catch(e) {} }
+
+        function openEmotionMenu() { document.getElementById('emotion-menu').style.display = 'flex'; }
+        function closeEmotionMenu() { document.getElementById('emotion-menu').style.display = 'none'; }
+        function openHopeMenu() { document.getElementById('hope-menu').style.display = 'flex'; }
+        function closeHopeMenu() { document.getElementById('hope-menu').style.display = 'none'; }
+        function openStopMenu() { document.getElementById('stop-menu').style.display = 'flex'; }
+        function closeStopMenu() { document.getElementById('stop-menu').style.display = 'none'; }
+        function openQModal() { document.getElementById('quick-modal').style.display = 'flex'; }
         function closeQModal() { document.getElementById('quick-modal').style.display = 'none'; document.getElementById('q-input-area').value = ""; }
-        async function sendQuickNotify(answer) { const userInput = document.getElementById('q-input-area').value; let content = answer ? `${quickMode==='toilet'?'🚽':'💬'} ${answer}` : ""; if(userInput) content += (answer ? "\n内容：" : "：") + userInput; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！🚀"); } catch(e) { alert("エラー💦"); } closeQModal(); }
+        
+        async function sendQuickNotify(answer) { 
+            const userInput = document.getElementById('q-input-area').value; 
+            let content = answer ? `💬 おへんじ：${answer}` : ""; 
+            if(userInput) content += (content ? "\n内容：" : "") + userInput; 
+            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！🚀"); } catch(e) {} 
+            closeQModal(); 
+        }
 
-        // --- 🎨 じゆうちょう ---
-        let canvasDataList = [];
-        const canvas = document.getElementById('main-canvas'), ctx = canvas.getContext('2d');
-        let drawing = false, currentMode = 'pen', penColor = '#000', brushSize = 10, undoStack = [], redoStack = [];
-        let photoX = 50, photoY = 50, photoW = 200, isPhotoEditing = false;
-        const photoLayer = document.getElementById('photo-edit-layer'), movingImg = document.getElementById('moving-photo');
-
-        const getPos = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const cx = (e.clientX || (e.touches && e.touches[0].clientX));
-            const cy = (e.clientY || (e.touches && e.touches[0].clientY));
-            return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY };
-        };
+        function startCooldown(seconds) {
+            const area = document.getElementById('cooldown-area'), bar = document.getElementById('cooldown-bar'), overlay = document.getElementById('rest-overlay');
+            const statusSection = document.getElementById('status-section'), app = document.getElementById('app-content');
+            let remaining = seconds;
+            area.style.display = 'block'; overlay.style.display = 'block';
+            statusSection.classList.add('active-cooldown'); app.classList.add('lock-buttons');
+            const timer = setInterval(() => {
+                remaining--; bar.style.width = (remaining / seconds) * 100 + "%";
+                if (remaining <= 0) { clearInterval(timer); area.style.display = 'none'; overlay.style.display = 'none'; statusSection.classList.remove('active-cooldown'); app.classList.remove('lock-buttons'); alert("おわり！🍵"); }
+            }, 1000);
+        }
 
         async function showCanvasList() {
             document.getElementById('canvas-list-screen').style.display = 'flex';
-            const grid = document.getElementById('canvas-thumbnails'); 
-            const status = document.getElementById('list-status');
-            grid.innerHTML = ""; 
-            status.innerHTML = "よみこみちゅう...⏳";
-            
+            const grid = document.getElementById('canvas-thumbnails');
+            grid.innerHTML = "<p style='grid-column:1/3; text-align:center; color:#888;'>よみこみ中...</p>";
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "get_canvases" }) });
-                canvasDataList = await res.json();
-                status.innerHTML = "";
-                if(canvasDataList.length === 0) status.innerHTML = "まだえがないよ。かいてみてね！";
-                
-                canvasDataList.forEach((data, index) => {
-                    const div = document.createElement('div'); div.className = "thumb-card"; div.onclick = () => openCanvas(index);
-                    div.innerHTML = `<img src="${data.img}" alt="作品"><div class="thumb-info">${data.date}</div>`;
-                    grid.appendChild(div);
+                const canvasDataList = await res.json();
+                grid.innerHTML = "";
+                canvasDataList.forEach((data) => {
+                    const card = document.createElement('div');
+                    card.className = "canvas-thumb-card";
+                    card.innerHTML = `<img src="${data.img}"><div style="font-size:10px; color:#888;">${data.date}</div>`;
+                    grid.appendChild(card);
                 });
-            } catch(e) { status.innerHTML = "よみこみエラー💦"; }
-        }
-
-        function createNewCanvas() { document.getElementById('canvas-screen').style.display = 'flex'; resizeCanvas(); clearCanvas(false); undoStack = []; redoStack = []; saveState(false); }
-        function openCanvas(index) { document.getElementById('canvas-screen').style.display = 'flex'; resizeCanvas(); undoStack = []; redoStack = []; const img = new Image(); img.onload = () => { ctx.drawImage(img, 0, 0); saveState(false); }; img.src = canvasDataList[index].img; }
-        function exitCanvas() { if(confirm("リストにもどる？")) { document.getElementById('canvas-screen').style.display = 'none'; showCanvasList(); } }
-
-        function resizeCanvas() { 
-            const wrap = document.getElementById('canvas-wrap');
-            const data = canvas.toDataURL();
-            canvas.width = 1000; 
-            canvas.height = wrap.clientHeight * (1000 / wrap.clientWidth);
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = data;
-        }
-
-        function clearCanvas(record = true) { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height); if(record) saveState(); }
-        function clearCanvasConfirm() { if(confirm("ぜんぶ消してもいい？")) clearCanvas(); }
-        function changePenColor(c, el) { penColor = c; document.querySelectorAll('.color-dot, .color-picker-btn').forEach(d => d.classList.remove('active')); if(el) el.classList.add('active'); setMode('pen'); }
-        function setMode(m) { currentMode = m; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-' + m).classList.add('active'); }
-        function changeSize(s) { brushSize = parseInt(s); }
-        function saveState(clearRedo = true) { undoStack.push(canvas.toDataURL()); if(undoStack.length > 30) undoStack.shift(); if(clearRedo) redoStack = []; }
-        function undo() { if (undoStack.length <= 1) return; redoStack.push(undoStack.pop()); const img = new Image(); img.onload = () => { ctx.fillStyle="#fff"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); }; img.src = undoStack[undoStack.length - 1]; }
-        function redo() { if (redoStack.length === 0) return; const data = redoStack.pop(); undoStack.push(data); const img = new Image(); img.onload = () => { ctx.fillStyle="#fff"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); }; img.src = data; }
-
-        function handleImage(event) {
-            const reader = new FileReader();
-            reader.onload = (f) => {
-                movingImg.src = f.target.result;
-                isPhotoEditing = true;
-                photoX = 100; photoY = 100; photoW = 300;
-                photoLayer.style.display = 'block';
-                document.getElementById('photo-tools').style.display = 'flex';
-                document.getElementById('normal-tools').style.display = 'none';
-                updatePhotoUI();
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-        function updatePhotoUI() {
-            const rect = canvas.getBoundingClientRect();
-            movingImg.style.left = (photoX / (canvas.width/rect.width)) + 'px';
-            movingImg.style.top = (photoY / (canvas.height/rect.height)) + 'px';
-            movingImg.style.width = (photoW / (canvas.width/rect.width)) + 'px';
-        }
-        function resizePhoto(diff) { photoW += diff; updatePhotoUI(); }
-        function fixPhoto() {
-            ctx.drawImage(movingImg, photoX, photoY, photoW, photoW * (movingImg.naturalHeight / movingImg.naturalWidth));
-            isPhotoEditing = false;
-            photoLayer.style.display = 'none';
-            document.getElementById('photo-tools').style.display = 'none';
-            document.getElementById('normal-tools').style.display = 'block';
-            saveState();
-        }
-
-        function start(e) {
-            const p = getPos(e);
-            if(isPhotoEditing) { drawing = true; return; }
-            if(currentMode === 'text') {
-                const text = prompt("文字を入力してね");
-                if(text) { ctx.font = `bold ${brushSize * 4}px sans-serif`; ctx.fillStyle = penColor; ctx.fillText(text, p.x, p.y); saveState(); }
-                return;
-            }
-            drawing = true; ctx.beginPath(); ctx.moveTo(p.x, p.y);
-        }
-        function move(e) {
-            const p = getPos(e);
-            if(!drawing) return;
-            if(isPhotoEditing) { photoX = p.x - photoW/2; photoY = p.y - (photoW * (movingImg.naturalHeight / movingImg.naturalWidth))/2; updatePhotoUI(); return; }
-            ctx.strokeStyle = (currentMode === 'eraser') ? '#fff' : penColor;
-            ctx.lineWidth = (currentMode === 'eraser') ? brushSize * 3 : brushSize;
-            ctx.lineTo(p.x, p.y); ctx.stroke();
-        }
-        function stop() { if(drawing) { drawing = false; if(!isPhotoEditing) saveState(); } }
-
-        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', stop);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }); canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }); canvas.addEventListener('touchend', stop);
-
-        async function sendCanvas() {
-            const data = canvas.toDataURL("image/png");
-            const btn = document.getElementById('canvas-send-btn');
-            btn.innerText = "保存中..."; btn.disabled = true;
-            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "save_canvas", img: data }) }); alert("みんなの自由帳に保存したよ！🎨"); document.getElementById('canvas-screen').style.display = 'none'; showCanvasList(); } catch(e) { alert("エラー💦"); } finally { btn.innerText = "みんなに おくる 🚀"; btn.disabled = false; }
+            } catch(e) { grid.innerHTML = "<p style='grid-column:1/3; text-align:center; color:#ff8bb0;'>エラー</p>"; }
         }
     </script>
 </body>
