@@ -24,23 +24,44 @@
         .sos-area { border: 2px solid #ffcdd2; background: #fff9f9; }
         .btn-sos { background: #ff5252; color: white; width: 100%; font-size: 18px; padding: 16px; border-radius: 15px; border: none; box-shadow: 0 4px 0 #b71c1c; font-weight: bold; cursor: pointer; position: relative; z-index: 10; }
 
-        /* 2. 状態・おねがいエリア（さらにスッキリ） */
+        /* 2. 状態・おねがいエリア */
         .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; position: relative; z-index: 10; }
         .btn-quick { padding: 12px 5px; border-radius: 12px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 3px 0 rgba(0,0,0,0.05); }
         .btn-limit-toilet { background: #e1f5fe; color: #0288d1; }
         .btn-limit-capa { background: #cfd8dc; color: #455a64; }
         .btn-limit-bat { background: #fff9c4; color: #f57f17; }
-        .btn-limit-stop { background: #ffebee; color: #c62828; } /* できない・やめて（ここに脳の限界も統合） */
+        .btn-limit-stop { background: #ffebee; color: #c62828; }
         .btn-hope { background: #e8f5e9; color: #2e7d32; }
         .btn-reply { background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
 
-        /* ⏱ タイマーUI */
+        /* ⏱ タイマーUI (3D演出) */
         .timer-setup { grid-column: 1 / 3; border-top: 1px dashed #eee; margin-top: 10px; padding-top: 10px; }
         .timer-btn-group { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
         .btn-timer { background: #f0f0f0; color: #666; border: 1px solid #ddd; padding: 8px; border-radius: 10px; font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; }
+        
         #cooldown-area { display: none; text-align: center; border-top: 2px solid #b49cff; padding-top: 10px; margin-top: 10px; width: 100%; grid-column: 1 / 3; }
-        .timer-bg { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 5px; position: relative; }
-        #cooldown-bar { width: 100%; height: 100%; background: #b49cff; position: relative; }
+        .timer-bg { 
+            width: 100%; height: 26px; background: #eee; border-radius: 10px; 
+            margin-top: 15px; position: relative; perspective: 600px;
+            overflow: visible; /* 絵文字がはみ出ても見えるように */
+        }
+        #cooldown-bar { 
+            width: 100%; height: 100%; background: #b49cff; 
+            position: relative; transition: width 1s linear; /* 1秒かけてなめらかに動く */
+            transform-style: preserve-3d;
+            transform: rotateX(25deg);
+            box-shadow: 0 4px 10px rgba(180, 156, 255, 0.4);
+            border-radius: 5px;
+        }
+        #nom-nom {
+            position: absolute; right: -12px; top: -12px; font-size: 26px; 
+            z-index: 20; animation: bite-move 0.5s infinite alternate;
+            pointer-events: none;
+        }
+        @keyframes bite-move {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
 
         /* オーバーレイ共通 */
         .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10002; display: none; flex-direction: column; padding: 20px; box-sizing: border-box; }
@@ -215,29 +236,35 @@
             const area = document.getElementById('cooldown-area'), bar = document.getElementById('cooldown-bar'), overlay = document.getElementById('rest-overlay');
             const statusSection = document.getElementById('status-section'), app = document.getElementById('app-content');
             
-            // バーの先端に「食べるやつ」を追加
-            bar.innerHTML = '<span id="nom-nom" style="position:absolute; right:0; top:-5px; font-size:15px; transform: translateX(50%);">🍴</span>';
+            bar.style.width = "100%"; // 最初に100%にリセット
+            bar.innerHTML = '<span id="nom-nom">😋</span>';
             
             let remaining = seconds;
             area.style.display = 'block'; overlay.style.display = 'block';
             statusSection.classList.add('active-cooldown'); app.classList.add('lock-buttons');
             
-            const timer = setInterval(() => {
-                remaining--;
-                const progress = (remaining / seconds) * 100;
-                bar.style.width = progress + "%";
-                
-                // 1秒ごとに絵文字を切り替えてパクパクさせる
-                const mouth = document.getElementById('nom-nom');
-                if(mouth) mouth.innerText = remaining % 2 === 0 ? "🍴" : "😋";
-                
-                if (remaining <= 0) { 
-                    clearInterval(timer); 
-                    area.style.display = 'none'; overlay.style.display = 'none'; 
-                    statusSection.classList.remove('active-cooldown'); app.classList.remove('lock-buttons'); 
-                    alert("おわり！🍵"); 
-                }
-            }, 1000);
+            // 初回の位置を確定させるためのディレイ
+            setTimeout(() => {
+                const timer = setInterval(() => {
+                    remaining--;
+                    const progress = Math.max(0, (remaining / seconds) * 100);
+                    bar.style.width = progress + "%";
+                    
+                    const mouth = document.getElementById('nom-nom');
+                    if(mouth) {
+                        mouth.innerText = remaining % 2 === 0 ? "😋" : "😲";
+                    }
+                    
+                    if (remaining <= 0) { 
+                        clearInterval(timer); 
+                        setTimeout(() => { // バーが消えきるまで少し待つ
+                            area.style.display = 'none'; overlay.style.display = 'none'; 
+                            statusSection.classList.remove('active-cooldown'); app.classList.remove('lock-buttons'); 
+                            alert("リフレッシュ完了！🍵"); 
+                        }, 500);
+                    }
+                }, 1000);
+            }, 50);
         }
 
         async function showCanvasList() {
