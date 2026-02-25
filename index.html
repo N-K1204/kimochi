@@ -6,10 +6,10 @@
     <title>きもちにっき</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- 基本レイアウト --- */
+        /* --- 基本レイアウト（元のデザインを維持） --- */
         body { background: #fdfcfd; margin: 0; padding: 0; font-family: sans-serif; color: #444; overflow-x: hidden; }
         .container { padding: 15px; padding-bottom: 30px; box-sizing: border-box; }
-        h1 { font-size: 20px; text-align: center; color: #ff8bb0; margin: 10px 0 20px; }
+        h1 { font-size: 20px; text-align: center; color: #ff8bb0; margin: 10px 0 15px; }
         
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #fff7e6, #ffeefd); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 85%; max-width: 320px; }
@@ -30,58 +30,55 @@
         .btn-limit-toilet { background: #e1f5fe; color: #0288d1; }
         .btn-limit-capa { background: #cfd8dc; color: #455a64; }
         .btn-limit-bat { background: #fff9c4; color: #f57f17; }
-        .btn-limit-stop { background: #ffebee; color: #c62828; }
-        .btn-hope { background: #e8f5e9; color: #2e7d32; }
+        .btn-limit-brain { background: #e1bee7; color: #7b1fa2; }
+        .btn-limit-mute { background: #f5f5f5; color: #9e9e9e; }
         .btn-reply { background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
+        .btn-hope { background: #e8f5e9; color: #2e7d32; }
 
-        /* ⏱ タイマーUI (3D演出) */
+        /* 🔋 体力ゲージ */
+        .battery-area { grid-column: 1 / 3; border-top: 1px dashed #eee; margin-top: 10px; padding-top: 10px; }
+        .battery-group { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
+        .btn-battery { flex: 1; padding: 8px; border-radius: 10px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
+
+        /* ⏱ タイマーUI */
         .timer-setup { grid-column: 1 / 3; border-top: 1px dashed #eee; margin-top: 10px; padding-top: 10px; }
         .timer-btn-group { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
         .btn-timer { background: #f0f0f0; color: #666; border: 1px solid #ddd; padding: 8px; border-radius: 10px; font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; }
-        
         #cooldown-area { display: none; text-align: center; border-top: 2px solid #b49cff; padding-top: 10px; margin-top: 10px; width: 100%; grid-column: 1 / 3; }
-        .timer-bg { 
-            width: 100%; height: 26px; background: #eee; border-radius: 10px; 
-            margin-top: 15px; position: relative; perspective: 600px;
-            overflow: visible; /* 絵文字がはみ出ても見えるように */
-        }
-        #cooldown-bar { 
-            width: 100%; height: 100%; background: #b49cff; 
-            position: relative; transition: width 1s linear; /* 1秒かけてなめらかに動く */
-            transform-style: preserve-3d;
-            transform: rotateX(25deg);
-            box-shadow: 0 4px 10px rgba(180, 156, 255, 0.4);
-            border-radius: 5px;
-        }
-        #nom-nom {
-            position: absolute; right: -12px; top: -12px; font-size: 26px; 
-            z-index: 20; animation: bite-move 0.5s infinite alternate;
-            pointer-events: none;
-        }
-        @keyframes bite-move {
-            from { transform: scale(1); }
-            to { transform: scale(1.2); }
-        }
+        .timer-bg { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        #cooldown-bar { width: 100%; height: 100%; background: #b49cff; }
 
-        /* オーバーレイ共通 */
+        /* 3. きもちをえらぶ */
+        .btn-main-emotion { background: #ff8bb0; color: white; width: 100%; font-size: 18px; padding: 20px; border-radius: 18px; border: none; box-shadow: 0 5px 0 #ff6f9e; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 10; }
+
+        /* 🎭 きもちオーバーレイ */
         .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10002; display: none; flex-direction: column; padding: 20px; box-sizing: border-box; }
         .overlay-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .overlay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; overflow-y: auto; align-content: flex-start; }
-        .grid-btn { aspect-ratio: 1.8; border-radius: 15px; border: 2.5px solid; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 13px; font-weight: 900; color: #444; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); background: #fff; border-color: #eee; text-align: center; }
+        .overlay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; overflow-y: auto; align-content: flex-start; padding-bottom: 80px; }
+        .grid-btn { aspect-ratio: 1.8; border-radius: 15px; border: 2.5px solid; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; font-weight: 900; color: #444; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); background: #fff; border-color: #eee; text-align: center; cursor: pointer; }
+        
+        /* 複数選択時の強調色 */
+        .grid-btn.selected { border-color: #ff8bb0; background: #fff0f7; }
 
-        .btn-main-emotion { background: #ff8bb0; color: white; width: 100%; font-size: 18px; padding: 20px; border-radius: 18px; border: none; box-shadow: 0 5px 0 #ff6f9e; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 10; }
-        .feature-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; position: relative; z-index: 10; }
-        .btn-mini-feature { flex: 0 0 100px; padding: 12px 5px; border-radius: 12px; color: white; text-decoration: none; font-size: 12px; font-weight: bold; text-align: center; box-shadow: 0 3px 0 rgba(0,0,0,0.1); cursor: pointer; border: none; }
+        /* 下部固定の決定ボタン */
+        .overlay-footer { position: fixed; bottom: 0; left: 0; width: 100%; padding: 20px; background: white; border-top: 1px solid #eee; box-sizing: border-box; }
+        .footer-btn-decide { background: #ff8bb0; color: white; width: 100%; padding: 15px; border-radius: 15px; border: none; font-size: 18px; font-weight: bold; box-shadow: 0 4px 0 #ff6f9e; cursor: pointer; }
 
-        #rest-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); z-index: 9998; display: none; backdrop-filter: blur(2px); }
+        /* 🕊️ おねがいオーバーレイ */
+        #hope-menu .grid-btn { border-color: #eee; }
+
+        /* ✨ 休憩中カバー */
+        #rest-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); z-index: 9998; display: none; pointer-events: auto; backdrop-filter: blur(2px); }
         .active-cooldown { position: relative; z-index: 10000 !important; box-shadow: 0 0 30px rgba(0,0,0,0.15) !important; background: #fff !important; }
         .lock-buttons button, .lock-buttons a { pointer-events: none !important; opacity: 0.4 !important; }
 
+        /* 💬 おへんじ・しつもんモーダル（元のデザイン・仕様を死守） */
         .q-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 10010; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .q-modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 320px; text-align: center; }
         .q-input { width: 100%; height: 100px; padding: 12px; border-radius: 15px; border: 3px solid #eee; box-sizing: border-box; margin-bottom: 15px; font-size: 16px; resize: none; }
-        .canvas-thumb-card { background: #f9f9f9; border-radius: 12px; border: 1px solid #eee; padding: 5px; text-align: center; cursor: pointer; }
-        .canvas-thumb-card img { width: 100%; border-radius: 8px; background: white; }
+        
+        .feature-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; position: relative; z-index: 10; }
+        .btn-mini-feature { flex: 0 0 100px; padding: 12px 5px; border-radius: 12px; color: white; text-decoration: none; font-size: 12px; font-weight: bold; text-align: center; box-shadow: 0 3px 0 rgba(0,0,0,0.1); border: none; }
     </style>
 </head>
 <body>
@@ -106,11 +103,21 @@
         <div class="section-box" id="status-section">
             <div class="section-title">📢 いまの状態・おねがい</div>
             <div class="quick-grid" id="quick-action-container">
-                <button class="btn-quick btn-limit-toilet" onclick="sendLimit('🚽 トイレにいきたいです')">🚽 トイレに行っといれ</button>
-                <button class="btn-quick btn-limit-capa" onclick="sendLimit('😵‍💫 キャパいっぱいです')">😵‍💫 キャパいっぱい</button>
-                <button class="btn-quick btn-limit-bat" onclick="sendLimit('🔋 つかれた・やすみたいです')">🔋 つかれた・やすみたい</button>
                 
-                <button class="btn-quick btn-limit-stop" onclick="openStopMenu()">✋ できない・やめて</button>
+                <div class="battery-area">
+                    <div style="font-size:10px; color:#aaa; text-align:center;">🔋 いまのパワー</div>
+                    <div class="battery-group">
+                        <button class="btn-battery" style="background:#ff6f6f; color:white;" onclick="sendLimit('🪫 パワー：ほぼゼロ')">ほぼゼロ</button>
+                        <button class="btn-battery" style="background:#ffcc80;" onclick="sendLimit('🔋 パワー：のこり半分')">半分くらい</button>
+                        <button class="btn-battery" style="background:#6ecb63; color:white;" onclick="sendLimit('🔋 パワー：まんたん！')">まんたん！</button>
+                    </div>
+                </div>
+
+                <button class="btn-quick btn-limit-toilet" onclick="sendLimit('🚽 トイレにいきたいです')">🚽 トイレ</button>
+                <button class="btn-quick btn-limit-capa" onclick="sendLimit('😵‍💫 キャパいっぱいです')">😵‍💫 キャパいっぱ</button>
+                <button class="btn-quick btn-limit-bat" onclick="sendLimit('🔋 体力がありません')">🔋 つかれ・やすみ</button>
+                <button class="btn-quick btn-limit-brain" onclick="sendLimit('🧠 考えるのが無理です')">🧠 考えるのムリ</button>
+                <button class="btn-quick btn-limit-mute" onclick="sendLimit('🔇 話せません')">🔇 話せない</button>
                 <button class="btn-quick btn-hope" onclick="openHopeMenu()">🕊️ おねがい</button>
                 <button class="btn-quick btn-reply" onclick="openQModal()">💬 おへんじ・しつもん</button>
 
@@ -147,42 +154,31 @@
     </div>
 
     <div id="emotion-menu" class="overlay-screen">
-        <div class="overlay-header"><h2 style="margin:0; font-size:18px; color:#888;">いま どんなきもち？</h2><button onclick="closeEmotionMenu()" style="border:none; background:none; font-size:28px; color:#ccc;">✖</button></div>
-        <div class="overlay-grid">
-            <a href="input.html?color=pink" class="grid-btn" style="border-color:#ff8bb0; background:#fff0f7;">😄 うれしい</a>
-            <a href="input.html?color=green" class="grid-btn" style="border-color:#6ecb63; background:#f0fff3;">😌 おちつく</a>
-            <a href="input.html?color=yellow" class="grid-btn" style="border-color:#f1c232; background:#fffbe0;">😮 びっくり</a>
-            <a href="input.html?color=purple" class="grid-btn" style="border-color:#b49cff; background:#f9f5ff;">😕 もやもや</a>
-            <a href="input.html?color=blue" class="grid-btn" style="border-color:#7da6ff; background:#f0f6ff;">😢 さみしい</a>
-            <a href="input.html?color=black" class="grid-btn" style="border-color:#8c8c8c; background:#f3f3f3;">😴 つかれた</a>
-            <a href="input.html?color=red" class="grid-btn" style="border-color:#ff6f6f; background:#fff0f0;">😡 イライラ</a>
-            <a href="input.html?color=white" class="grid-btn" style="border-color:#cccccc; background:#ffffff;">😁 期間限定</a>
+        <div class="overlay-header"><h2 style="margin:0; font-size:18px; color:#888;">いまのきもち 全部えらんでね</h2><button onclick="closeEmotionMenu()" style="border:none; background:none; font-size:28px; color:#ccc;">✖</button></div>
+        <div class="overlay-grid" id="emotion-selectable-grid">
+            <div class="grid-btn" data-val="うれしい" style="border-color:#ff8bb0; background:#fff0f7;">😄 うれしい</div>
+            <div class="grid-btn" data-val="おちつく" style="border-color:#6ecb63; background:#f0fff3;">😌 おちつく</div>
+            <div class="grid-btn" data-val="びっくり" style="border-color:#f1c232; background:#fffbe0;">😮 びっくり</div>
+            <div class="grid-btn" data-val="もやもや" style="border-color:#b49cff; background:#f9f5ff;">😕 もやもや</div>
+            <div class="grid-btn" data-val="さみしい" style="border-color:#7da6ff; background:#f0f6ff;">😢 さみしい</div>
+            <div class="grid-btn" data-val="つかれた" style="border-color:#8c8c8c; background:#f3f3f3;">😴 つかれた</div>
+            <div class="grid-btn" data-val="イライラ" style="border-color:#ff6f6f; background:#fff0f0;">😡 イライラ</div>
+            <div class="grid-btn" data-val="限定" style="border-color:#cccccc; background:#ffffff;">😁 期間限定</div>
+        </div>
+        <div class="overlay-footer">
+            <button class="footer-btn-decide" onclick="submitMultipleEmotions()">これにする！ ✅</button>
         </div>
     </div>
 
     <div id="hope-menu" class="overlay-screen">
-        <div class="overlay-header"><h2 style="margin:0; font-size:18px; color:#2e7d32;">🕊️ おねがい</h2><button onclick="closeHopeMenu()" style="border:none; background:none; font-size:28px; color:#ccc;">✖</button></div>
+        <div class="overlay-header"><h2 style="margin:0; font-size:18px; color:#2e7d32;">どうしてほしい？</h2><button onclick="closeHopeMenu()" style="border:none; background:none; font-size:28px; color:#ccc;">✖</button></div>
         <div class="overlay-grid">
-            <button class="grid-btn" onclick="sendLimit('👀 そばにいてほしいです')">👀 そばにいて</button>
-            <button class="grid-btn" onclick="sendLimit('🍃 ほうっておいてほしいです')">🍃 ほうっておいて</button>
-            <button class="grid-btn" onclick="sendLimit('⏰ あとでゆっくり話したいです')">⏰ あとで話したい</button>
-            <button class="grid-btn" onclick="sendLimit('🧸 ギュッとしてほしいです')">🧸 ギュッとして</button>
-            <button class="grid-btn" onclick="sendLimit('💧 お水がのみたいです')">💧 お水がほしい</button>
-            <button class="grid-btn" onclick="sendLimit('🧃 ジュースがのみたいです')">🍊 ジュースがほしい</button>
-            <button class="grid-btn" onclick="sendLimit('🌡️ 暑いです')">🥵 あつい</button>
-            <button class="grid-btn" onclick="sendLimit('🌡️ 寒いです')">🥶 さむい</button>
-        </div>
-    </div>
-
-    <div id="stop-menu" class="overlay-screen">
-        <div class="overlay-header"><h2 style="margin:0; font-size:18px; color:#c62828;">✋ できない・やめて</h2><button onclick="closeStopMenu()" style="border:none; background:none; font-size:28px; color:#ccc;">✖</button></div>
-        <div class="overlay-grid">
-            <button class="grid-btn" onclick="sendLimit('🧠 考えるのが無理です（しんどい）')">🧠 考えるのムリ</button>
-            <button class="grid-btn" onclick="sendLimit('🔇 いまは声がだせません')">🔇 話せない</button>
-            <button class="grid-btn" onclick="sendLimit('🚫 答えられません')">🚫 答えられない</button>
-            <button class="grid-btn" onclick="sendLimit('🧩 説明できません')">🧩 説明できない</button>
-            <button class="grid-btn" onclick="sendLimit('🔥 話題を変えてほしいです')">🔥 話題がキツい</button>
-            <button class="grid-btn" onclick="sendLimit('👥 ひとりにさせてください')">👥 ひとりにさせて</button>
+            <button class="grid-btn" onclick="sendLimit('💧 お水がのみたい')">💧 お水がほしい</button>
+            <button class="grid-btn" onclick="sendLimit('🧃 ジュースがのみたい')">🧃 ジュース</button>
+            <button class="grid-btn" onclick="sendLimit('🌡️ 暑いです')">🌡️ あつい</button>
+            <button class="grid-btn" onclick="sendLimit('🌡️ 寒いです')">🌡️ さむい</button>
+            <button class="grid-btn" onclick="sendLimit('👀 そばにいてほしい')">👀 そばにいて</button>
+            <button class="grid-btn" onclick="sendLimit('🍃 ほうっておいてほしい')">🍃 ほうっておいて</button>
         </div>
     </div>
 
@@ -195,7 +191,7 @@
                 <button class="login-btn" style="background:#7da6ff; flex:1; padding:12px;" onclick="sendQuickNotify('ううん')">ううん</button>
             </div>
             <button class="login-btn" style="background:#b49cff; width:100%;" onclick="sendQuickNotify()">おくる 💌</button>
-            <button onclick="closeQModal()" style="margin-top:15px; border:none; background:none; color:#aaa;">やめる</button>
+            <button onclick="closeQModal()" style="margin-top:15px; border:none; background:none; color:#aaa; cursor:pointer;">やめる</button>
         </div>
     </div>
 
@@ -212,18 +208,42 @@
         function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'block'; }
         window.onload = function() { if (sessionStorage.getItem("isLoggedIn") === "true") showApp(); };
 
-        async function sendSOS() { if(!confirm("「たすけて」をつうち する？")) return; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "sos" }) }); alert("おくったよ。"); } catch(e) {} }
-        async function sendLimit(content) { if(!confirm(content + " を つたえる？")) return; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ。"); closeHopeMenu(); closeStopMenu(); } catch(e) {} }
+        async function sendSOS() { if(!confirm("「たすけて」をつうち する？")) return; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "sos" }) }); alert("おくったよ！🚀"); } catch(e) {} }
+        async function sendLimit(content) { if(!confirm(content + " を つたえる？")) return; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！🚀"); closeHopeMenu(); } catch(e) {} }
 
-        function openEmotionMenu() { document.getElementById('emotion-menu').style.display = 'flex'; }
+        // --- 🎭 複数選択ロジック ---
+        let selectedEmotions = new Set();
+        document.querySelectorAll('#emotion-selectable-grid .grid-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const val = this.getAttribute('data-val');
+                if(selectedEmotions.has(val)) { selectedEmotions.delete(val); this.classList.remove('selected'); } 
+                else { selectedEmotions.add(val); this.classList.add('selected'); }
+            });
+        });
+
+        function openEmotionMenu() { 
+            selectedEmotions.clear();
+            document.querySelectorAll('#emotion-selectable-grid .grid-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById('emotion-menu').style.display = 'flex'; 
+        }
         function closeEmotionMenu() { document.getElementById('emotion-menu').style.display = 'none'; }
         function openHopeMenu() { document.getElementById('hope-menu').style.display = 'flex'; }
         function closeHopeMenu() { document.getElementById('hope-menu').style.display = 'none'; }
-        function openStopMenu() { document.getElementById('stop-menu').style.display = 'flex'; }
-        function closeStopMenu() { document.getElementById('stop-menu').style.display = 'none'; }
         function openQModal() { document.getElementById('quick-modal').style.display = 'flex'; }
         function closeQModal() { document.getElementById('quick-modal').style.display = 'none'; document.getElementById('q-input-area').value = ""; }
         
+        async function submitMultipleEmotions() {
+            if(selectedEmotions.size === 0) { alert("えらんでね"); return; }
+            const content = "🧪 きもち：" + Array.from(selectedEmotions).join(" / ");
+            if(confirm(content + " を おくる？")) {
+                try {
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) });
+                    alert("おくったよ！🚀");
+                    closeEmotionMenu();
+                } catch(e) {}
+            }
+        }
+
         async function sendQuickNotify(answer) { 
             const userInput = document.getElementById('q-input-area').value; 
             let content = answer ? `💬 おへんじ：${answer}` : ""; 
@@ -235,53 +255,27 @@
         function startCooldown(seconds) {
             const area = document.getElementById('cooldown-area'), bar = document.getElementById('cooldown-bar'), overlay = document.getElementById('rest-overlay');
             const statusSection = document.getElementById('status-section'), app = document.getElementById('app-content');
-            
-            bar.style.width = "100%"; // 最初に100%にリセット
-            bar.innerHTML = '<span id="nom-nom">😋</span>';
-            
             let remaining = seconds;
             area.style.display = 'block'; overlay.style.display = 'block';
             statusSection.classList.add('active-cooldown'); app.classList.add('lock-buttons');
-            
-            // 初回の位置を確定させるためのディレイ
-            setTimeout(() => {
-                const timer = setInterval(() => {
-                    remaining--;
-                    const progress = Math.max(0, (remaining / seconds) * 100);
-                    bar.style.width = progress + "%";
-                    
-                    const mouth = document.getElementById('nom-nom');
-                    if(mouth) {
-                        mouth.innerText = remaining % 2 === 0 ? "😋" : "😲";
-                    }
-                    
-                    if (remaining <= 0) { 
-                        clearInterval(timer); 
-                        setTimeout(() => { // バーが消えきるまで少し待つ
-                            area.style.display = 'none'; overlay.style.display = 'none'; 
-                            statusSection.classList.remove('active-cooldown'); app.classList.remove('lock-buttons'); 
-                            alert("リフレッシュ完了！🍵"); 
-                        }, 500);
-                    }
-                }, 1000);
-            }, 50);
+            const timer = setInterval(() => {
+                remaining--; bar.style.width = (remaining / seconds) * 100 + "%";
+                if (remaining <= 0) { clearInterval(timer); area.style.display = 'none'; overlay.style.display = 'none'; statusSection.classList.remove('active-cooldown'); app.classList.remove('lock-buttons'); alert("おわり！🍵"); }
+            }, 1000);
         }
 
         async function showCanvasList() {
             document.getElementById('canvas-list-screen').style.display = 'flex';
-            const grid = document.getElementById('canvas-thumbnails');
-            grid.innerHTML = "<p style='grid-column:1/3; text-align:center; color:#888;'>よみこみ中...</p>";
+            const grid = document.getElementById('canvas-thumbnails'); grid.innerHTML = "<p>よみこみ中...</p>";
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "get_canvases" }) });
-                const canvasDataList = await res.json();
-                grid.innerHTML = "";
-                canvasDataList.forEach((data) => {
-                    const card = document.createElement('div');
-                    card.className = "canvas-thumb-card";
-                    card.innerHTML = `<img src="${data.img}"><div style="font-size:10px; color:#888;">${data.date}</div>`;
+                const data = await res.json(); grid.innerHTML = "";
+                data.forEach(d => {
+                    const card = document.createElement('div'); card.style.background="#f9f9f9"; card.style.padding="5px";
+                    card.innerHTML = `<img src="${d.img}" style="width:100%; border-radius:8px;">`;
                     grid.appendChild(card);
                 });
-            } catch(e) { grid.innerHTML = "<p style='grid-column:1/3; text-align:center; color:#ff8bb0;'>エラー</p>"; }
+            } catch(e) { grid.innerHTML = "<p>エラー</p>"; }
         }
     </script>
 </body>
