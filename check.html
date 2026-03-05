@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アンテナしらべ</title>
+    <style>
+        /* --- デザイン（やさしい雰囲気） --- */
+        body { background: #fdfcfd; font-family: sans-serif; color: #444; padding: 20px; text-align: center; margin: 0; }
+        .card { background: white; border-radius: 25px; padding: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 2px solid #f0f0f0; }
+        h1 { font-size: 22px; color: #ff8bb0; margin-bottom: 5px; }
+        .intro { font-size: 13px; color: #888; margin-bottom: 15px; line-height: 1.4; }
+        
+        /* 質問の箱 */
+        .q-box { display: none; }
+        .q-box.active { display: block; animation: sideIn 0.3s ease-out; }
+        @keyframes sideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .q-text { font-size: 19px; font-weight: bold; margin-bottom: 25px; line-height: 1.6; min-height: 3.5em; display: flex; align-items: center; justify-content: center; }
+        
+        /* ボタン */
+        .btn-group { display: flex; flex-direction: column; gap: 15px; }
+        .ans-btn { padding: 22px; border-radius: 20px; border: 3px solid #eee; background: white; font-size: 19px; font-weight: bold; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
+        .ans-btn.yes { border-color: #ff8bb0; color: #ff8bb0; }
+        .ans-btn.no { border-color: #7da6ff; color: #7da6ff; }
+        .ans-btn:active { transform: scale(0.95); background: #fafafa; }
+
+        /* 結果エリア */
+        #result-area { display: none; background: #fffefe; border: 3px solid #ff8bb0; border-radius: 25px; padding: 25px; animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .res-title { font-size: 22px; font-weight: bold; color: #ff8bb0; margin-bottom: 15px; }
+        .res-body { font-size: 15px; text-align: left; line-height: 1.7; background: #fffcfd; padding: 18px; border-radius: 18px; border: 1px dashed #ff8bb0; }
+        
+        .btn-retry { margin-top: 20px; padding: 12px 25px; border-radius: 30px; border: none; background: #ff8bb0; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 0 #ff6f9e; }
+        .back-btn { display: inline-block; margin-top: 30px; color: #bbb; text-decoration: none; font-size: 14px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-area">
+        <div class="card">
+            <h1>📡 アンテナしらべ</h1>
+            <div class="intro">いまの あなたのことを<br>しらべる クイズだよ</div>
+        </div>
+
+        <div id="q1" class="q-box active">
+            <div class="q-text">🔊 まわりの おとが<br>大きく きこえて、<br>びっくりしちゃう？</div>
+            <div class="btn-group">
+                <button class="ans-btn yes" onclick="next(1, 1)">⭕️ あてはまる</button>
+                <button class="ans-btn no" onclick="next(1, 0)">❌ ちがうかな</button>
+            </div>
+        </div>
+
+        <div id="q2" class="q-box">
+            <div class="q-text">👕 ふくの チクチクや<br>へんな においに、<br>すぐ きづく？</div>
+            <div class="btn-group">
+                <button class="ans-btn yes" onclick="next(2, 1)">⭕️ あてはまる</button>
+                <button class="ans-btn no" onclick="next(2, 0)">❌ ちがうかな</button>
+            </div>
+        </div>
+
+        <div id="q3" class="q-box">
+            <div class="q-text">😢 おともだちが<br>かなしそうだと、<br>じぶんも かなしくなる？</div>
+            <div class="btn-group">
+                <button class="ans-btn yes" onclick="next(3, 1)">⭕️ あてはまる</button>
+                <button class="ans-btn no" onclick="next(3, 0)">❌ ちがうかな</button>
+            </div>
+        </div>
+
+        <div id="q4" class="q-box">
+            <div class="q-text">👫 たくさんの 人がいると<br>「つかれたなぁ」って<br>おもいやすい？</div>
+            <div class="btn-group">
+                <button class="ans-btn yes" onclick="next(4, 1)">⭕️ あてはまる</button>
+                <button class="ans-btn no" onclick="next(4, 0)">❌ ちがうかな</button>
+            </div>
+        </div>
+
+        <div id="q5" class="q-box">
+            <div class="q-text">🎨 きれいな えや、<br>きれいな おんがくに<br>「じーん」とする？</div>
+            <div class="btn-group">
+                <button class="ans-btn yes" onclick="next(5, 1)">⭕️ あてはまる</button>
+                <button class="ans-btn no" onclick="next(5, 0)">❌ ちがうかな</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-area">
+        <div class="res-title" id="res-title"></div>
+        <div class="res-body" id="res-body"></div>
+        <button class="btn-retry" onclick="location.reload()">もういっかい</button>
+    </div>
+
+    <a href="index.html" class="back-btn">◀ ️にっきに もどる</a>
+
+    <script>
+        let total = 0;
+        function next(current, val) {
+            total += val;
+            document.getElementById('q' + current).classList.remove('active');
+            if (current < 5) {
+                document.getElementById('q' + (current + 1)).classList.add('active');
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-area').style.display = 'none';
+            const area = document.getElementById('result-area');
+            const title = document.getElementById('res-title');
+            const body = document.getElementById('res-body');
+            area.style.display = 'block';
+
+            if (total >= 4) {
+                title.innerText = "✨ きらきらアンテナ";
+                body.innerHTML = "あなたは、まわりのことを たくさんキャッチできる、<b>とっても すごいアンテナ</b>をもっています。<br><br>やさしくて、いろいろなことに きづける すてきな 才能（さいのう）です。でも、アンテナが お仕事をがんばりすぎて、つかれちゃうことも あります。<br><br>つかれたときは、にっきのボタンで「おやすみしたい」って おしえてね。教えてくれると、みんな 安心するよ。";
+            } else if (total >= 2) {
+                title.innerText = "🍃 そよかぜアンテナ";
+                body.innerHTML = "あなたは、まわりの空気を さらさらと感じる、<b>やさしいアンテナ</b>をもっています。<br><br>お友だちの きもちが わかる、とっても やさしい子です。ときどき「つかれたな」とおもったら、すきなことをして パワーを ためようね。";
+            } else {
+                title.innerText = "☀️ げんきアンテナ";
+                body.innerHTML = "あなたは、じぶんのペースで どんどん進める、<b>つよいアンテナ</b>をもっています。<br><br>まわりのことに ふりまわされすぎず、元気にすごせるのが あなたの すごいところ。その元気を つかって、みんなを ニコニコにしてあげてね。";
+            }
+        }
+    </script>
+</body>
+</html>
