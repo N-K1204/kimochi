@@ -6,11 +6,11 @@
     <title>きもちにっき</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- 基本レイアウト（元のデザインを維持） --- */
         body { background: #fdfcfd; margin: 0; padding: 0; font-family: sans-serif; color: #444; overflow-x: hidden; }
         .container { padding: 15px; padding-bottom: 30px; box-sizing: border-box; }
-        h1 { font-size: 20px; text-align: center; color: #ff8bb0; margin: 10px 0 20px; }
+        h1 { font-size: 20px; text-align: center; color: #ff8bb0; margin: 10px 0 15px; }
         
+        /* ログイン */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #fff7e6, #ffeefd); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 85%; max-width: 320px; }
         .pass-input { width: 100%; padding: 12px; font-size: 18px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 20px; text-align: center; box-sizing: border-box; }
@@ -20,11 +20,11 @@
         .section-box { background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; transition: 0.3s; position: relative; }
         .section-title { font-size: 13px; font-weight: bold; color: #bbb; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 
-        /* 1. 緊急エリア */
+        /* SOS */
         .sos-area { border: 2px solid #ffcdd2; background: #fff9f9; }
         .btn-sos { background: #ff5252; color: white; width: 100%; font-size: 18px; padding: 16px; border-radius: 15px; border: none; box-shadow: 0 4px 0 #b71c1c; font-weight: bold; cursor: pointer; position: relative; z-index: 10; }
 
-        /* 2. 状態・おねがいエリア */
+        /* クイックアクション */
         .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; position: relative; z-index: 10; }
         .btn-quick { padding: 12px 5px; border-radius: 12px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 3px 0 rgba(0,0,0,0.05); }
         .btn-limit-toilet { background: #e1f5fe; color: #0288d1; }
@@ -32,15 +32,15 @@
         .btn-limit-bat { background: #fff9c4; color: #f57f17; }
         .btn-limit-brain { background: #e1bee7; color: #7b1fa2; }
         .btn-limit-mute { background: #f5f5f5; color: #9e9e9e; }
+        .btn-limit-sound { background: #ffe0b2; color: #e65100; } /* ✨ 音やだボタン用カラーを追加 */
         .btn-reply { background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
         .btn-hope { background: #e8f5e9; color: #2e7d32; }
 
-        /* 🔋 体力ゲージ */
         .battery-area { grid-column: 1 / 3; border-top: 1px dashed #eee; margin-top: 10px; padding-top: 10px; }
         .battery-group { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
         .btn-battery { flex: 1; padding: 8px; border-radius: 10px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
 
-        /* ⏱ タイマーUI */
+        /* タイマー */
         .timer-setup { grid-column: 1 / 3; border-top: 1px dashed #eee; margin-top: 10px; padding-top: 10px; }
         .timer-btn-group { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
         .btn-timer { background: #f0f0f0; color: #666; border: 1px solid #ddd; padding: 8px; border-radius: 10px; font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; }
@@ -48,19 +48,16 @@
         .timer-bg { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 5px; }
         #cooldown-bar { width: 100%; height: 100%; background: #b49cff; }
 
-        /* 3. きもちをえらぶ */
+        /* きもちボタン（1つに集約） */
         .btn-main-emotion { background: #ff8bb0; color: white; width: 100%; font-size: 18px; padding: 20px; border-radius: 18px; border: none; box-shadow: 0 5px 0 #ff6f9e; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 10; }
 
-        /* 🎭 きもちオーバーレイ */
+        /* 🎭 オーバーレイ */
         .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10002; display: none; flex-direction: column; padding: 20px; box-sizing: border-box; }
         .overlay-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .overlay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; overflow-y: auto; align-content: flex-start; padding-bottom: 80px; }
         .grid-btn { aspect-ratio: 1.8; border-radius: 15px; border: 2.5px solid; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; font-weight: 900; color: #444; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); background: #fff; border-color: #eee; text-align: center; cursor: pointer; }
-        
-        /* 複数選択時の強調色 */
         .grid-btn.selected { border-color: #ff8bb0; background: #fff0f7; }
 
-        /* 下部固定の決定ボタン */
         .overlay-footer { position: fixed; bottom: 0; left: 0; width: 100%; padding: 20px; background: white; border-top: 1px solid #eee; box-sizing: border-box; }
         .footer-btn-decide { background: #ff8bb0; color: white; width: 100%; padding: 15px; border-radius: 15px; border: none; font-size: 18px; font-weight: bold; box-shadow: 0 4px 0 #ff6f9e; cursor: pointer; }
 
@@ -68,7 +65,6 @@
         .active-cooldown { position: relative; z-index: 10000 !important; box-shadow: 0 0 30px rgba(0,0,0,0.15) !important; background: #fff !important; }
         .lock-buttons button, .lock-buttons a { pointer-events: none !important; opacity: 0.4 !important; }
 
-        /* 💬 おへんじ・しつもんモーダル */
         .q-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 10010; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .q-modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 320px; text-align: center; }
         .q-input { width: 100%; height: 100px; padding: 12px; border-radius: 15px; border: 3px solid #eee; box-sizing: border-box; margin-bottom: 15px; font-size: 16px; resize: none; }
@@ -99,7 +95,6 @@
         <div class="section-box" id="status-section">
             <div class="section-title">📢 いまの状態・おねがい</div>
             <div class="quick-grid" id="quick-action-container">
-                
                 <div class="battery-area">
                     <div style="font-size:10px; color:#aaa; text-align:center;">🔋 いまのパワー</div>
                     <div class="battery-group">
@@ -114,7 +109,7 @@
                 <button class="btn-quick btn-limit-bat" onclick="sendLimit('🔋 体力がありません')">🔋 つかれ・やすみ</button>
                 <button class="btn-quick btn-limit-brain" onclick="sendLimit('🧠 考えるのが無理です')">🧠 考えるのムリ</button>
                 <button class="btn-quick btn-limit-mute" onclick="sendLimit('🔇 話せません')">🔇 話せない</button>
-                <button class="btn-quick btn-hope" onclick="openHopeMenu()">🕊️ おねがい</button>
+                <button class="btn-quick btn-limit-sound" onclick="sendLimit('📢 おとがイヤです')">📢 音やだ</button> <button class="btn-quick btn-hope" onclick="openHopeMenu()">🕊️ おねがい</button>
                 <button class="btn-quick btn-reply" onclick="openQModal()">💬 おへんじ・しつもん</button>
 
                 <div class="timer-setup" id="timer-setup-ui">
@@ -192,12 +187,6 @@
         </div>
     </div>
 
-    <div id="canvas-list-screen" class="overlay-screen" style="z-index: 10015;">
-        <div class="overlay-header"><h3>🎨 じゆうちょう</h3><button onclick="document.getElementById('canvas-list-screen').style.display='none'" style="border:none; background:none; font-size:24px;">✖</button></div>
-        <button onclick="window.location.href='canvas.html'" style="background:#6ecb63; color:white; padding:15px; border-radius:15px; border:none; font-weight:bold; width:100%; margin-bottom:20px;">＋ あたらしい絵をかく</button>
-        <div id="canvas-thumbnails" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;"></div>
-    </div>
-
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
 
@@ -230,10 +219,8 @@
         
         async function submitMultipleEmotions() {
             if(selectedEmotions.size === 0) { alert("えらんでね"); return; }
-            const content = "🧪 きもち：" + Array.from(selectedEmotions).join(" / ");
-            if(confirm(content + " を おくる？")) {
-                try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！🚀"); closeEmotionMenu(); } catch(e) {}
-            }
+            const feelings = Array.from(selectedEmotions).join(",");
+            location.href = `input.html?feelings=${encodeURIComponent(feelings)}`;
         }
 
         async function sendQuickNotify(answer) { 
@@ -254,20 +241,6 @@
                 remaining--; bar.style.width = (remaining / seconds) * 100 + "%";
                 if (remaining <= 0) { clearInterval(timer); area.style.display = 'none'; overlay.style.display = 'none'; statusSection.classList.remove('active-cooldown'); app.classList.remove('lock-buttons'); alert("おわり！🍵"); }
             }, 1000);
-        }
-
-        async function showCanvasList() {
-            document.getElementById('canvas-list-screen').style.display = 'flex';
-            const grid = document.getElementById('canvas-thumbnails'); grid.innerHTML = "<p>よみこみ中...</p>";
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "get_canvases" }) });
-                const data = await res.json(); grid.innerHTML = "";
-                data.forEach(d => {
-                    const card = document.createElement('div'); card.style.background="#f9f9f9"; card.style.padding="5px";
-                    card.innerHTML = `<img src="${d.img}" style="width:100%; border-radius:8px;">`;
-                    grid.appendChild(card);
-                });
-            } catch(e) { grid.innerHTML = "<p>エラー</p>"; }
         }
     </script>
 </body>
