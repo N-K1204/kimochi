@@ -10,99 +10,42 @@
         body { background: #fdfcfd; font-family: sans-serif; color: #444; margin: 0; padding: 0; overflow-x: hidden; }
         .container { padding: 15px; max-width: 500px; margin: 0 auto; box-sizing: border-box; }
         
-        /* 💡 ヘッダー：期間限定を消し、選んだきもちを可愛く出す */
         #emotion-label { font-size: 20px; text-align: center; margin: 15px 0; font-weight: 900; line-height: 1.4; }
         
         .tab-container { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab-btn { flex: 1; padding: 12px 0; font-size: 15px; font-weight: bold; border: none; border-radius: 20px; cursor: pointer; background: #eee; color: #888; transition: 0.3s; }
         .tab-btn.active { color: white; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
 
-        /* ゲームエリア：角を丸く、影をつけてポップに */
         .game-area {
-            background-color: white;
-            border: 4px solid #eee;
-            border-radius: 25px;
-            padding: 10px;
-            margin-bottom: 15px;
-            height: 700px; 
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background-color: white; border: 4px solid #eee; border-radius: 25px;
+            padding: 10px; margin-bottom: 15px; height: 600px; 
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
             box-shadow: 0 8px 20px rgba(0,0,0,0.05);
         }
 
         .chat-history {
-            flex: 1;
-            overflow-y: auto;
-            padding: 50px 15px 15px 15px;
-            background: #fdfcfd;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            scroll-behavior: smooth;
+            flex: 1; overflow-y: auto; padding: 50px 15px 15px 15px;
+            background: #fdfcfd; border-radius: 20px; display: flex; flex-direction: column; gap: 18px; scroll-behavior: smooth;
         }
 
-        /* 🐶 わんちゃんのふきだし */
         .bubble-ai {
-            align-self: flex-start;
-            background: white;
-            border: 3px solid #eee;
-            color: #444;
-            padding: 12px 18px;
-            border-radius: 20px 20px 20px 5px;
-            position: relative;
-            max-width: 80%;
-            font-size: 16px;
-            font-weight: bold;
-            line-height: 1.5;
-            margin-left: 45px;
-            margin-top: 10px;
+            align-self: flex-start; background: white; border: 3px solid #eee; color: #444;
+            padding: 12px 18px; border-radius: 20px 20px 20px 5px; position: relative;
+            max-width: 80%; font-size: 16px; font-weight: bold; line-height: 1.5; margin-left: 45px; margin-top: 10px;
         }
-        .bubble-ai::before {
-            content: "🐶";
-            font-size: 35px;
-            position: absolute;
-            top: -5px;
-            left: -48px;
-        }
+        .bubble-ai::before { content: "🐶"; font-size: 35px; position: absolute; top: -5px; left: -48px; }
 
-        /* ユーザーのふきだし */
         .bubble-user {
-            align-self: flex-end;
-            background: #fff9c4;
-            border: 2px solid #fbc02d;
-            padding: 10px 15px;
-            border-radius: 20px 20px 5px 20px;
-            max-width: 80%;
-            font-size: 15px;
-            font-weight: bold;
+            align-self: flex-end; background: #fff9c4; border: 2px solid #fbc02d;
+            padding: 10px 15px; border-radius: 20px 20px 5px 20px; max-width: 80%; font-size: 15px; font-weight: bold;
         }
 
-        /* 選択肢エリア：スクロールしやすく */
-        .choice-scroll-wrapper {
-            height: 300px;
-            overflow-y: auto;
-            border-top: 2px dashed #eee;
-            padding-top: 12px;
-            background: white;
-        }
+        .choice-scroll-wrapper { height: 250px; overflow-y: auto; border-top: 2px dashed #eee; padding-top: 12px; background: white; }
         .choice-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-bottom: 20px; }
 
-        /* ボタンをぷっくりさせる */
         .game-btn {
-            padding: 12px 8px;
-            font-size: 14px;
-            font-weight: bold;
-            border: 2px solid #eee;
-            border-radius: 15px;
-            background: white;
-            cursor: pointer;
-            width: 46%;
-            box-shadow: 0 4px 0 #eee;
-            color: #555;
-            transition: 0.1s;
+            padding: 12px 8px; font-size: 14px; font-weight: bold; border: 2px solid #eee; border-radius: 15px;
+            background: white; cursor: pointer; width: 46%; box-shadow: 0 4px 0 #eee; color: #555; transition: 0.1s;
             display: flex; align-items: center; justify-content: center;
         }
         .game-btn:active { transform: translateY(3px); box-shadow: none; }
@@ -110,18 +53,15 @@
         .btn-neg { border-color: #7da6ff !important; background: #f0f6ff !important; color: #7da6ff !important; box-shadow: 0 4px 0 #bbdefb !important; }
         .btn-free-input { border: 2px dashed #bde4ff !important; color: #5dade2 !important; }
 
-        /* 操作ボタン */
         .ctrl-btns { position: absolute; top: 10px; right: 15px; z-index: 100; display: flex; gap: 8px; }
         .ctrl-btn { font-size: 11px; background: rgba(255,255,255,0.8); border: 1px solid #ddd; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-weight: bold; color: #888; }
 
-        /* ゲージエリア */
         .gauge-wrapper { background: white; padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .gauge-label { display: block; font-weight: bold; color: #888; margin-bottom: 10px; font-size: 14px; text-align: center; }
         .gauge-container { display: flex; justify-content: center; gap: 8px; }
         .gauge-btn { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #eee; background: white; font-weight: bold; cursor: pointer; transition: 0.2s; color: #888; }
-        .gauge-btn.selected { color: white; transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .gauge-btn.selected { color: white !important; transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        /* 送信ボタン */
         .btn-send-main { width: 100%; padding: 18px; border-radius: 50px; border: none; color: white; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.1); transition: 0.2s; }
         .btn-send-main:active { transform: translateY(4px); box-shadow: none; }
 
@@ -183,8 +123,6 @@
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
-
-        // --- 🎨 テーマとヘッダーの設定 ---
         const urlParams = new URLSearchParams(window.location.search);
         const feelingsParam = urlParams.get('feelings') || "";
         const colorKey = urlParams.get('color') || 'pink';
@@ -192,65 +130,67 @@
         const THEMES = { "pink": "#ff8bb0", "green": "#6ecb63", "yellow": "#f1c232", "purple": "#b49cff", "blue": "#7da6ff", "black": "#8c8c8c", "red": "#ff6f6f" };
         const mainColor = THEMES[colorKey] || "#ff8bb0";
 
+        // ヘッダー表示
         const labelEl = document.getElementById('emotion-label');
         labelEl.innerText = feelingsParam ? "🧪 " + feelingsParam.replace(/,/g, " / ") : "🐶 いっしょに さがそう";
         labelEl.style.color = mainColor;
-
-        // ボタン等の色をテーマに合わせる
         document.getElementById('submit-btn').style.backgroundColor = mainColor;
+
+        // スタイル動的適用
         const styleTag = document.createElement('style');
         styleTag.innerHTML = `.tab-btn.active { background-color: ${mainColor} !important; } .game-area { border-color: ${mainColor}22; } .gauge-btn.selected { background-color: ${mainColor} !important; border-color: ${mainColor} !important; }`;
         document.head.appendChild(styleTag);
 
-        // --- 📊 選択肢データ（一切減らさず全復旧） ---
-        let storyParts = { when:"", place:"", place_sub:"", person:"", action:"", action_type:"", event:"", reason:"", thought:"", body:"", last_valence:null };
+        // --- 📊 全データ（完全復旧・形式統一） ---
+        let storyParts = { when:"", place:"", place_sub:"", person:"", action:"", action_type:"", event:"", thought:"", body:"", last_valence:null };
+        
         const DATA = {
             when: [{l:"🌞 いま", v:"いま"}, {l:"🕰 さっき", v:"さっき"}, {l:"🌅 あさ", v:"きょうのあさ"}, {l:"☀️ おひる", v:"きょうのおひる"}, {l:"🌇 ゆうがた", v:"きょうのゆうがた"}, {l:"🌙 よる", v:"きょうのよる"}, {l:"📅 まえ", v:"まえ"}],
             people: [{l:"👦 かなとくん", v:"かなとくん"}, {l:"👩 ゆうき", v:"ゆうき"}, {l:"👤 ぼく", v:"ぼく"}, {l:"👨 とーちゃん", v:"とーちゃん"}, {l:"👩 かーちゃん", v:"かーちゃん"}, {l:"🏫 せんせい", v:"せんせい"}, {l:"👥 みんな", v:"グループのみんな"}],
-            body_pos: [{l:"✨ かるい", v:"からだがかるかった", p:1}, {l:"😌 ポカポカ", v:"ポカポカしていた", p:1}, {l:"😆 スッキリ", v:"スッキリした", p:1}],
+            body_pos: [{l:"✨ かるい", v:"からだがかるかった", p:1}, {l:"😌 ポカポカ", v:"ポカポカしていた", p:1}, {l:"💪 ちから", v:"ちからがわいてきた", p:1}, {l:"😆 スッキリ", v:"スッキリした", p:1}],
             body_neg: [{l:"🔥 カッカ", v:"かおがカッカした", n:1}, {l:"🕳 キュッ", v:"むねがキュッとした", n:1}, {l:"💓 ドキドキ", v:"むねがドキドキした", n:1}, {l:"🌪 グルグル", v:"おなかがグルグルした", n:1}],
             body_tired: [{l:"🛌 おもい", v:"からだがおもかった", n:1}, {l:"🥱 ねむい", v:"とてもねむかった", n:1}],
-            thought_pos: [{l:"😤 やりきった", v:"「やりきった！」"}, {l:"✨ もっとやりたい", v:"「もっとやりたい」"}, {l:"🥰 だいすき", v:"「だいすき」"}],
-            thought_neg: [{l:"😿 ずるい", v:"「ずるい！」"}, {l:"🥺 たすけて", v:"「たすけて」"}, {l:"🏠 かえりたい", v:"「かえりたい」"}, {l:"💧 ぼくがわるい", v:"「ぼくがわるいんだ」"}]
+            thought_pos: [{l:"😤 やりきった", v:"「やりきった！」", p:1}, {l:"✨ やりたい", v:"「もっとやりたい」", p:1}, {l:"🥰 だいすき", v:"「だいすき」", p:1}],
+            thought_neg: [{l:"😿 ずるい", v:"「ずるい！」", n:1}, {l:"🥺 たすけて", v:"「たすけて」", n:1}, {l:"🏠 かえりたい", v:"「かえりたい」", n:1}, {l:"💧 ぼくがわるい", v:"「ぼくがわるいんだ」", n:1}]
         };
 
         const ACTIONS_MAP = {
             "きょうしつ": [{l:"✏️ べんきょう", v:"べんきょう", t:"study"}, {l:"🍱 きゅうしょく", v:"きゅうしょく", t:"eat"}, {l:"😆 やすみじかん", v:"やすみじかん", t:"social"}],
             "リビング": [{l:"📺 テレビ", v:"テレビ", t:"passive"}, {l:"🎮 ゲーム", v:"ゲーム", t:"play"}, {l:"🍽 ごはん", v:"ごはん", t:"eat"}],
-            "こうえん": [{l:"🏃 おにごっこ", v:"おにごっこ", t:"play"}, {l:"🛝 ゆうぐ", v:"ゆうぐであそぶ", t:"play"}]
-            // ※ACTIONS_MAP, EVENTS_MAPの詳細は長いため、ロジック内で動的に呼び出せるよう元の構造を維持
+            "こうえん": [{l:"🏃 おにごっこ", v:"おにごっこ", t:"play"}, {l:"🛝 ゆうぐ", v:"ゆうぐであそぶ", t:"play"}],
+            "トイレ": [{l:"🚽 トイレ", v:"トイレにいく", t:"passive"}]
         };
         const DEFAULT_ACTIONS = [{l:"👀 みる", v:"なにかをみていた", t:"passive"}, {l:"🚶 いる", v:"そこにいた", t:"passive"}];
 
         const EVENTS_MAP = {
-            "study": [{l:"💡 わかった", v:"わかった", p:1}, {l:"😵 わかんない", v:"わからなかった", n:1}],
-            "play": [{l:"😆 たのしい", v:"たのしかった", p:1}, {l:"😡 けんか", v:"けんかした", n:1}],
-            "passive": [{l:"😌 おちつく", v:"おちついていた", p:1}, {l:"🥱 たいくつ", v:"たいくつだった", n:1}],
-            "social": [{l:"🤝 なかよし", v:"なかよくできた", p:1}, {l:"🗡 わるぐち", v:"わるぐちをいわれた", n:1}]
+            "study": [{l:"💡 わかった", v:"わかった", p:1}, {l:"😵 わからん", v:"わからなかった", n:1}],
+            "play": [{l:"😆 たのしい", v:"たのしかった", p:1}, {l:"💥 けんか", v:"けんかした", n:1}],
+            "social": [{l:"🤝 なかよし", v:"なかよくできた", p:1}, {l:"🗡 わるぐち", v:"わるぐちをいわれた", n:1}],
+            "passive": [{l:"😌 おちつく", v:"おちついていた", p:1}, {l:"🥱 たいくつ", v:"たいくつだった", n:1}]
         };
 
-        // --- ⚙️ エンジン部分 ---
+        // --- ⚙️ シナリオ構造 ---
+        const SCENARIO = {
+            start: { text: "いっしょに さがそう。\nそれは、いつ あったこと？", gc: () => DATA.when.map(w => ({l:w.l, next:"place_check", s:{when:w.v}})) },
+            place_check: { text: "どこで あったこと？", gc: () => [{l:"🏫 がっこう", next:"place_school", s:{place:"がっこう"}}, {l:"🏠 おうち", next:"place_home", s:{place:"おうち"}}, {l:"🌳 おそと", next:"place_outside", s:{place:"おそと"}}] },
+            place_school: { text: "がっこうの、どこ？", gc: () => [{l:"🪑 きょうしつ", next:"who", s:{place_sub:"きょうしつ"}}, {l:"🚽 トイレ", next:"who", s:{place_sub:"トイレ"}}] },
+            place_home: { text: "おうちの、どこ？", gc: () => [{l:"🛋 リビング", next:"who", s:{place_sub:"リビング"}}, {l:"🛀 おふろ", next:"who", s:{place_sub:"おふろ"}}, {l:"🛌 しんしつ", next:"who", s:{place_sub:"しんしつ"}}] },
+            place_outside: { text: "おそとの、どこ？", gc: () => [{l:"🌳 こうえん", next:"who", s:{place_sub:"こうえん"}}, {l:"🚌 のりもの", next:"who", s:{place_sub:"のりもの"}}] },
+            who: { text: "だれと いたの？", gc: () => DATA.people.map(p => ({l:p.l, next:"action", s:{person:p.v}})) },
+            action: { text: "なにを してたの？", gc: () => (ACTIONS_MAP[storyParts.place_sub] || DEFAULT_ACTIONS).map(a => ({l:a.l, next:"event", s:{action:a.v, action_type:a.t}})) },
+            event: { text: "そこで、なにが あった？", gc: () => (EVENTS_MAP[storyParts.action_type] || EVENTS_MAP["passive"]).map(e => ({l:e.l, next:"thought", s:{event:e.v, last_valence:e.n?'n':'p'}, p:e.p, n:e.n})) },
+            thought: { text: "どんなふうに おもった？", gc: () => (storyParts.last_valence==='p'?DATA.thought_pos:DATA.thought_neg).map(t => ({l:t.l, next:"body", s:{thought:t.v}, p:t.p, n:t.n})) },
+            body: { text: "いま、からだは どんなかんじ？", gc: () => (storyParts.last_valence==='p'?DATA.body_pos:DATA.body_neg).concat(DATA.body_tired).map(b => ({l:b.l, next:"end", s:{body:b.v}, p:b.p, n:b.n})) }
+        };
+
         let historyStack = [];
         function startGame() {
             document.getElementById('chat-history').innerHTML = "";
             document.getElementById('choice-wrapper').style.display = 'block';
             document.getElementById('game-final-text').style.display = 'none';
-            historyStack = []; storyParts = { when:"", place:"", place_sub:"", person:"", action:"", action_type:"", event:"", reason:"", thought:"", body:"", last_valence:null };
+            historyStack = []; storyParts = { when:"", place:"", place_sub:"", person:"", action:"", action_type:"", event:"", thought:"", body:"", last_valence:null };
             showStep("start");
         }
-
-        const SCENARIO = {
-            start: { text: "いっしょに さがそう。\nそれは、いつ あったこと？", c: DATA.when.map(w => ({l:w.l, n:"place_check", s:{when:w.v}})) },
-            place_check: { text: "どこで あったこと？", c: [{l:"🏫 がっこう", n:"place_school", s:{place:"がっこう"}}, {l:"🏠 おうち", n:"place_home", s:{place:"おうち"}}, {l:"🌳 おそと", n:"place_outside", s:{place:"おそと"}}] },
-            place_school: { text: "がっこうの、どこ？", c: [{l:"🪑 きょうしつ", n:"who", s:{place_sub:"きょうしつ"}}, {l:"🤸 たいいくかん", n:"who", s:{place_sub:"たいいくかん"}}, {l:"🚽 トイレ", n:"who", s:{place_sub:"トイレ"}}] },
-            place_home: { text: "おうちの、どこ？", c: [{l:"🛋 リビング", n:"who", s:{place_sub:"リビング"}}, {l:"🛀 おふろ", n:"who", s:{place_sub:"おふろ"}}, {l:"🛌 しんしつ", n:"who", s:{place_sub:"しんしつ"}}] },
-            place_outside: { text: "おそとの、どこ？", c: [{l:"🌳 こうえん", n:"who", s:{place_sub:"こうえん"}}, {l:"🏪 おみせ", n:"who", s:{place_sub:"おみせ"}}, {l:"🚌 のりもの", n:"who", s:{place_sub:"のりもの"}}] },
-            who: { text: "だれと いたの？", c: DATA.people.map(p => ({l:p.l, n:"action", s:{person:p.v}})) },
-            action: { text: "なにを してたの？", gc: () => (ACTIONS_MAP[storyParts.place_sub] || DEFAULT_ACTIONS).map(a => ({l:a.l, n:"event", s:{action:a.v, action_type:a.t}})) },
-            event: { text: "そこで、なにが あった？", gc: () => (EVENTS_MAP[storyParts.action_type] || EVENTS_MAP["passive"]).map(e => ({l:e.l, n:"thought", s:{event:e.v, last_valence:e.n?'n':'p'}, p:e.p, n:e.n})) },
-            thought: { text: "どんなふうに おもった？", gc: () => (storyParts.last_valence==='p'?DATA.thought_pos:DATA.thought_neg).map(t => ({l:t.l, n:"body", s:{thought:t.v}, p:t.p, n:t.n})) },
-            body: { text: "いま、からだは どんなかんじ？", gc: () => (storyParts.last_valence==='p'?DATA.body_pos:DATA.body_neg).concat(DATA.body_tired).map(b => ({l:b.l, n:"end", s:{body:b.v}, p:b.p, n:b.n})) }
-        };
 
         function showStep(id) {
             const step = SCENARIO[id]; if(!step) return;
@@ -259,24 +199,20 @@
             history.appendChild(bubble); history.scrollTop = history.scrollHeight;
 
             const area = document.getElementById('choice-area'); area.innerHTML = "";
-            let choices = step.c || step.gc();
+            let choices = step.gc ? step.gc() : (step.choices || []);
             choices.forEach(c => {
                 const btn = document.createElement('button'); btn.className = 'game-btn'; btn.innerText = c.l;
-                if(c.p) btn.classList.add('btn-pos'); if(c.n === 'n' || c.n === 1) btn.classList.add('btn-neg');
+                if(c.p) btn.classList.add('btn-pos'); if(c.n) btn.classList.add('btn-neg');
                 btn.onclick = () => {
                     historyStack.push({id, parts: JSON.parse(JSON.stringify(storyParts))});
                     document.getElementById('btn-back').style.display = 'block';
                     const userB = document.createElement('div'); userB.className = 'bubble-user'; userB.innerText = c.l;
                     history.appendChild(userB);
                     if(c.s) Object.assign(storyParts, c.s);
-                    if(c.n === "end") finishGame(); else showStep(c.n);
+                    if(c.next === "end") finishGame(); else showStep(c.next);
                 };
                 area.appendChild(btn);
             });
-            // じゆうにかくボタンも追加
-            const freeBtn = document.createElement('button'); freeBtn.className = 'game-btn btn-free-input'; freeBtn.innerText = "✏️ じゆうにかく";
-            freeBtn.onclick = () => switchMode('free');
-            area.appendChild(freeBtn);
         }
 
         function goBack() {
@@ -291,36 +227,34 @@
         function finishGame() {
             document.getElementById('choice-wrapper').style.display = 'none';
             const res = document.getElementById('game-final-text'); res.style.display = 'block';
-            res.value = `${storyParts.when}、${storyParts.place}の${storyParts.place_sub}で、${storyParts.person}と${storyParts.action}をしていたら、${storyParts.event}。それで${storyParts.thought}っておもったよ。からだは${storyParts.body}。`;
+            res.value = `${storyParts.when}、${storyParts.place}の${storyParts.place_sub}で${storyParts.person}と${storyParts.action}をしていたら${storyParts.event}があったよ。${storyParts.thought}っておもったよ。からだは${storyParts.body}だった。`;
         }
 
-        // --- 🧪 送信ロジック ---
+        function switchMode(mode) {
+            document.getElementById('mode-game-area').style.display = mode === 'game' ? 'flex' : 'none';
+            document.getElementById('mode-free-area').style.display = mode === 'free' ? 'block' : 'none';
+            document.getElementById('tab-game').classList.toggle('active', mode === 'game');
+            document.getElementById('tab-free').classList.toggle('active', mode === 'free');
+        }
+
         let emotionLevel = 3, sleepLevel = 1;
-        setupGauge('gauge-emotion', v => emotionLevel = v);
-        setupGauge('gauge-sleep', v => sleepLevel = v);
         function setupGauge(id, setter) {
             const btns = document.querySelectorAll(`#${id} .gauge-btn`);
             btns.forEach(btn => btn.onclick = () => {
                 btns.forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); setter(btn.dataset.val);
             });
         }
-
-        function switchMode(mode) {
-            document.getElementById('mode-game-area').style.display = mode === 'game' ? 'flex' : 'none';
-            document.getElementById('mode-free-area').style.display = mode === 'free' ? 'block' : 'none';
-            document.getElementById('tab-game').className = mode === 'game' ? 'tab-btn active' : 'tab-btn';
-            document.getElementById('tab-free').className = mode === 'free' ? 'tab-btn active' : 'tab-btn';
-        }
+        setupGauge('gauge-emotion', v => emotionLevel = v);
+        setupGauge('gauge-sleep', v => sleepLevel = v);
 
         document.getElementById('submit-btn').onclick = async () => {
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = "おくってるよ... 🚀";
+            const btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "おくってるよ... 🚀";
             const text = document.getElementById('mode-game-area').style.display !== 'none' ? document.getElementById('game-final-text').value : document.getElementById('user-input-free').value;
-            const finalMsg = `🧪 選んだきもち：${feelingsParam}\n📝 おはなし：${text}\n📊 強さ:${emotionLevel} / 眠さ:${sleepLevel}`;
+            const finalMsg = `🧪 きもち：${feelingsParam}\n📝 おはなし：${text}\n📊 強さ:${emotionLevel} / 眠さ:${sleepLevel}`;
             try {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: finalMsg }) });
                 alert("おくったよ！🚀"); location.href = "index.html";
-            } catch(e) { alert("エラーがおきたかも"); btn.disabled = false; btn.innerText = "おくる 💌"; }
+            } catch(e) { alert("エラー"); btn.disabled = false; btn.innerText = "おくる 💌"; }
         };
 
         window.onload = startGame;
