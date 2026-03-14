@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scenic Flow Timer - Fixed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400&family=JetBrains+Mono:wght@100&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #a2d2ff;
+            --bg-dark: #050b1a;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- 🌟 背景：星空（動画が出るまでのバックアップ） --- */
+        #stars-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, #111d31 0%, #030611 100%);
+            z-index: -3;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle var(--d) infinite ease-in-out;
+        }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+
+        /* --- 📺 背景：YouTube動画（iframe直接埋め込み方式） --- */
+        #video-wrap {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2; pointer-events: none; overflow: hidden;
+        }
+        #bg-video {
+            position: absolute; top: 50%; left: 50%;
+            width: 100vw; height: 56.25vw;
+            min-height: 100vh; min-width: 177.77vh;
+            transform: translate(-50%, -50%);
+            border: none; opacity: 0; transition: opacity 3s ease;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
+        /* --- 🚪 開始ボタン --- */
+        #unlock-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #030611;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; cursor: pointer; transition: opacity 1s;
+        }
+        .start-btn-init {
+            border: 1px solid var(--accent); padding: 18px 36px;
+            border-radius: 50px; color: var(--accent);
+            font-size: 13px; letter-spacing: 6px;
+            animation: pulse 2s infinite; font-weight: 200;
+        }
+
+        /* --- 💎 メインUI（画像 image_148fbc.png の再現） --- */
+        .app-container {
+            height: 100vh; width: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 1.5s;
+        }
+
+        .glass-box {
+            width: 80%; max-width: 460px;
+            padding: 40px; text-align: center;
+        }
+
+        .date-header {
+            display: flex; justify-content: space-between;
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 12px; margin-bottom: 30px;
+        }
+        .date-item { text-align: left; }
+        .date-item.right { text-align: right; }
+        .label { font-size: 9px; opacity: 0.4; letter-spacing: 2px; margin-bottom: 4px; font-weight: 400; }
+        .val { font-size: 14px; font-weight: 200; }
+
+        .current-clock {
+            font-size: 60px; font-weight: 100; margin-bottom: 25px;
+            color: #e0f0ff; letter-spacing: -1px;
+        }
+        .ampm { font-size: 18px; opacity: 0.2; margin-left: 12px; font-weight: 200; }
+
+        .infinite-timer {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 78px; font-weight: 100; margin: 30px 0;
+            letter-spacing: -3px; color: white;
+        }
+
+        .btn-group {
+            display: flex; justify-content: center; gap: 20px; margin-top: 40px;
+        }
+        .ctrl-btn {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white; padding: 10px 45px; border-radius: 40px;
+            font-size: 11px; letter-spacing: 4px; cursor: pointer; transition: 0.3s;
+        }
+        .ctrl-btn:hover:not(:disabled) { border-color: white; background: rgba(255, 255, 255, 0.1); }
+        .ctrl-btn:disabled { opacity: 0.05; cursor: default; }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; } }
+    </style>
+</head>
+<body>
+
+    <div id="stars-bg"></div>
+    <div id="video-wrap"></div> <div class="overlay"></div>
+
+    <div id="unlock-screen" onclick="launchApp()">
+        <div class="start-btn-init">START THE WORLD</div>
+    </div>
+
+    <div class="app-container" id="app">
+        <div class="glass-box">
+            <div class="date-header">
+                <div class="date-item">
+                    <div class="label">TODAY</div>
+                    <div id="today-val" class="val">--/-- ---</div>
+                </div>
+                <div class="date-item right">
+                    <div class="label">TOMORROW</div>
+                    <div id="tomorrow-val" class="val">--/-- ---</div>
+                </div>
+            </div>
+
+            <div id="clock-12" class="current-clock">00:00:00<span class="ampm">--</span></div>
+            <div id="timer-display" class="infinite-timer">00:00:00</div>
+
+            <div class="btn-group">
+                <button id="btn-start" class="ctrl-btn" onclick="runTimer()">START</button>
+                <button id="btn-stop" class="ctrl-btn" onclick="stopTimer()" disabled>STOP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEEKS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        function makeStars() {
+            const bg = document.getElementById('stars-bg');
+            for(let i=0; i<80; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                const size = Math.random() * 1.5 + 'px';
+                s.style.width = size; s.style.height = size;
+                s.style.top = Math.random() * 100 + '%';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.setProperty('--d', Math.random() * 3 + 2 + 's');
+                bg.appendChild(s);
+            }
+        }
+        makeStars();
+
+        function getVid() {
+            const h = new Date().getHours();
+            if (h >= 5 && h < 11) return 'AY5qcIq5u2g'; // 朝
+            if (h >= 11 && h < 16) return '3xPkwNu2o8g'; // 昼
+            if (h >= 16 && h < 19) return 'xykQaTJcrqA'; // 夕
+            return 'r6HJhRvom7E'; // 夜
+        }
+
+        // --- 🚀 起動処理：ここが重要！ ---
+        function launchApp() {
+            const videoId = getVid();
+            const videoWrap = document.getElementById('video-wrap');
+            
+            // 💡 クリックした瞬間にiframeを生成して流す（これが最も確実）
+            videoWrap.innerHTML = `
+                <iframe id="bg-video" 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3" 
+                    allow="autoplay; encrypted-media">
+                </iframe>`;
+
+            // 画面を切り替える
+            document.getElementById('unlock-screen').style.opacity = '0';
+            setTimeout(() => { 
+                document.getElementById('unlock-screen').style.display = 'none'; 
+                document.getElementById('bg-video').style.opacity = '1';
+            }, 1000);
+            
+            document.getElementById('app').style.opacity = '1';
+
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()} ${WEEKS[d.getDay()]}`;
+            document.getElementById('today-val').innerText = fmt(now);
+            const tom = new Date(); tom.setDate(now.getDate() + 1);
+            document.getElementById('tomorrow-val').innerText = fmt(tom);
+
+            let h = now.getHours();
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            document.getElementById('clock-12').innerHTML = `${h}:${m}:${s}<span class="ampm">${ampm}</span>`;
+        }
+
+        // --- ⏱ タイマー ---
+        let startTime, elapsedTime = 0, timerInterval;
+        const display = document.getElementById('timer-display');
+
+        function runTimer() {
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(() => {
+                elapsedTime = Date.now() - startTime;
+                const totalSec = Math.floor(elapsedTime / 1000);
+                const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+                const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+                const s = String(totalSec % 60).padStart(2, '0');
+                display.innerText = `${h}:${m}:${s}`;
+            }, 100);
+            document.getElementById('btn-start').disabled = true;
+            document.getElementById('btn-stop').disabled = false;
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-stop').disabled = true;
+        }
+    </script>
+</body>
+</html>
