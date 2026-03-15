@@ -6,103 +6,78 @@
     <title>Panoramic Scenic Clock</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --accent: #a2d2ff;
-            --bg-deep: #02040a;
-        }
+        :root { --accent: #a2d2ff; --bg-deep: #02040a; }
 
         body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
+            margin: 0; padding: 0; width: 100%; height: 100%;
             background-color: var(--bg-deep);
             color: white;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
+            font-family: 'Inter', sans-serif; overflow: hidden;
         }
 
-        /* --- 🌟 背景1：CSS星空（動画がダメでも真っ暗にならない） --- */
-        #fallback-stars {
+        /* 📺 背景映像（映像のみ・ミュート） */
+        #video-background {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #111d31 0%, #02040a 100%);
-            z-index: -4;
+            z-index: 1; pointer-events: none;
         }
-        .star {
-            position: absolute; background: white; border-radius: 50%;
-            opacity: 0.3; animation: twinkle var(--d) infinite ease-in-out;
-        }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.2); } }
-
-        /* --- 📺 背景2：全画面動画枠 --- */
-        #video-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -3; pointer-events: none; overflow: hidden;
-            opacity: 0; transition: opacity 4s ease;
-        }
-        #video-container iframe {
+        #video-background iframe {
             position: absolute; top: 50%; left: 50%;
             width: 100vw; height: 56.25vw;
             min-height: 100vh; min-width: 177.77vh;
-            transform: translate(-50%, -50%);
-            border: none;
+            transform: translate(-50%, -50%); border: none;
         }
 
-        .scenic-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 40%, transparent 100%);
-            z-index: -2;
+        /* 🔊 音声専用（完全に隠す） */
+        #audio-container {
+            position: fixed; top: -100px; left: -100px; width: 1px; height: 1px;
+            z-index: -1; pointer-events: none; opacity: 0;
         }
 
-        /* --- 🚪 全画面起動スイッチ --- */
         #start-gate {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-deep);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000; cursor: pointer; transition: opacity 1.2s;
-        }
-        .gate-label {
-            font-size: 12px; letter-spacing: 10px; opacity: 0.4;
-            animation: pulse 2s infinite; color: var(--accent);
+            background: var(--bg-deep); display: flex; justify-content: center; align-items: center;
+            z-index: 2000; cursor: pointer; transition: opacity 1s;
         }
 
-        /* --- 💎 上部インフォメーション（image_13a6a5.png を完全再現） --- */
+        /* UIレイヤー：視認性強化版 */
         .top-bar {
-            position: fixed; top: 0; left: 0; width: 100%;
-            padding: 30px 40px; box-sizing: border-box;
+            position: fixed; top: 0; left: 0; width: 100%; padding: 40px; box-sizing: border-box;
             display: flex; justify-content: space-between; align-items: flex-start;
-            z-index: 100;
-            opacity: 0; transition: opacity 2s;
+            z-index: 1000; visibility: hidden; opacity: 0; transition: opacity 2s;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
         }
+        .info-group.center { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; }
+        .info-group.right { text-align: right; pointer-events: auto; } /* スライダー操作のため有効化 */
+        
+        .label { font-size: 10px; opacity: 0.8; letter-spacing: 3px; margin-bottom: 8px; font-weight: 700; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); }
+        .val { font-size: 18px; font-weight: 400; text-shadow: 1px 1px 6px rgba(0,0,0,0.9); }
+        .mini-clock { font-size: 48px; font-weight: 200; color: #ffffff; text-shadow: 0 0 20px rgba(162, 210, 255, 0.6), 2px 2px 10px rgba(0,0,0,1); }
+        .ampm { font-size: 16px; opacity: 0.6; margin-left: 10px; }
 
-        .info-group { text-align: left; }
-        .info-group.right { text-align: right; }
-        .info-group.center { 
-            position: absolute; left: 50%; transform: translateX(-50%); 
-            text-align: center;
+        /* ✨ ボリュームスライダーのスタイル */
+        .volume-ctrl {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 5px; margin-top: 10px;
         }
-
-        .label { font-size: 8px; opacity: 0.4; letter-spacing: 2px; margin-bottom: 5px; font-weight: 700; color: #fff; }
-        .val { font-size: 15px; font-weight: 200; letter-spacing: 1px; }
-
-        /* 小さく配置した時計 */
-        .mini-clock {
-            font-size: 36px; font-weight: 100;
-            color: #d8eaff; text-shadow: 0 0 15px rgba(162, 210, 255, 0.4);
-            letter-spacing: -1px; line-height: 1;
+        input[type=range] {
+            -webkit-appearance: none; background: rgba(255,255,255,0.2); height: 2px; width: 100px;
+            outline: none; cursor: pointer; border-radius: 2px;
         }
-        .ampm { font-size: 14px; opacity: 0.2; margin-left: 8px; font-weight: 200; }
-
-        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; background: var(--accent); width: 12px; height: 12px;
+            border-radius: 50%; box-shadow: 0 0 10px rgba(162, 210, 255, 0.8);
+        }
     </style>
 </head>
 <body>
 
-    <div id="fallback-stars"></div>
+    <div id="video-background">
+        <iframe id="bg-iframe" src="about:blank" title="Background Scenery" allow="autoplay"></iframe>
+    </div>
 
-    <div id="video-container"></div>
-    <div class="scenic-overlay"></div>
+    <div id="audio-container"></div>
 
-    <div id="start-gate" onclick="activateScenic()">
-        <div class="gate-label">TAP TO ENTER THE SCENERY</div>
+    <div id="start-gate" onclick="initClock()">
+        <div style="font-size: 12px; letter-spacing: 10px; color: var(--accent);">TAP TO ENTER</div>
     </div>
 
     <div class="top-bar" id="ui-overlay">
@@ -110,68 +85,74 @@
             <div class="label">TODAY</div>
             <div id="today-val" class="val">--/-- ---</div>
         </div>
-
         <div class="info-group center">
             <div class="label">CURRENT TIME</div>
             <div id="clock-display" class="mini-clock">00:00:00<span class="ampm">--</span></div>
         </div>
-
         <div class="info-group right">
             <div class="label">TOMORROW</div>
             <div id="tomorrow-val" class="val">--/-- ---</div>
+            <div class="volume-ctrl">
+                <div class="label" style="margin-bottom:0;">VOLUME</div>
+                <input type="range" id="volume-slider" min="0" max="100" value="5" oninput="changeVolume(this.value)">
+            </div>
         </div>
     </div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
         const WEEKS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        let audioPlayer;
 
-        // 🌟 星空をあらかじめ作っておく
-        function createStars() {
-            const container = document.getElementById('fallback-stars');
-            for(let i=0; i<80; i++) {
-                const s = document.createElement('div');
-                s.className = 'star';
-                const size = Math.random() * 2 + 'px';
-                s.style.width = size; s.style.height = size;
-                s.style.top = Math.random() * 100 + '%';
-                s.style.left = Math.random() * 100 + '%';
-                s.style.setProperty('--d', Math.random() * 3 + 2 + 's');
-                container.appendChild(s);
-            }
-        }
-        createStars();
+        function initClock() {
+            // 背景映像（夜景）
+            const bgVid = 'r6HJhRvom7E'; 
+            document.getElementById('bg-iframe').src = `https://www.youtube.com/embed/${bgVid}?autoplay=1&mute=1&loop=1&playlist=${bgVid}&controls=0&modestbranding=1&rel=0`;
 
-        function getVid() {
-            const h = new Date().getHours();
-            if (h >= 5 && h < 11) return 'AY5qcIq5u2g'; // 朝
-            if (h >= 11 && h < 16) return '3xPkwNu2o8g'; // 昼
-            if (h >= 16 && h < 19) return 'xykQaTJcrqA'; // 夕
-            return 'r6HJhRvom7E'; // 夜
-        }
-
-        function activateScenic() {
-            const vid = getVid();
-            const container = document.getElementById('video-container');
-            
-            // 💡 直接 iframe を挿入（最も確実な方式）
-            container.innerHTML = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1&mute=1&loop=1&playlist=${vid}&controls=0&modestbranding=1&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media"></iframe>`;
+            // BGM音声（初期音量はご指定の通り「5」で開始）
+            const audioVid = 'gK7rcyxB-F8';
+            audioPlayer = new YT.Player('audio-container', {
+                height: '1',
+                width: '1',
+                videoId: audioVid,
+                playerVars: {
+                    'autoplay': 1,
+                    'loop': 1,
+                    'playlist': audioVid,
+                    'controls': 0
+                },
+                events: {
+                    'onReady': (event) => {
+                        event.target.setVolume(5);
+                        event.target.playVideo();
+                    }
+                }
+            });
 
             document.getElementById('start-gate').style.opacity = '0';
-            setTimeout(() => { 
+            setTimeout(() => {
                 document.getElementById('start-gate').style.display = 'none';
-                container.style.opacity = '1';
+                document.getElementById('ui-overlay').style.visibility = 'visible';
                 document.getElementById('ui-overlay').style.opacity = '1';
             }, 1000);
 
-            updateAll();
-            setInterval(updateAll, 1000);
+            update();
+            setInterval(update, 1000);
         }
 
-        function updateAll() {
+        // ✨ 音量を変更する関数
+        function changeVolume(val) {
+            if (audioPlayer && audioPlayer.setVolume) {
+                audioPlayer.setVolume(val);
+            }
+        }
+
+        function update() {
             const now = new Date();
             const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()} ${WEEKS[d.getDay()]}`;
             document.getElementById('today-val').innerText = fmt(now);
-            const tom = new Date(); tom.setDate(now.getDate() + 1);
+            const tom = new Date(now); tom.setDate(now.getDate() + 1);
             document.getElementById('tomorrow-val').innerText = fmt(tom);
 
             let h = now.getHours();
