@@ -43,7 +43,7 @@
         /* タイマー */
         .timer-setup { grid-column: 1 / 3; border-top: 1px dashed #eee; margin-top: 10px; padding-top: 10px; }
         .timer-btn-group { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
-        .btn-timer { background: #f0f0f0; color: #666; border: 1px solid #ddd; padding: 8px; border-radius: 10px; font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; }
+        .btn-timer { background: #f0f0f0; color: #666; border: 1px solid #ddd; padding: 8px; border-radius: 10px; font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; }
         #cooldown-area { display: none; text-align: center; border-top: 2px solid #b49cff; padding-top: 10px; margin-top: 10px; width: 100%; grid-column: 1 / 3; }
         .timer-bg { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 5px; }
         #cooldown-bar { width: 100%; height: 100%; background: #b49cff; }
@@ -116,9 +116,9 @@
                 <div class="timer-setup" id="timer-setup-ui">
                     <div style="font-size:10px; color:#aaa; text-align:center;">⏱ ひとやすみタイマー</div>
                     <div class="timer-btn-group">
-                        <button class="btn-timer" onclick="startCooldown(10)">10秒</button>
-                        <button class="btn-timer" onclick="startCooldown(30)">30秒</button>
-                        <button class="btn-timer" onclick="startCooldown(60)">60秒</button>
+                        <a href="timer.html?sec=10" class="btn-timer">10秒</a>
+                        <a href="timer.html?sec=30" class="btn-timer">30秒</a>
+                        <a href="timer.html?sec=60" class="btn-timer">60秒</a>
                     </div>
                 </div>
 
@@ -142,6 +142,7 @@
                 <a href="katchin.html" class="btn-mini-feature" style="background:#90caf9;">🧊 かっちん</a>
                 <a href="calendar.html" class="btn-mini-feature" style="background:#ffcc80;">📅 予定</a>
                 <a href="logs.html" class="btn-mini-feature" style="background:#888;">📘 記録</a>
+                <a href="timer.html" class="btn-mini-feature" style="background:#a2d2ff;">🕒 時間</a>
             </div>
         </div>
     </div>
@@ -218,7 +219,6 @@
         function openQModal() { document.getElementById('quick-modal').style.display = 'flex'; }
         function closeQModal() { document.getElementById('quick-modal').style.display = 'none'; document.getElementById('q-input-area').value = ""; }
         
-        // 修正箇所：遷移先URLに色情報を追加
         function submitMultipleEmotions() {
             if(selectedEmotions.size === 0) { alert("えらんでね"); return; }
             const feelings = Array.from(selectedEmotions).join(",");
