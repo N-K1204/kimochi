@@ -15,7 +15,6 @@
             font-family: 'Inter', sans-serif; overflow: hidden;
         }
 
-        /* 📺 背景映像（映像のみ・ミュート） */
         #video-background {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 1; pointer-events: none;
@@ -27,9 +26,9 @@
             transform: translate(-50%, -50%); border: none;
         }
 
-        /* 🔊 音声専用（完全に隠す） */
+        /* 🔊 モバイルでも認識されやすいよう、少しだけサイズを持たせて背面に隠す */
         #audio-container {
-            position: fixed; top: -100px; left: -100px; width: 1px; height: 1px;
+            position: fixed; bottom: 0; right: 0; width: 200px; height: 200px;
             z-index: -1; pointer-events: none; opacity: 0;
         }
 
@@ -39,7 +38,6 @@
             z-index: 2000; cursor: pointer; transition: opacity 1s;
         }
 
-        /* UIレイヤー：視認性強化版 */
         .top-bar {
             position: fixed; top: 0; left: 0; width: 100%; padding: 40px; box-sizing: border-box;
             display: flex; justify-content: space-between; align-items: flex-start;
@@ -47,25 +45,16 @@
             background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
         }
         .info-group.center { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; }
-        .info-group.right { text-align: right; pointer-events: auto; } /* スライダー操作のため有効化 */
+        .info-group.right { text-align: right; pointer-events: auto; }
         
         .label { font-size: 10px; opacity: 0.8; letter-spacing: 3px; margin-bottom: 8px; font-weight: 700; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); }
         .val { font-size: 18px; font-weight: 400; text-shadow: 1px 1px 6px rgba(0,0,0,0.9); }
         .mini-clock { font-size: 48px; font-weight: 200; color: #ffffff; text-shadow: 0 0 20px rgba(162, 210, 255, 0.6), 2px 2px 10px rgba(0,0,0,1); }
         .ampm { font-size: 16px; opacity: 0.6; margin-left: 10px; }
 
-        /* ✨ ボリュームスライダーのスタイル */
-        .volume-ctrl {
-            display: flex; flex-direction: column; align-items: flex-end; gap: 5px; margin-top: 10px;
-        }
-        input[type=range] {
-            -webkit-appearance: none; background: rgba(255,255,255,0.2); height: 2px; width: 100px;
-            outline: none; cursor: pointer; border-radius: 2px;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; background: var(--accent); width: 12px; height: 12px;
-            border-radius: 50%; box-shadow: 0 0 10px rgba(162, 210, 255, 0.8);
-        }
+        .volume-ctrl { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; margin-top: 10px; }
+        input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.2); height: 2px; width: 100px; outline: none; cursor: pointer; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; background: var(--accent); width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 10px rgba(162, 210, 255, 0.8); }
     </style>
 </head>
 <body>
@@ -81,17 +70,10 @@
     </div>
 
     <div class="top-bar" id="ui-overlay">
-        <div class="info-group">
-            <div class="label">TODAY</div>
-            <div id="today-val" class="val">--/-- ---</div>
-        </div>
-        <div class="info-group center">
-            <div class="label">CURRENT TIME</div>
-            <div id="clock-display" class="mini-clock">0:00:00<span class="ampm">--</span></div>
-        </div>
+        <div class="info-group"><div class="label">TODAY</div><div id="today-val" class="val">--/-- ---</div></div>
+        <div class="info-group center"><div class="label">CURRENT TIME</div><div id="clock-display" class="mini-clock">0:00:00<span class="ampm">--</span></div></div>
         <div class="info-group right">
-            <div class="label">TOMORROW</div>
-            <div id="tomorrow-val" class="val">--/-- ---</div>
+            <div class="label">TOMORROW</div><div id="tomorrow-val" class="val">--/-- ---</div>
             <div class="volume-ctrl">
                 <div class="label" style="margin-bottom:0;">VOLUME</div>
                 <input type="range" id="volume-slider" min="0" max="100" value="5" oninput="changeVolume(this.value)">
@@ -106,27 +88,28 @@
         let audioPlayer;
 
         function initClock() {
+            // 背景映像の読み込み
             const bgVid = 'r6HJhRvom7E'; 
             document.getElementById('bg-iframe').src = `https://www.youtube.com/embed/${bgVid}?autoplay=1&mute=1&loop=1&playlist=${bgVid}&controls=0&modestbranding=1&rel=0`;
 
+            // BGM音声の初期化（少し時間を置いて、確実にクリック判定内に収める）
             const audioVid = 'gK7rcyxB-F8';
-            audioPlayer = new YT.Player('audio-container', {
-                height: '1',
-                width: '1',
-                videoId: audioVid,
-                playerVars: {
-                    'autoplay': 1,
-                    'loop': 1,
-                    'playlist': audioVid,
-                    'controls': 0
-                },
-                events: {
-                    'onReady': (event) => {
-                        event.target.setVolume(5);
-                        event.target.playVideo();
+            if (!audioPlayer) {
+                audioPlayer = new YT.Player('audio-container', {
+                    height: '200', width: '200', videoId: audioVid,
+                    playerVars: { 'autoplay': 1, 'loop': 1, 'playlist': audioVid, 'controls': 0, 'playsinline': 1 },
+                    events: {
+                        'onReady': (event) => {
+                            event.target.setVolume(5);
+                            event.target.playVideo();
+                        },
+                        'onStateChange': (event) => {
+                            // モバイルで停止してしまった場合に再開を試みる
+                            if (event.data === YT.PlayerState.PAUSED) event.target.playVideo();
+                        }
                     }
-                }
-            });
+                });
+            }
 
             document.getElementById('start-gate').style.opacity = '0';
             setTimeout(() => {
@@ -135,15 +118,10 @@
                 document.getElementById('ui-overlay').style.opacity = '1';
             }, 1000);
 
-            update();
-            setInterval(update, 1000);
+            update(); setInterval(update, 1000);
         }
 
-        function changeVolume(val) {
-            if (audioPlayer && audioPlayer.setVolume) {
-                audioPlayer.setVolume(val);
-            }
-        }
+        function changeVolume(val) { if (audioPlayer && audioPlayer.setVolume) audioPlayer.setVolume(val); }
 
         function update() {
             const now = new Date();
@@ -156,10 +134,7 @@
             const m = String(now.getMinutes()).padStart(2, '0');
             const s = String(now.getSeconds()).padStart(2, '0');
             const ampm = rawH >= 12 ? 'PM' : 'AM';
-            
-            // 0~11時表記
             let h = rawH % 12;
-
             document.getElementById('clock-display').innerHTML = `${h}:${m}:${s}<span class="ampm">${ampm}</span>`;
         }
     </script>
