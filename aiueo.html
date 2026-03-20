@@ -22,7 +22,7 @@
 
         .blue-section { background-color: var(--blue-bg); padding-bottom: 20px; }
 
-        /* --- ヘッダーと表の幅を 1000px で統一 --- */
+        /* --- 上の枠（ヘッダー）と表の横幅を1000pxで統一 --- */
         .header {
             width: 95%; max-width: 1000px;
             margin: 0 auto; padding: 15px 0;
@@ -37,7 +37,6 @@
             display: flex; align-items: center; gap: 5px; white-space: nowrap;
         }
 
-        /* 🆕 速度調整：左がおそく、右がはやく */
         .speed-ctrl {
             display: flex; align-items: center; gap: 8px;
             background: rgba(255,255,255,0.2); padding: 5px 15px;
@@ -61,7 +60,7 @@
 
         .main-content { padding: 10px; display: flex; justify-content: center; align-items: flex-start; }
 
-        /* 表の幅をヘッダーに合わせる */
+        /* 表の最大幅をヘッダーと合わせる */
         .grid {
             display: grid; grid-template-columns: repeat(15, 1fr);
             grid-template-rows: repeat(6, 1fr); gap: 6px; direction: rtl;
@@ -81,25 +80,22 @@
         .row-u { background-color: #ffff00; color: #000 !important; }
         .row-e-1 { background-color: #008000; }
         .row-e-2 { background-color: #32cd32; }
-        /* 💗 お〜ゔ */
         .row-o { background-color: var(--heart-pink) !important; color: white !important; }
 
         .row-ga { background-color: #006400; }
         .row-gi { background-color: #800080; }
         .row-gu { background-color: #8b0000; }
         .row-ge { background-color: #00008b; }
-        /* 💩 ご〜ぽ */
         .row-go { background-color: var(--dirty-orange) !important; color: white !important; }
 
         .btn-poop { background-color: var(--poop-color); color: white; }
         .btn-done { background-color: #007bff; color: white; }
-        /* やりなおし：背景黒、文字赤 */
         .btn-retry { background-color: black !important; color: #ff0000 !important; }
         
         .btn-dakuten { background-color: #696969; }
         .btn-handakuten { background-color: #a9a9a9; }
 
-        /* 🆕 お花と猫のエリア */
+        /* 下にお花を咲かせる */
         .flowers-area {
             position: relative; flex: 1;
             display: flex; justify-content: center; align-items: flex-end;
@@ -111,7 +107,7 @@
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background-color: white; padding: 40px 80px; border-radius: 20px;
             box-shadow: 0 0 40px rgba(0,0,0,0.5); display: none; z-index: 1000;
-            white-space: nowrap;
+            white-space: nowrap; /* 横一列 */
         }
         #modal p { color: #007bff; font-size: 40px; font-weight: bold; margin: 0; }
         .fade-out { animation: fadeOut 1.2s forwards; }
@@ -125,7 +121,7 @@
         <a href="index.html" class="home-link">🏠 ホーム</a>
         
         <div class="speed-ctrl">
-            🐢 おそく <input type="range" id="speed-range" min="0.2" max="1.8" step="0.1" value="0.8"> はやく 🚀
+            🐢 おそく <input type="range" id="speed-range" min="0.3" max="1.8" step="0.1" value="0.9"> はやく 🚀
         </div>
 
         <div class="display-container">
@@ -140,7 +136,7 @@
 </div>
 
 <div class="flowers-area">
-    <span>🌸</span><span>🌼</span><span>🌷</span><span>🌻</span><span>🌺</span>
+    <span>🌸</span><span>🌼</span><span>🌷</span><span>🌻</span><span>🌺</span><span>🌼</span><span>🌸</span>
     <div class="cat">🐱</div>
 </div>
 
@@ -158,9 +154,10 @@
         ["あ", "か", "さ", "た", "な", "は", "ま", "や", "ら", "わ"],
         ["い", "き", "し", "ち", "に", "ひ", "み", "ゃ", "り", "を"],
         ["う", "く", "す", "つ", "ぬ", "ふ", "む", "ゆ", "る", "ん"],
-        ["え", "け", "せ", "て", "ね", "へ", "め", "ゅ", "れ", "ー"],
+        ["え", "け", "せ", "て", "ne", "へ", "め", "ゅ", "れ", "ー"],
         ["お", "こ", "そ", "と", "の", "ほ", "も", "よ", "ろ", "ゔ"]
     ];
+    mainLetters[3][4] = "ね"; // タイポ修正
 
     const dakuLetters = [
         ["が", "ざ", "だ", "ば", "ぱ"],
@@ -227,17 +224,26 @@
     function addChar(c) { display.textContent += c; }
     function deleteChar() { display.textContent = display.textContent.slice(0, -1); }
 
-    // 🆕 自然な読み上げロジック
+    // 🆕 濁点・半濁点の分析と自然な読み上げ
     function readText() {
         let rawText = display.textContent;
         if (!rawText) return;
 
-        // 濁点・半濁点を正規化（「は」+「゛」を「ば」に合体させる）
-        // ブラウザのTTSは合体した文字（NFC）の方が自然に読みます
-        let text = rawText.replace(/([か-ほ])゛/g, (m, p1) => String.fromCharCode(p1.charCodeAt(0) + 1));
-        text = text.replace(/([は-ほ])゜/g, (m, p1) => String.fromCharCode(p1.charCodeAt(0) + 2));
-        // 特殊な変換
-        text = text.replace(/う゛/g, "ゔ").replace(/さ゛/g, "ざ").replace(/し゛/g, "じ").replace(/す゛/g, "ず").replace(/せ゛/g, "ぜ").replace(/そ゛/g, "ぞ").replace(/た゛/g, "だ").replace(/ち゛/g, "ぢ").replace(/つ゛/g, "づ").replace(/て゛/g, "で").replace(/と゛/g, "ど");
+        // 文字の合体処理（NFC正規化の代わりにより確実に置換）
+        // 例：「は」+「゛」→「ば」
+        let text = rawText.replace(/([か-ほ])゛/g, (match, p1) => {
+            return String.fromCharCode(p1.charCodeAt(0) + 1);
+        });
+        text = text.replace(/([は-ほ])゜/g, (match, p1) => {
+            return String.fromCharCode(p1.charCodeAt(0) + 2);
+        });
+
+        // 特殊な組み合わせ（う、た行など）の手動カバー
+        const rules = {
+            "う゛": "ゔ", "さ゛": "ざ", "し゛": "じ", "す゛": "ず", "せ゛": "ぜ", "そ゛": "ぞ",
+            "た゛": "だ", "ち゛": "ぢ", "つ゛": "づ", "て゛": "で", "と゛": "ど"
+        };
+        for (let key in rules) { text = text.split(key).join(rules[key]); }
 
         const rate = parseFloat(speedRange.value);
 
@@ -250,7 +256,8 @@
 
             const uttr = new SpeechSynthesisUtterance(text);
             uttr.lang = 'ja-JP';
-            uttr.rate = rate; // スライダーの値を全体に適用
+            uttr.rate = rate;  // 全体の速さ
+            uttr.pitch = 1.2; // 少し明るく感情的に
             window.speechSynthesis.speak(uttr);
         }, 1200);
     }
