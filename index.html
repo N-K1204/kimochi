@@ -137,6 +137,7 @@
             <div class="section-title">🎡 きぶんてんかん</div>
             <div class="feature-row" id="feature-container">
                 <button class="btn-mini-feature" style="background:#6ecb63;" onclick="showCanvasList()">🎨 自由帳</button>
+                <a href="aiueo.html" class="btn-mini-feature" style="background:#ff8bb0;">🔤 あいうえお</a>
                 <a href="check.html" class="btn-mini-feature" style="background:#b49cff;">📡 アンテナ</a> 
                 <a href="shiritori.html" class="btn-mini-feature" style="background:#ff8a65;">🍎 しりとり</a>
                 <a href="katchin.html" class="btn-mini-feature" style="background:#90caf9;">🧊 かっちん</a>
@@ -191,13 +192,44 @@
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
+        
+        // 🆕 Discord通知用の設定（ここにURLを入れてください）
+        const DISCORD_WEBHOOK_URL = "ここにDiscordのWebhookURLを貼ってください";
 
         function checkPassword() { if (document.getElementById('password').value === "yuuki01121003") { sessionStorage.setItem("isLoggedIn", "true"); showApp(); } }
         function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'block'; }
         window.onload = function() { if (sessionStorage.getItem("isLoggedIn") === "true") showApp(); };
 
-        async function sendSOS() { if(!confirm("「たすけて」をつうち する？")) return; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "sos" }) }); alert("おくったよ！🚀"); } catch(e) {} }
-        async function sendLimit(content) { if(!confirm(content + " を つたえる？")) return; try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！🚀"); closeHopeMenu(); } catch(e) {} }
+        // 🆕 Discord送信関数
+        async function sendToDiscord(message) {
+            if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes("ここに")) return;
+            try {
+                await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: `**【きもちにっき通知】**\n${message}` })
+                });
+            } catch (e) { console.error("Discord送信エラー", e); }
+        }
+
+        async function sendSOS() { 
+            if(!confirm("「たすけて」をつうち する？")) return; 
+            try { 
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "sos" }) }); 
+                await sendToDiscord("🚨 **たすけて！** 呼び出しがありました。");
+                alert("おくったよ！🚀"); 
+            } catch(e) {} 
+        }
+
+        async function sendLimit(content) { 
+            if(!confirm(content + " を つたえる？")) return; 
+            try { 
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); 
+                await sendToDiscord(`📢 **おねがい/状態:** ${content}`);
+                alert("おくったよ！🚀"); 
+                closeHopeMenu(); 
+            } catch(e) {} 
+        }
 
         let selectedEmotions = new Set();
         document.querySelectorAll('#emotion-selectable-grid .grid-btn').forEach(btn => {
@@ -229,7 +261,11 @@
             const userInput = document.getElementById('q-input-area').value; 
             let content = answer ? `💬 おへんじ：${answer}` : ""; 
             if(userInput) content += (content ? "\n内容：" : "") + userInput; 
-            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); alert("おくったよ！🚀"); } catch(e) {} 
+            try { 
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ type: "quick_notify", content: content }) }); 
+                await sendToDiscord(`💬 **おへんじ/しつもん:**\n${content}`);
+                alert("おくったよ！🚀"); 
+            } catch(e) {} 
             closeQModal(); 
         }
 
