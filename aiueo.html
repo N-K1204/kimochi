@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ひらがな あいうえお表</title>
+    <style>
+        :root {
+            --poop-color: #8b4513; /* うんち色 */
+            --dirty-orange: #a0522d; /* 汚いオレンジ */
+            --blue-bg: #007bff;
+            --green-bg: #28a745;
+            --heart-pink: #ff85a1; /* 💗 このハートの色 */
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            overflow-x: hidden; display: flex; flex-direction: column;
+            background-color: var(--green-bg);
+        }
+
+        .blue-section { background-color: var(--blue-bg); padding-bottom: 20px; }
+
+        .header {
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            min-height: 120px;
+        }
+
+        .home-link {
+            background-color: white; color: var(--blue-bg);
+            text-decoration: none; padding: 8px 16px; border-radius: 12px;
+            font-weight: bold; font-size: 14px; box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            display: flex; align-items: center; gap: 5px; white-space: nowrap;
+        }
+
+        .speed-ctrl {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.2); padding: 5px 15px;
+            border-radius: 20px; color: white; font-size: 12px; font-weight: bold;
+        }
+
+        .display-container {
+            display: flex; align-items: center; gap: 8px;
+            flex-grow: 1; justify-content: center; min-width: 300px;
+        }
+
+        #text-display {
+            width: 100%; max-width: 400px; height: 60px;
+            background-color: white; border: 3px solid #ccc; border-radius: 10px;
+            font-size: 32px; display: flex; align-items: center; padding: 0 15px;
+            overflow-x: auto; white-space: nowrap; color: #333;
+        }
+
+        .delete-btn {
+            background-color: black; border: none; border-radius: 8px;
+            width: 70px; height: 60px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 24px;
+        }
+
+        .main-content { padding: 10px; display: flex; justify-content: center; align-items: flex-start; }
+
+        .grid {
+            display: grid; grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(6, 1fr); gap: 6px; direction: rtl;
+            width: 100%; max-width: 1100px;
+        }
+
+        button.char-btn {
+            border: 2px solid white; color: white; font-size: 22px;
+            font-weight: bold; padding: 12px 5px; border-radius: 8px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; min-height: 55px;
+        }
+        button.char-btn:active { transform: scale(0.92); }
+
+        .row-a { background-color: #ff0000; }
+        .row-i-1 { background-color: #0000ff; }
+        .row-i-2 { background-color: #00ffff; }
+        .row-u { background-color: #ffff00; color: #000 !important; }
+        .row-e-1 { background-color: #008000; }
+        .row-e-2 { background-color: #32cd32; }
+        .row-o { background-color: var(--heart-pink) !important; color: white !important; }
+
+        .row-ga { background-color: #006400; }
+        .row-gi { background-color: #800080; }
+        .row-gu { background-color: #8b0000; }
+        .row-ge { background-color: #00008b; }
+        .row-go { background-color: var(--dirty-orange) !important; color: white !important; }
+
+        .btn-poop { background-color: var(--poop-color); color: white; }
+        .btn-done { background-color: #007bff; color: white; }
+        .btn-retry { background-color: black !important; color: #ff0000 !important; }
+        .btn-dakuten { background-color: #696969; }
+        .btn-handakuten { background-color: #a9a9a9; }
+
+        .cat { position: absolute; bottom: 15px; right: 15px; font-size: 70px; pointer-events: none; }
+
+        #modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background-color: white; padding: 40px 80px; border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5); display: none; z-index: 1000;
+            white-space: nowrap; 
+        }
+        #modal p { color: #007bff; font-size: 40px; font-weight: bold; margin: 0; }
+        .fade-out { animation: fadeOut 1.2s forwards; }
+        @keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="blue-section">
+    <div class="header">
+        <a href="index.html" class="home-link">🏠 ホーム</a>
+        
+        <div class="speed-ctrl">
+            🐢 おそく <input type="range" id="speed-range" min="0.2" max="1.5" step="0.1" value="0.5"> はやく 🚀
+        </div>
+
+        <div class="display-container">
+            <div id="text-display"></div>
+            <button class="delete-btn" onclick="deleteChar()">📢<span style="color:red; margin-left:2px;">✖</span></button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="grid" id="aiueo-grid"></div>
+    </div>
+</div>
+
+<div style="position: relative; flex: 1;">
+    <div class="cat">🐈</div>
+</div>
+
+<div id="modal">
+    <p>いっしょによんでね</p>
+</div>
+
+<script>
+    const display = document.getElementById('text-display');
+    const grid = document.getElementById('aiueo-grid');
+    const modal = document.getElementById('modal');
+    const speedRange = document.getElementById('speed-range');
+
+    const mainLetters = [
+        ["あ", "か", "さ", "た", "な", "は", "ま", "や", "ら", "わ"],
+        ["い", "き", "し", "ち", "に", "ひ", "み", "ゃ", "り", "を"],
+        ["う", "く", "す", "つ", "ぬ", "ふ", "む", "ゆ", "る", "ん"],
+        ["え", "け", "せ", "て", "ね", "へ", "め", "ゅ", "れ", "ー"],
+        ["お", "こ", "そ", "と", "の", "ほ", "も", "よ", "ろ", "ゔ"]
+    ];
+
+    const dakuLetters = [
+        ["が", "ざ", "だ", "ば", "ぱ"],
+        ["ぎ", "じ", "ぢ", "び", "ぴ"],
+        ["ぐ", "ず", "づ", "ぶ", "ぷ"],
+        ["げ", "ぜ", "で", "べ", "ぺ"],
+        ["ご", "ぞ", "ど", "ぼ", "ぽ"]
+    ];
+
+    function createGrid() {
+        for (let r = 0; r < 5; r++) {
+            for (let c = 0; c < 10; c++) {
+                const char = mainLetters[r][c];
+                const btn = document.createElement('button');
+                btn.className = 'char-btn';
+                btn.textContent = char;
+                if (r === 4) btn.classList.add('row-o');
+                else if (r === 0) btn.classList.add('row-a');
+                else if (r === 1) btn.classList.add(c % 2 === 0 ? 'row-i-1' : 'row-i-2');
+                else if (r === 2) btn.classList.add('row-u');
+                else if (r === 3) btn.classList.add(c % 2 === 0 ? 'row-e-1' : 'row-e-2');
+                if (c === 7 && (r === 1 || r === 3)) btn.classList.add('btn-poop');
+                btn.onclick = () => addChar(char);
+                btn.style.gridRow = r + 1; btn.style.gridColumn = c + 1;
+                grid.appendChild(btn);
+            }
+        }
+
+        for (let r = 0; r < 5; r++) {
+            for (let c = 0; c < 5; c++) {
+                const char = dakuLetters[r][c];
+                const btn = document.createElement('button');
+                btn.className = 'char-btn';
+                btn.textContent = char;
+                if (r === 4) btn.classList.add('row-go'); 
+                else if (r === 0) btn.classList.add('row-ga');
+                else if (r === 1) btn.classList.add('row-gi');
+                else if (r === 2) btn.classList.add('row-gu');
+                else if (r === 3) btn.classList.add('row-ge');
+                btn.onclick = () => addChar(char);
+                btn.style.gridRow = r + 1; btn.style.gridColumn = c + 11;
+                grid.appendChild(btn);
+            }
+        }
+
+        createBtn('できた', 'btn-done', 6, "1 / span 3", readText);
+        createBtn('っ', 'btn-poop', 6, 4, () => addChar('っ'));
+        createBtn('やりなおし', 'btn-retry', 6, "5 / span 3", () => { display.textContent = ""; });
+        createBtn('ょ', 'btn-poop', 6, 8, () => addChar('ょ'));
+        createBtn('゛', 'btn-dakuten', 6, 9, () => addChar('゛'));
+        createBtn('゜', 'btn-handakuten', 6, 10, () => addChar('゜'));
+        ["ぁ", "ぃ", "ぅ", "ぇ", "ぉ"].forEach((v, i) => {
+            createBtn(v, 'btn-poop', 6, 11 + i, () => addChar(v));
+        });
+    }
+
+    function createBtn(txt, cls, r, c, clickFn) {
+        const btn = document.createElement('button');
+        btn.className = `char-btn ${cls}`; btn.textContent = txt;
+        btn.style.gridRow = r; btn.style.gridColumn = c;
+        btn.onclick = clickFn; grid.appendChild(btn);
+    }
+
+    function addChar(c) { display.textContent += c; }
+    function deleteChar() { display.textContent = display.textContent.slice(0, -1); }
+
+    // 🆕 濁点・半濁点を合体させ、感情豊かに読むロジック
+    function readText() {
+        let text = display.textContent;
+        if (!text) return;
+
+        // 1. 濁点・半濁点の合体分析
+        const dakuMap = {
+            "か゛":"が","き゛":"ぎ","く゛":"ぐ","け゛":"げ","こ゛":"ご",
+            "さ゛":"ざ","し゛":"じ","す゛":"ず","せ゛":"ぜ","そ゛":"ぞ",
+            "た゛":"だ","ち゛":"ぢ","つ゛":"づ","て゛":"で","と゛":"ど",
+            "は゛":"ば","ひ゛":"び","ふ゛":"ぶ","へ゛":"べ","ほ゛":"ぼ",
+            "う゛":"ゔ"
+        };
+        const handakuMap = {
+            "は゜":"ぱ","ひ゜":"ぴ","ふ゜":"ぷ","へ゜":"ぺ","ほ゜":"ぽ"
+        };
+
+        Object.keys(dakuMap).forEach(key => text = text.split(key).join(dakuMap[key]));
+        Object.keys(handakuMap).forEach(key => text = text.split(key).join(handakuMap[key]));
+        
+        // 合体できなかった記号のみを削除
+        text = text.replace(/[゛゜]/g, "");
+
+        const rate = parseFloat(speedRange.value);
+
+        modal.style.display = 'block';
+        modal.classList.add('fade-out');
+
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('fade-out');
+
+            const uttr = new SpeechSynthesisUtterance(text);
+            uttr.lang = 'ja-JP';
+            uttr.rate = rate;
+            
+            // 🆕 感情的にする設定
+            uttr.pitch = 1.3;  // 少し高めのトーン（明るく元気）
+            uttr.volume = 1.0; // はっきりと
+            
+            window.speechSynthesis.speak(uttr);
+        }, 1200);
+    }
+
+    createGrid();
+</script>
+</body>
+</html>
