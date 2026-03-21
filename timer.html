@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nogizaka46 MV Clock - Mobile Sound Fix</title>
+    <title>Nogizaka46 MV Clock - Seek Bar Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;700&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #7d4ba7; --bg-deep: #000; }
@@ -25,20 +25,39 @@
 
         .volume-ctrl-overlay { 
             position: absolute; top: 95px; right: 40px; 
-            display: flex; flex-direction: column; align-items: flex-end; gap: 8px; 
+            display: flex; flex-direction: column; align-items: flex-end; gap: 12px; 
             pointer-events: auto;
         }
 
-        input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.2); height: 2px; width: 140px; outline: none; cursor: pointer; border-radius: 2px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; background: var(--accent); width: 14px; height: 14px; border-radius: 50%; }
+        .slider-group { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.2); height: 2px; outline: none; cursor: pointer; border-radius: 2px; }
         
-        .btn-ui { background: rgba(125, 75, 167, 0.3); border: 1px solid var(--accent); color: white; font-size: 10px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        #volume-slider { width: 180px; }
+        #volume-slider::-webkit-slider-thumb { -webkit-appearance: none; background: var(--accent); width: 16px; height: 16px; border-radius: 4px; }
+        
+        #master-ceiling { width: 120px; opacity: 0.8; }
+        #master-ceiling::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 12px; height: 12px; border-radius: 50%; }
+
+        /* 🆕 カスタム再生バーのスタイル */
+        .seek-bar-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 30px;
+            z-index: 1001; display: flex; align-items: center; padding: 0 20px;
+            box-sizing: border-box; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+            opacity: 0; transition: opacity 0.5s;
+        }
+        body:hover .seek-bar-container { opacity: 1; }
+        #seek-slider { width: 100%; height: 4px; background: rgba(255,255,255,0.1); }
+        #seek-slider::-webkit-slider-thumb { -webkit-appearance: none; background: var(--accent); width: 4px; height: 20px; border-radius: 2px; box-shadow: 0 0 10px var(--accent); }
+
+        .btn-ui { background: rgba(125, 75, 167, 0.3); border: 1px solid var(--accent); color: white; font-size: 10px; padding: 4px 12px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
         body:hover .top-bar { opacity: 1; visibility: visible; }
+        #loading-info { position: fixed; bottom: 40px; left: 20px; font-size: 10px; color: var(--accent); z-index: 1001; opacity: 0; }
     </style>
 </head>
 <body>
 
     <div id="video-container"><div id="player"></div></div>
+    <div id="loading-info">再生可能な動画を探しています...</div>
 
     <div id="start-gate" onclick="initApp()">
         <div style="text-align: center;">
@@ -57,113 +76,126 @@
         <div style="grid-area: 2/3; text-align: right;" id="tomorrow-val" class="val">--/-- ---</div>
 
         <div class="volume-ctrl-overlay">
-            <div class="label" style="margin-bottom:0; font-size:7px;">APP VOLUME (ULTRA LOW)</div>
-            <input type="range" id="volume-slider" min="0" max="100" step="0.01" value="30" oninput="changeVolume(this.value)">
-            <div style="display:flex; gap:5px;">
-                <button id="play-pause-btn" class="btn-ui" onclick="togglePlay()">PAUSE ⏸</button>
-                <button class="btn-ui" onclick="nextMV()">NEXT ⏭</button>
-                <button class="btn-ui" style="border-color: #fff;" onclick="toggleNativeControls()">SETTINGS ⚙️</button>
+            <div class="slider-group">
+                <div class="label" id="ceiling-label" style="margin-bottom:0; font-size:7px; opacity: 0.5;">LIMIT CEILING: 20%</div>
+                <input type="range" id="master-ceiling" min="0" max="100" step="1" value="20" oninput="applyDualVolume()">
+            </div>
+            <div class="slider-group">
+                <div class="label" id="vol-label" style="margin-bottom:0; font-size:7px;">MAIN VOLUME: 50%</div>
+                <input type="range" id="volume-slider" min="0" max="100" step="1" value="50" oninput="applyDualVolume()">
             </div>
         </div>
+    </div>
+
+    <div class="seek-bar-container">
+        <input type="range" id="seek-slider" min="0" max="100" step="0.1" value="0" oninput="manualSeek(this.value)">
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
         const WEEKS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        let mvPlayer;
+        let mvPlayer, skipMonitor;
         let nativeVisible = false;
+        let volUpdateTimer = null;
+        let isUserSeeking = false; // シーク操作中フラグ
 
         function initApp() {
             createPlayer(0); 
-            // 🚩 UI表示を少し早める
             document.getElementById('start-gate').style.opacity = '0';
-            setTimeout(() => { 
-                document.getElementById('start-gate').style.display = 'none'; 
-                document.getElementById('ui-overlay').style.visibility = 'visible'; 
-                document.getElementById('ui-overlay').style.opacity = '1'; 
-            }, 300);
+            setTimeout(() => { document.getElementById('start-gate').style.display = 'none'; document.getElementById('ui-overlay').style.visibility = 'visible'; document.getElementById('ui-overlay').style.opacity = '1'; }, 300);
             update(); setInterval(update, 1000);
+            
+            // 🆕 再生バーの定期更新（0.5秒おき）
+            setInterval(updateProgressBar, 500);
         }
 
         function createPlayer(controlsValue) {
             const playlistId = 'PLDUMgL1jIEfMcaJcz082WS8TxcTlexJKz';
             if (mvPlayer) mvPlayer.destroy();
-
             mvPlayer = new YT.Player('player', {
                 height: '100%', width: '100%',
-                playerVars: { 
-                    'listType': 'playlist', 'list': playlistId, 
-                    'autoplay': 1, 'loop': 1, 'controls': controlsValue,
-                    'modestbranding': 1, 'rel': 0, 'showinfo': 0, 'vq': 'hd1080',
-                    'playsinline': 1 // 🚩 携帯で全画面強制を避ける
-                },
+                playerVars: { 'listType': 'playlist', 'list': playlistId, 'autoplay': 1, 'loop': 1, 'controls': controlsValue, 'modestbranding': 1, 'rel': 0, 'showinfo': 0, 'vq': 'hd1080', 'playsinline': 1 },
                 events: {
                     'onReady': (event) => {
-                        // 🚩 携帯での音出しを確実にするための儀式
-                        event.target.mute(); 
-                        event.target.playVideo();
-                        
-                        setTimeout(() => {
-                            event.target.unMute();
-                            event.target.setVolume(1); // 極低音量
-                            event.target.setShuffle(true);
-                        }, 500);
-
-                        // 🚩 監視：3秒経っても「未開始(-1)」の時だけエラーとみなして飛ばす
-                        setTimeout(() => {
-                            const state = event.target.getPlayerState();
-                            if (state === -1) {
-                                console.log("再生が始まらないためスキップします");
-                                event.target.nextVideo();
-                            }
-                        }, 3000);
+                        event.target.mute(); event.target.playVideo();
+                        if (event.target.setPlaybackRate) event.target.setPlaybackRate(1);
+                        setTimeout(() => { event.target.unMute(); applyDualVolume(); event.target.setShuffle(true); }, 800);
+                        startAggressiveMonitor();
                     },
                     'onStateChange': (event) => {
                         const btn = document.getElementById('play-pause-btn');
-                        if (event.data === YT.PlayerState.PLAYING) btn.innerText = "PAUSE ⏸";
+                        if (event.data === YT.PlayerState.PLAYING) { btn.innerText = "PAUSE ⏸"; document.getElementById('loading-info').style.opacity = '0'; }
                         else if (event.data === YT.PlayerState.PAUSED) btn.innerText = "PLAY ▶";
                     },
-                    'onError': (event) => {
-                        event.target.nextVideo();
-                    }
+                    'onError': () => nextMV()
                 }
             });
         }
 
-        function changeVolume(val) { 
-            if (mvPlayer && mvPlayer.setVolume) {
-                const tinyVol = (val / 100) * 2;
-                mvPlayer.setVolume(tinyVol); 
-                if (tinyVol > 0) {
-                    mvPlayer.unMute();
-                    // 🚩 携帯ブラウザへの念押し
-                    if(mvPlayer.getPlayerState() === 2) mvPlayer.playVideo();
+        // 🆕 再生バーを動画に合わせて動かす
+        function updateProgressBar() {
+            if (mvPlayer && mvPlayer.getCurrentTime && !isUserSeeking) {
+                const duration = mvPlayer.getDuration();
+                if (duration > 0) {
+                    const current = mvPlayer.getCurrentTime();
+                    document.getElementById('seek-slider').value = (current / duration) * 100;
                 }
-            } 
+            }
         }
 
-        function toggleNativeControls() {
-            nativeVisible = !nativeVisible;
-            createPlayer(nativeVisible ? 1 : 0);
+        // 🆕 再生バーを自分で動かした時の処理
+        function manualSeek(val) {
+            isUserSeeking = true;
+            if (mvPlayer && mvPlayer.seekTo) {
+                const duration = mvPlayer.getDuration();
+                const targetTime = (val / 100) * duration;
+                mvPlayer.seekTo(targetTime, true);
+            }
+            // 操作が終わって少ししたら自動更新を再開
+            setTimeout(() => { isUserSeeking = false; }, 1000);
         }
 
-        function nextMV() { if (mvPlayer && mvPlayer.nextVideo) mvPlayer.nextVideo(); }
-        function togglePlay() {
-            if (!mvPlayer) return;
-            const state = mvPlayer.getPlayerState();
-            state === YT.PlayerState.PLAYING ? mvPlayer.pauseVideo() : mvPlayer.playVideo();
+        function startAggressiveMonitor() {
+            if (skipMonitor) clearInterval(skipMonitor);
+            let stuckCounter = 0;
+            skipMonitor = setInterval(() => {
+                if (!mvPlayer || !mvPlayer.getPlayerState) return;
+                const state = mvPlayer.getPlayerState();
+                if (state === -1 || state === 3 || state === 5) {
+                    stuckCounter++;
+                    if (stuckCounter >= 4) { document.getElementById('loading-info').style.opacity = '1'; nextMV(); stuckCounter = 0; }
+                } else if (state === 1) stuckCounter = 0;
+            }, 1000);
         }
 
+        function applyDualVolume() {
+            const mainVal = parseInt(document.getElementById('volume-slider').value);
+            const ceilingVal = parseInt(document.getElementById('master-ceiling').value);
+            document.getElementById('ceiling-label').innerText = `LIMIT CEILING: ${ceilingVal}%`;
+            document.getElementById('vol-label').innerText = `MAIN VOLUME: ${mainVal}%`;
+
+            if (volUpdateTimer) clearTimeout(volUpdateTimer);
+            volUpdateTimer = setTimeout(() => {
+                if (mvPlayer && mvPlayer.setVolume) {
+                    const finalVol = (mainVal / 100) * ceilingVal;
+                    mvPlayer.setVolume(finalVol); 
+                    if (finalVol > 0 && mvPlayer.isMuted()) mvPlayer.unMute();
+                }
+            }, 50);
+        }
+
+        function toggleNativeControls() { nativeVisible = !nativeVisible; createPlayer(nativeVisible ? 1 : 0); }
+        function nextMV() { if (mvPlayer && mvPlayer.nextVideo) { mvPlayer.nextVideo(); setTimeout(() => mvPlayer.playVideo(), 500); } }
+        function togglePlay() { if (!mvPlayer) return; const state = mvPlayer.getPlayerState(); state === YT.PlayerState.PLAYING ? mvPlayer.pauseVideo() : mvPlayer.playVideo(); }
+        
         function update() {
-            const now = new Date();
-            const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()} ${WEEKS[d.getDay()]}`;
+            const now = new Date(); const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()} ${WEEKS[d.getDay()]}`;
             document.getElementById('today-val').innerText = fmt(now);
             const tom = new Date(now); tom.setDate(now.getDate() + 1);
             document.getElementById('tomorrow-val').innerText = fmt(tom);
-            let rawH = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
-            let ampm = rawH >= 12 ? 'PM' : 'AM', h = rawH % 12 || 12;
-            document.getElementById('clock-display').innerHTML = `${h}:${m}:${s}<span style="font-size:10px; opacity:0.5; margin-left:8px;">${ampm}</span>`;
+            let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock-display').innerHTML = `${h % 12 || 12}:${m}:${s}<span style="font-size:10px; opacity:0.5; margin-left:8px;">${h >= 12 ? 'PM' : 'AM'}</span>`;
         }
     </script>
 </body>
