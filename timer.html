@@ -3,37 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nogizaka46 MV Clock - Ultra Quiet</title>
+    <title>Nogizaka46 MV Clock - Mobile Sound Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;700&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #7d4ba7; --bg-deep: #000; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--bg-deep); color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
-        #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
         #player { width: 100%; height: 100%; }
-        #start-gate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep); display: flex; justify-content: center; align-items: center; z-index: 2000; cursor: pointer; transition: opacity 1s; }
+        #start-gate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep); display: flex; justify-content: center; align-items: center; z-index: 2000; cursor: pointer; }
         
         .top-bar { 
             position: fixed; top: 0; left: 0; width: 100%; padding: 30px 40px; box-sizing: border-box; 
             z-index: 1000; visibility: hidden; opacity: 0; transition: opacity 0.5s; 
             background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%); 
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            grid-template-rows: auto auto;
-            align-items: baseline;
-            pointer-events: none; 
+            display: grid; grid-template-columns: 1fr auto 1fr; grid-template-rows: auto auto; align-items: baseline; pointer-events: none; 
         }
-
-        .item-today-label    { grid-area: 1 / 1; text-align: left; }
-        .item-today-val      { grid-area: 2 / 1; text-align: left; }
-        .item-center-label   { grid-area: 1 / 2; text-align: center; }
-        .item-center-clock   { grid-area: 2 / 2; text-align: center; }
-        .item-tomorrow-label { grid-area: 1 / 3; text-align: right; }
-        .item-tomorrow-val   { grid-area: 2 / 3; text-align: right; }
 
         .label { font-size: 9px; opacity: 0.6; letter-spacing: 2.5px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
         .val { font-weight: 400; font-size: 15px; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); }
-        .date-part, .week-part { font-size: 15px; font-weight: 400; }
-        .week-part { margin-left: 8px; }
         .mini-clock { font-size: 32px; font-weight: 200; color: #fff; text-shadow: 0 0 10px rgba(125, 75, 167, 0.8); line-height: 1; }
 
         .volume-ctrl-overlay { 
@@ -46,8 +33,6 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; background: var(--accent); width: 14px; height: 14px; border-radius: 50%; }
         
         .btn-ui { background: rgba(125, 75, 167, 0.3); border: 1px solid var(--accent); color: white; font-size: 10px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
-        .btn-ui:hover { background: rgba(125, 75, 167, 0.6); }
-
         body:hover .top-bar { opacity: 1; visibility: visible; }
     </style>
 </head>
@@ -57,29 +42,28 @@
 
     <div id="start-gate" onclick="initApp()">
         <div style="text-align: center;">
-            <div style="font-size: 10px; letter-spacing: 5px; color: var(--accent); margin-bottom: 15px;">乃木坂46 MV COLLECTION</div>
+            <div style="font-size: 10px; letter-spacing: 5px; color: var(--accent); margin-bottom: 15px;">NOGIZAKA46 MV COLLECTION</div>
             <div style="font-size: 12px; color: white; opacity: 0.8;">TAP TO ENTER</div>
         </div>
     </div>
 
     <div class="top-bar" id="ui-overlay">
-        <div class="label item-today-label">TODAY</div>
-        <div class="label item-center-label">CURRENT TIME</div>
-        <div class="label item-tomorrow-label">TOMORROW</div>
+        <div style="grid-area: 1/1" class="label">TODAY</div>
+        <div style="grid-area: 1/2" class="label">CURRENT TIME</div>
+        <div style="grid-area: 1/3; text-align: right;" class="label">TOMORROW</div>
 
-        <div id="today-val" class="val item-today-val">
-            <span class="date-part">--/--</span><span class="week-part">---</span>
-        </div>
-        
-        <div id="clock-display" class="mini-clock item-center-clock">0:00:00</div>
-        
-        <div id="tomorrow-val" class="val item-tomorrow-val">
-            <span class="date-part">--/--</span><span class="week-part">---</span>
-        </div>
+        <div style="grid-area: 2/1" id="today-val" class="val">--/-- ---</div>
+        <div style="grid-area: 2/2" id="clock-display" class="mini-clock">0:00:00</div>
+        <div style="grid-area: 2/3; text-align: right;" id="tomorrow-val" class="val">--/-- ---</div>
 
         <div class="volume-ctrl-overlay">
-            <div class="label" style="margin-bottom:0; font-size:7px;">VOLUME</div>
+            <div class="label" style="margin-bottom:0; font-size:7px;">APP VOLUME (ULTRA LOW)</div>
             <input type="range" id="volume-slider" min="0" max="100" step="0.01" value="30" oninput="changeVolume(this.value)">
+            <div style="display:flex; gap:5px;">
+                <button id="play-pause-btn" class="btn-ui" onclick="togglePlay()">PAUSE ⏸</button>
+                <button class="btn-ui" onclick="nextMV()">NEXT ⏭</button>
+                <button class="btn-ui" style="border-color: #fff;" onclick="toggleNativeControls()">SETTINGS ⚙️</button>
+            </div>
         </div>
     </div>
 
@@ -88,50 +72,80 @@
     <script>
         const WEEKS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         let mvPlayer;
+        let nativeVisible = false;
 
         function initApp() {
+            createPlayer(0); 
+            // 🚩 UI表示を少し早める
+            document.getElementById('start-gate').style.opacity = '0';
+            setTimeout(() => { 
+                document.getElementById('start-gate').style.display = 'none'; 
+                document.getElementById('ui-overlay').style.visibility = 'visible'; 
+                document.getElementById('ui-overlay').style.opacity = '1'; 
+            }, 300);
+            update(); setInterval(update, 1000);
+        }
+
+        function createPlayer(controlsValue) {
             const playlistId = 'PLDUMgL1jIEfMcaJcz082WS8TxcTlexJKz';
+            if (mvPlayer) mvPlayer.destroy();
+
             mvPlayer = new YT.Player('player', {
                 height: '100%', width: '100%',
                 playerVars: { 
                     'listType': 'playlist', 'list': playlistId, 
-                    'autoplay': 1, 'loop': 1, 'controls': 1, 
-                    'modestbranding': 1, 'rel': 0, 'showinfo': 0,
-                    'vq': 'hd1080' 
+                    'autoplay': 1, 'loop': 1, 'controls': controlsValue,
+                    'modestbranding': 1, 'rel': 0, 'showinfo': 0, 'vq': 'hd1080',
+                    'playsinline': 1 // 🚩 携帯で全画面強制を避ける
                 },
                 events: {
                     'onReady': (event) => {
-                        // 🚩 初期音量を「1」に設定（YouTube APIで出せる最小の音）
-                        event.target.setVolume(1);
-                        event.target.setShuffle(true);
-                        setTimeout(() => { event.target.playVideo(); }, 500);
+                        // 🚩 携帯での音出しを確実にするための儀式
+                        event.target.mute(); 
+                        event.target.playVideo();
+                        
+                        setTimeout(() => {
+                            event.target.unMute();
+                            event.target.setVolume(1); // 極低音量
+                            event.target.setShuffle(true);
+                        }, 500);
+
+                        // 🚩 監視：3秒経っても「未開始(-1)」の時だけエラーとみなして飛ばす
+                        setTimeout(() => {
+                            const state = event.target.getPlayerState();
+                            if (state === -1) {
+                                console.log("再生が始まらないためスキップします");
+                                event.target.nextVideo();
+                            }
+                        }, 3000);
                     },
                     'onStateChange': (event) => {
                         const btn = document.getElementById('play-pause-btn');
                         if (event.data === YT.PlayerState.PLAYING) btn.innerText = "PAUSE ⏸";
                         else if (event.data === YT.PlayerState.PAUSED) btn.innerText = "PLAY ▶";
                     },
-                    'onError': (event) => event.target.nextVideo()
+                    'onError': (event) => {
+                        event.target.nextVideo();
+                    }
                 }
             });
-
-            document.getElementById('start-gate').style.opacity = '0';
-            setTimeout(() => { 
-                document.getElementById('start-gate').style.display = 'none'; 
-                document.getElementById('ui-overlay').style.visibility = 'visible'; 
-                document.getElementById('ui-overlay').style.opacity = '1'; 
-            }, 1000);
-
-            update(); setInterval(update, 1000);
         }
 
         function changeVolume(val) { 
             if (mvPlayer && mvPlayer.setVolume) {
-                // 🚩 重要：スライダーの 0~100 を、YouTube API の 0~2 の範囲にマッピング
-                // これにより、アプリ側で100にしてもYouTube側は「2」にしかなりません
                 const tinyVol = (val / 100) * 2;
                 mvPlayer.setVolume(tinyVol); 
+                if (tinyVol > 0) {
+                    mvPlayer.unMute();
+                    // 🚩 携帯ブラウザへの念押し
+                    if(mvPlayer.getPlayerState() === 2) mvPlayer.playVideo();
+                }
             } 
+        }
+
+        function toggleNativeControls() {
+            nativeVisible = !nativeVisible;
+            createPlayer(nativeVisible ? 1 : 0);
         }
 
         function nextMV() { if (mvPlayer && mvPlayer.nextVideo) mvPlayer.nextVideo(); }
@@ -143,14 +157,10 @@
 
         function update() {
             const now = new Date();
-            const fmtParts = (d) => ({ date: `${d.getMonth() + 1}/${d.getDate()}`, week: WEEKS[d.getDay()] });
-            const today = fmtParts(now);
-            document.querySelector('#today-val .date-part').innerText = today.date;
-            document.querySelector('#today-val .week-part').innerText = today.week;
-            const tomDate = new Date(now); tomDate.setDate(now.getDate() + 1);
-            const tomorrow = fmtParts(tomDate);
-            document.querySelector('#tomorrow-val .date-part').innerText = tomorrow.date;
-            document.querySelector('#tomorrow-val .week-part').innerText = tomorrow.week;
+            const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()} ${WEEKS[d.getDay()]}`;
+            document.getElementById('today-val').innerText = fmt(now);
+            const tom = new Date(now); tom.setDate(now.getDate() + 1);
+            document.getElementById('tomorrow-val').innerText = fmt(tom);
             let rawH = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
             let ampm = rawH >= 12 ? 'PM' : 'AM', h = rawH % 12 || 12;
             document.getElementById('clock-display').innerHTML = `${h}:${m}:${s}<span style="font-size:10px; opacity:0.5; margin-left:8px;">${ampm}</span>`;
