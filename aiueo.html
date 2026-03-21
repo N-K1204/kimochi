@@ -22,7 +22,6 @@
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* 800px固定・真ん中寄せ */
         .app-wrapper {
             width: 800px;
             display: flex;
@@ -52,7 +51,6 @@
             box-shadow: 0 3px 0 rgba(0,0,0,0.1);
         }
 
-        /* 入力エリア：複数行見えるように textarea に変更 */
         .display-container {
             flex: 1;
             display: flex;
@@ -61,15 +59,14 @@
         }
 
         #text-display {
-            width: 380px; height: 80px; /* 高さを出して全部見えるように */
+            width: 380px; height: 80px; 
             background-color: white; border: 3px solid #ccc; border-radius: 12px;
             font-size: 26px; padding: 8px 12px;
             color: #333;
-            resize: none; /* 大きさを変えられないように */
+            resize: none; 
             outline: none;
             word-break: break-all;
             line-height: 1.2;
-            /* モバイルで勝手にキーボードが出ないようにしつつ、カーソルは有効にする設定 */
             inputmode: none; 
         }
 
@@ -87,7 +84,6 @@
         }
         #speed-range { width: 100%; cursor: pointer; }
 
-        /* メイングリッド */
         .main-content { padding: 5px 15px 15px; }
         .grid {
             display: grid;
@@ -106,7 +102,6 @@
         }
         button.char-btn:active { transform: translateY(2px); box-shadow: none; }
 
-        /* 色設定 */
         .row-a { background-color: #ff0000; }
         .row-i-1 { background-color: #0000ff; }
         .row-i-2 { background-color: #00ffff; }
@@ -125,7 +120,6 @@
         .btn-dakuten { background-color: #696969; }
         .btn-handakuten { background-color: #a9a9a9; }
 
-        /* 下部エリア */
         .bottom-section {
             background-color: var(--green-bg);
             padding: 20px 15px;
@@ -183,6 +177,9 @@
 <div id="modal"><p>いっしょによんでね</p></div>
 
 <script>
+    // 🚩 ここに GAS の URL を貼り付けてください
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
+
     const display = document.getElementById('text-display');
     const grid = document.getElementById('aiueo-grid');
     const modal = document.getElementById('modal');
@@ -237,7 +234,7 @@
                 grid.appendChild(btn);
             }
         }
-        createBtn('できた', 'btn-done', 6, "1 / span 3", readText);
+        createBtn('できた', 'btn-done', 6, "1 / span 3", readAndNotify);
         createBtn('っ', 'btn-poop', 6, 4, () => addChar('っ'));
         createBtn('やりなおし', 'btn-retry', 6, "5 / span 3", () => { display.value = ""; display.focus(); });
         createBtn('ょ', 'btn-poop', 6, 8, () => addChar('ょ'));
@@ -255,7 +252,6 @@
         btn.onclick = clickFn; grid.appendChild(btn);
     }
 
-    // 🆕 カーソル位置に文字を入れるロジック
     function addChar(char) {
         const pos = display.selectionStart;
         const end = display.selectionEnd;
@@ -265,7 +261,6 @@
         display.focus();
     }
 
-    // 🆕 カーソル位置の前の文字を消すロジック
     function deleteChar() {
         const pos = display.selectionStart;
         const end = display.selectionEnd;
@@ -282,10 +277,24 @@
         display.focus();
     }
 
-    function readText() {
-        let text = display.value;
-        if (!text) return;
-        text = text.replace(/([か-ほ])゛/g, (m, p) => String.fromCharCode(p.charCodeAt(0) + 1));
+    // 🆕 読み上げと通知を同時に行う
+    async function readAndNotify() {
+        const rawText = display.value;
+        if (!rawText) return;
+
+        // --- 1. Discord通知 (GASへ送信) ---
+        try {
+            fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    type: "aiueo_report",
+                    content: rawText
+                })
+            });
+        } catch (e) { console.error("通知エラー", e); }
+
+        // --- 2. 読み上げ処理 ---
+        let text = rawText.replace(/([か-ほ])゛/g, (m, p) => String.fromCharCode(p.charCodeAt(0) + 1));
         text = text.replace(/([は-ほ])゜/g, (m, p) => String.fromCharCode(p.charCodeAt(0) + 2));
         const rules = {"う゛":"ゔ","さ゛":"ざ","し゛":"じ","す゛":"ず","せ゛":"ぜ","そ゛":"ぞ","た゛":"だ","ち゛":"ぢ","つ゛":"づ","て゛":"で","と゛":"ど"};
         for (let k in rules) { text = text.split(k).join(rules[k]); }
