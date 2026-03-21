@@ -43,10 +43,12 @@
         /* タイマー */
         .timer-setup { grid-column: 1 / 3; border-top: 1px dashed #eee; margin-top: 10px; padding-top: 10px; }
         .timer-btn-group { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
-        .btn-timer { background: #f0f0f0; color: #666; border: 1px solid #ddd; padding: 8px; border-radius: 10px; font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; }
+        .btn-timer { background: #f0f0f0; color: #666; border: 1px solid #ddd; padding: 8px; border-radius: 10px; font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
+        
         #cooldown-area { display: none; text-align: center; border-top: 2px solid #b49cff; padding-top: 10px; margin-top: 10px; width: 100%; grid-column: 1 / 3; }
+        #cooldown-display { font-size: 24px; font-weight: bold; color: #b49cff; margin: 10px 0; }
         .timer-bg { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 5px; }
-        #cooldown-bar { width: 100%; height: 100%; background: #b49cff; }
+        #cooldown-bar { width: 0%; height: 100%; background: #b49cff; }
 
         /* きもちボタン */
         .btn-main-emotion { background: #ff8bb0; color: white; width: 100%; font-size: 18px; padding: 20px; border-radius: 18px; border: none; box-shadow: 0 5px 0 #ff6f9e; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 10; }
@@ -61,7 +63,7 @@
         .overlay-footer { position: fixed; bottom: 0; left: 0; width: 100%; padding: 20px; background: white; border-top: 1px solid #eee; box-sizing: border-box; }
         .footer-btn-decide { background: #ff8bb0; color: white; width: 100%; padding: 15px; border-radius: 15px; border: none; font-size: 18px; font-weight: bold; box-shadow: 0 4px 0 #ff6f9e; cursor: pointer; }
 
-        #rest-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); z-index: 9998; display: none; pointer-events: auto; backdrop-filter: blur(2px); }
+        #rest-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.4); z-index: 9998; display: none; pointer-events: auto; backdrop-filter: blur(4px); }
         .active-cooldown { position: relative; z-index: 10000 !important; box-shadow: 0 0 30px rgba(0,0,0,0.15) !important; background: #fff !important; }
         .lock-buttons button, .lock-buttons a { pointer-events: none !important; opacity: 0.4 !important; }
 
@@ -116,14 +118,15 @@
                 <div class="timer-setup" id="timer-setup-ui">
                     <div style="font-size:10px; color:#aaa; text-align:center;">⏱ ひとやすみタイマー</div>
                     <div class="timer-btn-group">
-                        <a href="timer.html?sec=10" class="btn-timer">10秒</a>
-                        <a href="timer.html?sec=30" class="btn-timer">30秒</a>
-                        <a href="timer.html?sec=60" class="btn-timer">60秒</a>
+                        <button onclick="startCooldown(10)" class="btn-timer">10秒</button>
+                        <button onclick="startCooldown(30)" class="btn-timer">30秒</button>
+                        <button onclick="startCooldown(60)" class="btn-timer">60秒</button>
                     </div>
                 </div>
 
                 <div id="cooldown-area">
                     <p style="font-weight:bold; color:#555; margin:0; font-size:11px;">いまは ひとやすみ中...🍵</p>
+                    <div id="cooldown-display">0 秒</div>
                     <div class="timer-bg"><div id="cooldown-bar"></div></div>
                 </div>
             </div>
@@ -192,15 +195,12 @@
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyoM20f2RskSPGOr8qQmsUkL5M6Ykusyp6wBaRit71hsvdQ4gbXIO6HrAAlkq4RCbJT/exec";
-        
-        // 🆕 Discord通知用の設定（ここにURLを入れてください）
         const DISCORD_WEBHOOK_URL = "ここにDiscordのWebhookURLを貼ってください";
 
         function checkPassword() { if (document.getElementById('password').value === "yuuki01121003") { sessionStorage.setItem("isLoggedIn", "true"); showApp(); } }
         function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'block'; }
         window.onload = function() { if (sessionStorage.getItem("isLoggedIn") === "true") showApp(); };
 
-        // 🆕 Discord送信関数
         async function sendToDiscord(message) {
             if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes("ここに")) return;
             try {
@@ -269,15 +269,39 @@
             closeQModal(); 
         }
 
-        function startCooldown(seconds) {
-            const area = document.getElementById('cooldown-area'), bar = document.getElementById('cooldown-bar'), overlay = document.getElementById('rest-overlay');
-            const statusSection = document.getElementById('status-section'), app = document.getElementById('app-content');
-            let remaining = seconds;
-            area.style.display = 'block'; overlay.style.display = 'block';
-            statusSection.classList.add('active-cooldown'); app.classList.add('lock-buttons');
+        function startCooldown(targetSeconds) {
+            const area = document.getElementById('cooldown-area');
+            const display = document.getElementById('cooldown-display');
+            const bar = document.getElementById('cooldown-bar');
+            const overlay = document.getElementById('rest-overlay');
+            const statusSection = document.getElementById('status-section');
+            const app = document.getElementById('app-content');
+            
+            let elapsed = 0;
+            area.style.display = 'block'; 
+            overlay.style.display = 'block';
+            statusSection.classList.add('active-cooldown'); 
+            app.classList.add('lock-buttons');
+            
+            display.innerText = "0 秒";
+            bar.style.width = "0%";
+
             const timer = setInterval(() => {
-                remaining--; bar.style.width = (remaining / seconds) * 100 + "%";
-                if (remaining <= 0) { clearInterval(timer); area.style.display = 'none'; overlay.style.display = 'none'; statusSection.classList.remove('active-cooldown'); app.classList.remove('lock-buttons'); alert("おわり！🍵"); }
+                elapsed++;
+                display.innerText = elapsed + " 秒";
+                const progress = (elapsed / targetSeconds) * 100;
+                bar.style.width = progress + "%";
+
+                if (elapsed >= targetSeconds) {
+                    clearInterval(timer);
+                    setTimeout(() => {
+                        area.style.display = 'none'; 
+                        overlay.style.display = 'none'; 
+                        statusSection.classList.remove('active-cooldown'); 
+                        app.classList.remove('lock-buttons'); 
+                        alert("おわり！🍵");
+                    }, 500);
+                }
             }, 1000);
         }
     </script>
