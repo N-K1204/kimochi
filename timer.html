@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nogizaka46 MV Clock - Ultra Quiet</title>
+    <title>Nogizaka46 MV Clock - Volume Fixed</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;700&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #7d4ba7; --bg-deep: #000; }
@@ -78,8 +78,12 @@
         </div>
 
         <div class="volume-ctrl-overlay">
-            <div class="label" style="margin-bottom:0; font-size:7px;">VOLUME</div>
+            <div class="label" style="margin-bottom:0; font-size:7px;">ULTRA LOW VOLUME</div>
             <input type="range" id="volume-slider" min="0" max="100" step="0.01" value="30" oninput="changeVolume(this.value)">
+            <div style="display:flex; gap:5px;">
+                <button id="play-pause-btn" class="btn-ui" onclick="togglePlay()">PAUSE ⏸</button>
+                <button class="btn-ui" onclick="nextMV()">NEXT ⏭</button>
+            </div>
         </div>
     </div>
 
@@ -101,8 +105,8 @@
                 },
                 events: {
                     'onReady': (event) => {
-                        // 🚩 初期音量を「1」に設定（YouTube APIで出せる最小の音）
                         event.target.setVolume(1);
+                        event.target.unMute(); // 🚩 起動時に確実にミュート解除
                         event.target.setShuffle(true);
                         setTimeout(() => { event.target.playVideo(); }, 500);
                     },
@@ -125,12 +129,16 @@
             update(); setInterval(update, 1000);
         }
 
+        // 🚩 音量調整時にミュート状態をチェックし、自動で解除するよう修正
         function changeVolume(val) { 
             if (mvPlayer && mvPlayer.setVolume) {
-                // 🚩 重要：スライダーの 0~100 を、YouTube API の 0~2 の範囲にマッピング
-                // これにより、アプリ側で100にしてもYouTube側は「2」にしかなりません
                 const tinyVol = (val / 100) * 2;
                 mvPlayer.setVolume(tinyVol); 
+                
+                // 音量が0より大きいのにミュート状態なら解除する
+                if (tinyVol > 0) {
+                    mvPlayer.unMute();
+                }
             } 
         }
 
