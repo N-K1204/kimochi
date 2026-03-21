@@ -3,125 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panoramic Scenic Clock</title>
+    <title>Nogizaka46 MV Clock - Fixed</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #a2d2ff; --bg-deep: #02040a; }
-
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: var(--bg-deep);
-            color: white;
-            font-family: 'Inter', sans-serif; overflow: hidden;
-        }
-
-        #video-background {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
-        }
-        #video-background iframe {
-            position: absolute; top: 50%; left: 50%;
-            width: 100vw; height: 56.25vw;
-            min-height: 100vh; min-width: 177.77vh;
-            transform: translate(-50%, -50%); border: none;
-        }
-
-        /* 🔊 モバイルでも認識されやすいよう、少しだけサイズを持たせて背面に隠す */
-        #audio-container {
-            position: fixed; bottom: 0; right: 0; width: 200px; height: 200px;
-            z-index: -1; pointer-events: none; opacity: 0;
-        }
-
-        #start-gate {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-deep); display: flex; justify-content: center; align-items: center;
-            z-index: 2000; cursor: pointer; transition: opacity 1s;
-        }
-
-        .top-bar {
-            position: fixed; top: 0; left: 0; width: 100%; padding: 40px; box-sizing: border-box;
-            display: flex; justify-content: space-between; align-items: flex-start;
-            z-index: 1000; visibility: hidden; opacity: 0; transition: opacity 2s;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
-        }
+        :root { --accent: #7d4ba7; --bg-deep: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--bg-deep); color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
+        #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #player { width: 100%; height: 100%; }
+        #start-gate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep); display: flex; justify-content: center; align-items: center; z-index: 2000; cursor: pointer; transition: opacity 1s; }
+        .top-bar { position: fixed; top: 0; left: 0; width: 100%; padding: 20px 30px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start; z-index: 1000; visibility: hidden; opacity: 0; transition: opacity 0.5s; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%); pointer-events: none; }
         .info-group.center { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; }
         .info-group.right { text-align: right; pointer-events: auto; }
-        
-        .label { font-size: 10px; opacity: 0.8; letter-spacing: 3px; margin-bottom: 8px; font-weight: 700; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); }
-        .val { font-size: 18px; font-weight: 400; text-shadow: 1px 1px 6px rgba(0,0,0,0.9); }
-        .mini-clock { font-size: 48px; font-weight: 200; color: #ffffff; text-shadow: 0 0 20px rgba(162, 210, 255, 0.6), 2px 2px 10px rgba(0,0,0,1); }
-        .ampm { font-size: 16px; opacity: 0.6; margin-left: 10px; }
-
-        .volume-ctrl { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; margin-top: 10px; }
-        input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.2); height: 2px; width: 100px; outline: none; cursor: pointer; border-radius: 2px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; background: var(--accent); width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 10px rgba(162, 210, 255, 0.8); }
+        .label { font-size: 8px; opacity: 0.6; letter-spacing: 2px; margin-bottom: 3px; font-weight: 700; }
+        .val { font-size: 13px; font-weight: 400; }
+        .mini-clock { font-size: 28px; font-weight: 200; color: #fff; text-shadow: 0 0 10px rgba(125, 75, 167, 0.8); }
+        .volume-ctrl { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 10px; }
+        input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.2); height: 2px; width: 80px; outline: none; cursor: pointer; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; background: var(--accent); width: 10px; height: 10px; border-radius: 50%; }
+        .btn-ui { background: rgba(125, 75, 167, 0.3); border: 1px solid var(--accent); color: white; font-size: 10px; padding: 5px 10px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .btn-ui:hover { background: rgba(125, 75, 167, 0.6); }
+        body:hover .top-bar { opacity: 1; visibility: visible; }
     </style>
 </head>
 <body>
-
-    <div id="video-background">
-        <iframe id="bg-iframe" src="about:blank" title="Background Scenery" allow="autoplay"></iframe>
-    </div>
-
-    <div id="audio-container"></div>
-
-    <div id="start-gate" onclick="initClock()">
-        <div style="font-size: 12px; letter-spacing: 10px; color: var(--accent);">TAP TO ENTER</div>
-    </div>
-
+    <div id="video-container"><div id="player"></div></div>
+    <div id="start-gate" onclick="initApp()"><div style="text-align: center;"><div style="font-size: 10px; letter-spacing: 5px; color: var(--accent); margin-bottom: 15px;">乃木坂46 MV COLLECTION</div><div style="font-size: 12px; color: white; opacity: 0.8;">TAP TO ENTER</div></div></div>
     <div class="top-bar" id="ui-overlay">
         <div class="info-group"><div class="label">TODAY</div><div id="today-val" class="val">--/-- ---</div></div>
-        <div class="info-group center"><div class="label">CURRENT TIME</div><div id="clock-display" class="mini-clock">0:00:00<span class="ampm">--</span></div></div>
+        <div class="info-group center"><div class="label">CURRENT TIME</div><div id="clock-display" class="mini-clock">0:00:00</div></div>
         <div class="info-group right">
             <div class="label">TOMORROW</div><div id="tomorrow-val" class="val">--/-- ---</div>
             <div class="volume-ctrl">
-                <div class="label" style="margin-bottom:0;">VOLUME</div>
-                <input type="range" id="volume-slider" min="0" max="100" value="5" oninput="changeVolume(this.value)">
+                <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="changeVolume(this.value)">
+                <div style="display:flex; gap:5px;">
+                    <button id="play-pause-btn" class="btn-ui" onclick="togglePlay()">PAUSE ⏸</button>
+                    <button class="btn-ui" onclick="nextMV()">NEXT ⏭</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
-
     <script>
         const WEEKS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        let audioPlayer;
+        let mvPlayer;
 
-        function initClock() {
-            // 背景映像の読み込み
-            const bgVid = 'r6HJhRvom7E'; 
-            document.getElementById('bg-iframe').src = `https://www.youtube.com/embed/${bgVid}?autoplay=1&mute=1&loop=1&playlist=${bgVid}&controls=0&modestbranding=1&rel=0`;
-
-            // BGM音声の初期化（少し時間を置いて、確実にクリック判定内に収める）
-            const audioVid = 'gK7rcyxB-F8';
-            if (!audioPlayer) {
-                audioPlayer = new YT.Player('audio-container', {
-                    height: '200', width: '200', videoId: audioVid,
-                    playerVars: { 'autoplay': 1, 'loop': 1, 'playlist': audioVid, 'controls': 0, 'playsinline': 1 },
-                    events: {
-                        'onReady': (event) => {
-                            event.target.setVolume(5);
-                            event.target.playVideo();
-                        },
-                        'onStateChange': (event) => {
-                            // モバイルで停止してしまった場合に再開を試みる
-                            if (event.data === YT.PlayerState.PAUSED) event.target.playVideo();
-                        }
-                    }
-                });
-            }
-
+        function initApp() {
+            const playlistId = 'PLDUMgL1jIEfMcaJcz082WS8TxcTlexJKz';
+            mvPlayer = new YT.Player('player', {
+                height: '100%', width: '100%',
+                playerVars: { 'listType': 'playlist', 'list': playlistId, 'autoplay': 1, 'loop': 1, 'controls': 1, 'modestbranding': 1, 'rel': 0, 'showinfo': 0 },
+                events: {
+                    'onReady': (event) => {
+                        event.target.setVolume(50);
+                        event.target.setShuffle(true);
+                        setTimeout(() => { event.target.playVideo(); }, 500);
+                    },
+                    'onStateChange': (event) => {
+                        const btn = document.getElementById('play-pause-btn');
+                        if (event.data === YT.PlayerState.PLAYING) { btn.innerText = "PAUSE ⏸"; }
+                        else if (event.data === YT.PlayerState.PAUSED) { btn.innerText = "PLAY ▶"; }
+                    },
+                    'onError': (event) => { event.target.nextVideo(); }
+                }
+            });
             document.getElementById('start-gate').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('start-gate').style.display = 'none';
-                document.getElementById('ui-overlay').style.visibility = 'visible';
-                document.getElementById('ui-overlay').style.opacity = '1';
-            }, 1000);
-
+            setTimeout(() => { document.getElementById('start-gate').style.display = 'none'; document.getElementById('ui-overlay').style.visibility = 'visible'; document.getElementById('ui-overlay').style.opacity = '1'; }, 1000);
             update(); setInterval(update, 1000);
         }
 
-        function changeVolume(val) { if (audioPlayer && audioPlayer.setVolume) audioPlayer.setVolume(val); }
+        function changeVolume(val) { if (mvPlayer && mvPlayer.setVolume) mvPlayer.setVolume(val); }
+        function nextMV() { if (mvPlayer && mvPlayer.nextVideo) mvPlayer.nextVideo(); }
+        
+        function togglePlay() {
+            if (!mvPlayer) return;
+            const state = mvPlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) { mvPlayer.pauseVideo(); }
+            else { mvPlayer.playVideo(); }
+        }
 
         function update() {
             const now = new Date();
@@ -129,13 +88,9 @@
             document.getElementById('today-val').innerText = fmt(now);
             const tom = new Date(now); tom.setDate(now.getDate() + 1);
             document.getElementById('tomorrow-val').innerText = fmt(tom);
-
-            let rawH = now.getHours();
-            const m = String(now.getMinutes()).padStart(2, '0');
-            const s = String(now.getSeconds()).padStart(2, '0');
-            const ampm = rawH >= 12 ? 'PM' : 'AM';
-            let h = rawH % 12;
-            document.getElementById('clock-display').innerHTML = `${h}:${m}:${s}<span class="ampm">${ampm}</span>`;
+            let rawH = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
+            let ampm = rawH >= 12 ? 'PM' : 'AM', h = rawH % 12 || 12;
+            document.getElementById('clock-display').innerHTML = `${h}:${m}:${s}<span style="font-size:10px; opacity:0.5; margin-left:5px;">${ampm}</span>`;
         }
     </script>
 </body>
