@@ -6,74 +6,107 @@
     <title>ひらがな あいうえお表</title>
     <style>
         :root {
-            --poop-color: #8b4513; /* うんち色 */
-            --dirty-orange: #a0522d; /* 汚いオレンジ */
+            --poop-color: #8b4513; 
+            --dirty-orange: #a0522d; 
             --blue-bg: #007bff;
             --green-bg: #28a745;
-            --heart-pink: #ff85a1; /* 💗 このハートの色 */
+            --heart-pink: #ff85a1; 
         }
+
+        * { box-sizing: border-box; }
 
         body, html {
             margin: 0; padding: 0; height: 100%;
             font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-            overflow-x: hidden; display: flex; flex-direction: column;
             background-color: var(--green-bg);
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        .blue-section { background-color: var(--blue-bg); padding-bottom: 20px; }
+        /* 800px固定・真ん中寄せ */
+        .app-wrapper {
+            width: 800px;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--blue-bg);
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            margin: 10px 0;
+            border-radius: 20px;
+            overflow: hidden;
+        }
 
-        /* --- 上の枠（ヘッダー）と表の横幅を1000pxで統一 --- */
         .header {
-            width: 95%; max-width: 1000px;
-            margin: 0 auto; padding: 15px 0;
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-            gap: 15px; min-height: 120px; box-sizing: border-box;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            gap: 10px;
         }
 
         .home-link {
+            width: 90px; height: 45px;
             background-color: white; color: var(--blue-bg);
-            text-decoration: none; padding: 8px 16px; border-radius: 12px;
-            font-weight: bold; font-size: 14px; box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-            display: flex; align-items: center; gap: 5px; white-space: nowrap;
+            text-decoration: none; border-radius: 10px;
+            font-weight: bold; font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.1);
         }
 
-        .speed-ctrl {
-            display: flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,0.2); padding: 5px 15px;
-            border-radius: 20px; color: white; font-size: 12px; font-weight: bold;
+        /* 入力エリア：複数行見えるように textarea に変更 */
+        .display-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
         }
-
-        .display-container { display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: center; }
 
         #text-display {
-            width: 100%; max-width: 400px; height: 60px;
-            background-color: white; border: 3px solid #ccc; border-radius: 10px;
-            font-size: 32px; display: flex; align-items: center; padding: 0 15px;
-            overflow-x: auto; white-space: nowrap; color: #333;
+            width: 380px; height: 80px; /* 高さを出して全部見えるように */
+            background-color: white; border: 3px solid #ccc; border-radius: 12px;
+            font-size: 26px; padding: 8px 12px;
+            color: #333;
+            resize: none; /* 大きさを変えられないように */
+            outline: none;
+            word-break: break-all;
+            line-height: 1.2;
+            /* モバイルで勝手にキーボードが出ないようにしつつ、カーソルは有効にする設定 */
+            inputmode: none; 
         }
 
         .delete-btn {
-            background-color: black; border: none; border-radius: 8px;
-            width: 70px; height: 60px; cursor: pointer;
+            background-color: black; color: white; border: none; border-radius: 10px;
+            width: 65px; height: 80px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; font-size: 24px;
         }
 
-        .main-content { padding: 10px; display: flex; justify-content: center; align-items: flex-start; }
+        .speed-ctrl {
+            width: 150px;
+            background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px;
+            color: white; font-size: 10px; font-weight: bold;
+            text-align: center;
+        }
+        #speed-range { width: 100%; cursor: pointer; }
 
-        /* 表の最大幅をヘッダーと合わせる */
+        /* メイングリッド */
+        .main-content { padding: 5px 15px 15px; }
         .grid {
-            display: grid; grid-template-columns: repeat(15, 1fr);
-            grid-template-rows: repeat(6, 1fr); gap: 6px; direction: rtl;
-            width: 95%; max-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 6px;
+            direction: rtl;
         }
 
         button.char-btn {
-            border: 2px solid white; color: white; font-size: 22px;
-            font-weight: bold; padding: 12px 5px; border-radius: 8px;
-            cursor: pointer; display: flex; justify-content: center; align-items: center; min-height: 55px;
+            border: 2px solid white; color: white; font-size: 18px;
+            font-weight: bold; padding: 8px 0; border-radius: 8px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            min-height: 50px; box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+            transition: 0.05s;
         }
-        button.char-btn:active { transform: scale(0.92); }
+        button.char-btn:active { transform: translateY(2px); box-shadow: none; }
 
+        /* 色設定 */
         .row-a { background-color: #ff0000; }
         .row-i-1 { background-color: #0000ff; }
         .row-i-2 { background-color: #00ffff; }
@@ -81,68 +114,73 @@
         .row-e-1 { background-color: #008000; }
         .row-e-2 { background-color: #32cd32; }
         .row-o { background-color: var(--heart-pink) !important; color: white !important; }
-
         .row-ga { background-color: #006400; }
         .row-gi { background-color: #800080; }
         .row-gu { background-color: #8b0000; }
         .row-ge { background-color: #00008b; }
         .row-go { background-color: var(--dirty-orange) !important; color: white !important; }
-
         .btn-poop { background-color: var(--poop-color); color: white; }
         .btn-done { background-color: #007bff; color: white; }
         .btn-retry { background-color: black !important; color: #ff0000 !important; }
-        
         .btn-dakuten { background-color: #696969; }
         .btn-handakuten { background-color: #a9a9a9; }
 
-        /* 下にお花を咲かせる */
-        .flowers-area {
-            position: relative; flex: 1;
-            display: flex; justify-content: center; align-items: flex-end;
-            padding-bottom: 20px; font-size: 50px; gap: 15px;
+        /* 下部エリア */
+        .bottom-section {
+            background-color: var(--green-bg);
+            padding: 20px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
         }
-        .cat { position: absolute; bottom: 10px; right: 15px; font-size: 70px; pointer-events: none; }
+        .flower-group { display: flex; gap: 15px; font-size: 35px; }
+        .cat { font-size: 60px; line-height: 1; }
 
         #modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background-color: white; padding: 40px 80px; border-radius: 20px;
-            box-shadow: 0 0 40px rgba(0,0,0,0.5); display: none; z-index: 1000;
-            white-space: nowrap; /* 横一列 */
+            background-color: white; padding: 30px 50px; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; z-index: 11000;
         }
-        #modal p { color: #007bff; font-size: 40px; font-weight: bold; margin: 0; }
+        #modal p { color: #007bff; font-size: 32px; font-weight: bold; margin: 0; }
         .fade-out { animation: fadeOut 1.2s forwards; }
-        @keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes fadeOut { 0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div class="blue-section">
-    <div class="header">
-        <a href="index.html" class="home-link">🏠 ホーム</a>
-        
-        <div class="speed-ctrl">
-            🐢 おそく <input type="range" id="speed-range" min="0.3" max="1.8" step="0.1" value="0.9"> はやく 🚀
-        </div>
+<div class="app-wrapper">
+    <div class="blue-section">
+        <header class="header">
+            <a href="index.html" class="home-link">🏠 ホーム</a>
+            
+            <div class="display-container">
+                <textarea id="text-display" readonly onfocus="this.readOnly=false;" onblur="this.readOnly=true;" placeholder="もじが でるよ"></textarea>
+                <button class="delete-btn" onclick="deleteChar()">📢✖</button>
+            </div>
 
-        <div class="display-container">
-            <div id="text-display"></div>
-            <button class="delete-btn" onclick="deleteChar()">📢<span style="color:red; margin-left:2px;">✖</span></button>
-        </div>
+            <div class="speed-ctrl">
+                <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                    <span>🐢 おそく</span><span>🚀 はやく</span>
+                </div>
+                <input type="range" id="speed-range" min="0.3" max="1.8" step="0.1" value="0.9">
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="grid" id="aiueo-grid"></div>
+        </main>
     </div>
 
-    <div class="main-content">
-        <div class="grid" id="aiueo-grid"></div>
+    <div class="bottom-section">
+        <div class="flower-group">
+            <span>🌸</span><span>🌼</span><span>🌷</span><span>🌻</span><span>🌺</span><span>🌼</span><span>🌸</span>
+        </div>
+        <div class="cat">😸</div>
     </div>
 </div>
 
-<div class="flowers-area">
-    <span>🌸</span><span>🌼</span><span>🌷</span><span>🌻</span><span>🌺</span><span>🌼</span><span>🌸</span>
-    <div class="cat">🐱</div>
-</div>
-
-<div id="modal">
-    <p>いっしょによんでね</p>
-</div>
+<div id="modal"><p>いっしょによんでね</p></div>
 
 <script>
     const display = document.getElementById('text-display');
@@ -154,10 +192,9 @@
         ["あ", "か", "さ", "た", "な", "は", "ま", "や", "ら", "わ"],
         ["い", "き", "し", "ち", "に", "ひ", "み", "ゃ", "り", "を"],
         ["う", "く", "す", "つ", "ぬ", "ふ", "む", "ゆ", "る", "ん"],
-        ["え", "け", "せ", "て", "ne", "へ", "め", "ゅ", "れ", "ー"],
+        ["え", "け", "せ", "て", "ね", "へ", "め", "ゅ", "れ", "ー"],
         ["お", "こ", "そ", "と", "の", "ほ", "も", "よ", "ろ", "ゔ"]
     ];
-    mainLetters[3][4] = "ね"; // タイポ修正
 
     const dakuLetters = [
         ["が", "ざ", "だ", "ば", "ぱ"],
@@ -174,38 +211,35 @@
                 const btn = document.createElement('button');
                 btn.className = 'char-btn';
                 btn.textContent = char;
-                if (r === 4) btn.classList.add('row-o');
-                else if (r === 0) btn.classList.add('row-a');
+                if (r === 0) btn.classList.add('row-a');
                 else if (r === 1) btn.classList.add(c % 2 === 0 ? 'row-i-1' : 'row-i-2');
                 else if (r === 2) btn.classList.add('row-u');
                 else if (r === 3) btn.classList.add(c % 2 === 0 ? 'row-e-1' : 'row-e-2');
-                if (c === 7 && (r === 1 || r === 3)) btn.classList.add('btn-poop');
+                else if (r === 4) btn.classList.add('row-o');
                 btn.onclick = () => addChar(char);
                 btn.style.gridRow = r + 1; btn.style.gridColumn = c + 1;
                 grid.appendChild(btn);
             }
         }
-
         for (let r = 0; r < 5; r++) {
             for (let c = 0; c < 5; c++) {
                 const char = dakuLetters[r][c];
                 const btn = document.createElement('button');
                 btn.className = 'char-btn';
                 btn.textContent = char;
-                if (r === 4) btn.classList.add('row-go'); 
-                else if (r === 0) btn.classList.add('row-ga');
+                if (r === 0) btn.classList.add('row-ga');
                 else if (r === 1) btn.classList.add('row-gi');
                 else if (r === 2) btn.classList.add('row-gu');
                 else if (r === 3) btn.classList.add('row-ge');
+                else if (r === 4) btn.classList.add('row-go');
                 btn.onclick = () => addChar(char);
                 btn.style.gridRow = r + 1; btn.style.gridColumn = c + 11;
                 grid.appendChild(btn);
             }
         }
-
         createBtn('できた', 'btn-done', 6, "1 / span 3", readText);
         createBtn('っ', 'btn-poop', 6, 4, () => addChar('っ'));
-        createBtn('やりなおし', 'btn-retry', 6, "5 / span 3", () => { display.textContent = ""; });
+        createBtn('やりなおし', 'btn-retry', 6, "5 / span 3", () => { display.value = ""; display.focus(); });
         createBtn('ょ', 'btn-poop', 6, 8, () => addChar('ょ'));
         createBtn('゛', 'btn-dakuten', 6, 9, () => addChar('゛'));
         createBtn('゜', 'btn-handakuten', 6, 10, () => addChar('゜'));
@@ -221,31 +255,40 @@
         btn.onclick = clickFn; grid.appendChild(btn);
     }
 
-    function addChar(c) { display.textContent += c; }
-    function deleteChar() { display.textContent = display.textContent.slice(0, -1); }
+    // 🆕 カーソル位置に文字を入れるロジック
+    function addChar(char) {
+        const pos = display.selectionStart;
+        const end = display.selectionEnd;
+        const val = display.value;
+        display.value = val.substring(0, pos) + char + val.substring(end);
+        display.selectionStart = display.selectionEnd = pos + char.length;
+        display.focus();
+    }
 
-    // 🆕 濁点・半濁点の分析と自然な読み上げ
+    // 🆕 カーソル位置の前の文字を消すロジック
+    function deleteChar() {
+        const pos = display.selectionStart;
+        const end = display.selectionEnd;
+        const val = display.value;
+        if (pos === end) {
+            if (pos > 0) {
+                display.value = val.substring(0, pos - 1) + val.substring(pos);
+                display.selectionStart = display.selectionEnd = pos - 1;
+            }
+        } else {
+            display.value = val.substring(0, pos) + val.substring(end);
+            display.selectionStart = display.selectionEnd = pos;
+        }
+        display.focus();
+    }
+
     function readText() {
-        let rawText = display.textContent;
-        if (!rawText) return;
-
-        // 文字の合体処理（NFC正規化の代わりにより確実に置換）
-        // 例：「は」+「゛」→「ば」
-        let text = rawText.replace(/([か-ほ])゛/g, (match, p1) => {
-            return String.fromCharCode(p1.charCodeAt(0) + 1);
-        });
-        text = text.replace(/([は-ほ])゜/g, (match, p1) => {
-            return String.fromCharCode(p1.charCodeAt(0) + 2);
-        });
-
-        // 特殊な組み合わせ（う、た行など）の手動カバー
-        const rules = {
-            "う゛": "ゔ", "さ゛": "ざ", "し゛": "じ", "す゛": "ず", "せ゛": "ぜ", "そ゛": "ぞ",
-            "た゛": "だ", "ち゛": "ぢ", "つ゛": "づ", "て゛": "で", "と゛": "ど"
-        };
-        for (let key in rules) { text = text.split(key).join(rules[key]); }
-
-        const rate = parseFloat(speedRange.value);
+        let text = display.value;
+        if (!text) return;
+        text = text.replace(/([か-ほ])゛/g, (m, p) => String.fromCharCode(p.charCodeAt(0) + 1));
+        text = text.replace(/([は-ほ])゜/g, (m, p) => String.fromCharCode(p.charCodeAt(0) + 2));
+        const rules = {"う゛":"ゔ","さ゛":"ざ","し゛":"じ","す゛":"ず","せ゛":"ぜ","そ゛":"ぞ","た゛":"だ","ち゛":"ぢ","つ゛":"づ","て゛":"で","と゛":"ど"};
+        for (let k in rules) { text = text.split(k).join(rules[k]); }
 
         modal.style.display = 'block';
         modal.classList.add('fade-out');
@@ -253,13 +296,12 @@
         setTimeout(() => {
             modal.style.display = 'none';
             modal.classList.remove('fade-out');
-
             const uttr = new SpeechSynthesisUtterance(text);
             uttr.lang = 'ja-JP';
-            uttr.rate = rate;  // 全体の速さ
-            uttr.pitch = 1.2; // 少し明るく感情的に
+            uttr.rate = parseFloat(speedRange.value);
+            uttr.pitch = 1.2;
             window.speechSynthesis.speak(uttr);
-        }, 1200);
+        }, 1500);
     }
 
     createGrid();
