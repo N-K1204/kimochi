@@ -3,189 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nogizaka46 Sleep Cocktail</title>
+    <title>Sleep Orange Cocktail - Professional Production</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #7d4ba7; --accent-dark: #4b2c63; --bg-deep: #050505; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--bg-deep); color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
-        
-        /* ヘッダーデザイン（完璧な整列を維持） */
+        :root { 
+            --juice: #FF9800; --juice-dark: #e65100; --juice-light: #ffb74d; --bg: #050505; 
+        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a1a1a 0%, var(--bg) 100%); color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
+
+        /* ヘッダーデザイン完全復元 */
         .top-bar { 
             position: fixed; top: 0; left: 0; width: 100%; padding: 30px 40px; box-sizing: border-box; 
             display: grid; grid-template-columns: 1fr auto 1fr; grid-template-rows: auto auto; align-items: baseline; z-index: 1000;
         }
-        .item-today-label { grid-area: 1 / 1; text-align: left; }
-        .item-today-val { grid-area: 2 / 1; text-align: left; }
-        .item-center-label { grid-area: 1 / 2; text-align: center; }
-        .item-center-clock { grid-area: 2 / 2; text-align: center; }
-        .item-tomorrow-label { grid-area: 1 / 3; text-align: right; }
-        .item-tomorrow-val { grid-area: 2 / 3; text-align: right; }
-
-        .label { font-size: 9px; opacity: 0.6; letter-spacing: 2.5px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
+        .item-label { font-size: 9px; opacity: 0.6; letter-spacing: 2.5px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
         .val { font-weight: 400; font-size: 15px; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); }
-        .mini-clock { font-size: 32px; font-weight: 200; color: #fff; text-shadow: 0 0 10px rgba(125, 75, 167, 0.8); line-height: 1; }
-        .ampm-part { font-size: 10px; opacity: 0.5; margin-left: 8px; font-weight: 400; }
+        .mini-clock { font-size: 32px; font-weight: 200; color: #fff; text-shadow: 0 0 15px rgba(255, 152, 0, 0.4); line-height: 1; }
+        .ampm-part { font-size: 10px; opacity: 0.5; margin-left: 8px; }
 
-        /* アラーム設定 */
-        .alarm-settings { position: absolute; top: 100px; right: 40px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; z-index: 1001; }
+        /* 設定UI */
+        .alarm-settings { position: absolute; top: 110px; right: 40px; display: flex; align-items: center; gap: 10px; z-index: 1001; }
         .alarm-input-group { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        input[type="time"] { background: transparent; border: none; color: white; font-family: 'Inter'; font-size: 14px; outline: none; color-scheme: dark; }
+        input[type="time"] { background: transparent; border: none; color: white; font-size: 16px; outline: none; color-scheme: dark; }
 
-        /* 🚩 カクテルグラス・タンク */
-        .glass-container {
+        /* ステージ */
+        .stage {
             position: absolute; top: 55%; left: 50%; transform: translate(-50%, -40%);
-            width: 200px; height: 350px;
-            border-left: 4px solid rgba(255,255,255,0.1);
-            border-right: 4px solid rgba(255,255,255,0.1);
-            border-bottom: 8px solid rgba(255,255,255,0.15);
+            width: 240px; height: 480px;
+        }
+
+        /* 🆕 メタリック・ノズル（注ぎ口） */
+        .pour-mechanism {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 36px; height: 30px; 
+            background: linear-gradient(to right, #333, #777, #222);
+            border-radius: 4px; z-index: 100;
+            border-bottom: 4px solid #111;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+        }
+
+        /* 🆕 物理封じ込め：グラス内壁（絶対にはみ出さない） */
+        .glass-mask {
+            position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+            width: 174px; height: 420px; /* ノズルまで届く高さ */
             border-radius: 0 0 40px 40px;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.05));
-            overflow: hidden; display: flex; flex-direction: column-reverse;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            overflow: hidden; /* ★ これで全高をクリップ */
+            z-index: 10;
         }
 
-        /* 🚩 液体（グラデーションと表面張力） */
-        .liquid { 
-            width: 100%; height: 0%; 
-            background: linear-gradient(to top, var(--accent-dark) 0%, var(--accent) 80%, #a389d4 100%); 
-            transition: height 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
+        /* 流体計算レイヤー */
+        .fluid-layer {
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+            filter: url('#goo'); 
         }
 
-        /* 液体表面の柔らかい光（棒に見えないようボカしを強化） */
-        .liquid::after {
-            content: ""; position: absolute; top: -10px; left: 0; width: 100%; height: 20px;
-            background: rgba(163, 137, 212, 0.4); filter: blur(8px); border-radius: 50%;
+        /* 注がれる液体（ストリーム） */
+        .pour-stream {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 15px; height: 0; /* JSで液面まで動的に接続 */
+            background: linear-gradient(to right, var(--juice-dark), var(--juice-light), var(--juice-dark));
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .is-pouring .pour-stream { opacity: 0.9; animation: wiggle 0.1s infinite; }
+        @keyframes wiggle { 0% { transform: translateX(-51%); width: 14px; } 100% { transform: translateX(-49%); width: 16px; } }
+
+        /* 液体本体コンテナ（底から312px） */
+        .liquid-container {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 312px;
+        }
+        .liquid-base {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+            background: linear-gradient(to top, var(--juice-dark) 0%, var(--juice) 70%, var(--juice-light) 100%);
+            transition: height 1s linear;
+        }
+        .surface-blob {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 20px; background: var(--juice-light); border-radius: 50%;
         }
 
-        /* 🚩 氷（ふわふわ浮く） */
+        /* 🆕 プロ仕様の氷：水中に沈み、浮力で上がる */
         .ice-cube {
-            position: absolute; width: 50px; height: 50px;
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px; backdrop-filter: blur(4px);
-            animation: bobbing 4s infinite ease-in-out;
-            pointer-events: none;
+            position: absolute; width: 60px; height: 60px;
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 12px; backdrop-filter: blur(5px);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
+            z-index: 50; transition: bottom 1s linear;
         }
 
-        @keyframes bobbing {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
+        /* 泡・果肉 */
+        .pulp {
+            position: absolute; background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%; animation: rise 2.5s infinite ease-in; z-index: 40;
+        }
+        @keyframes rise { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 20% { opacity: 0.6; } 100% { transform: translateY(-300px) scale(1.1); opacity: 0; } }
+
+        /* グラス外枠（一番手前） */
+        .glass-outline {
+            position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+            width: 180px; height: 320px;
+            border-left: 3px solid rgba(255,255,255,0.15); border-right: 3px solid rgba(255,255,255,0.15);
+            border-bottom: 10px solid rgba(255,255,255,0.25); border-radius: 0 0 45px 45px;
+            pointer-events: none; z-index: 110;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
 
-        /* 🚩 小さな炭酸泡 */
-        .bubble {
-            position: absolute; background: rgba(255,255,255,0.4);
-            border-radius: 50%; animation: rise 3s infinite ease-in;
-            pointer-events: none;
-        }
-        @keyframes rise {
-            0% { transform: translateY(0) scale(1); opacity: 0; }
-            20% { opacity: 0.6; }
-            100% { transform: translateY(-200px) scale(0.5); opacity: 0; }
-        }
+        .btn-ui { background: rgba(255, 152, 0, 0.2); border: 1px solid var(--juice); color: white; font-size: 11px; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: 700; letter-spacing: 1px; }
+        .btn-active { background: var(--juice); box-shadow: 0 0 20px var(--juice); }
+        .btn-alarm { background: #f44336; border-color: #f44336; box-shadow: 0 0 20px #f44336; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-        .btn-ui { background: rgba(125, 75, 167, 0.3); border: 1px solid var(--accent); color: white; font-size: 10px; padding: 6px 12px; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: 600; }
-        .btn-active { background: var(--accent); box-shadow: 0 0 15px var(--accent); }
-        .status-msg { position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); font-size: 11px; opacity: 0.3; letter-spacing: 3px; font-weight: 700; }
+        .status { position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); font-size: 11px; opacity: 0.5; letter-spacing: 2px; font-weight: 700; text-align: center; width: 100%; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <div class="label item-today-label">TODAY</div>
-        <div class="label item-center-label">CURRENT TIME</div>
-        <div class="label item-tomorrow-label">TOMORROW</div>
+        <div class="item-label" style="grid-area: 1/1">TODAY</div>
+        <div class="item-label" style="grid-area: 1/2; text-align:center;">CURRENT TIME</div>
+        <div class="item-label" style="grid-area: 1/3; text-align:right;">TOMORROW</div>
 
-        <div id="today-val" class="val item-today-val"><span class="date-part">--/--</span><span class="week-part">---</span></div>
-        <div id="clock-display" class="mini-clock item-center-clock">0:00:00<span class="ampm-part">AM</span></div>
-        <div id="tomorrow-val" class="val item-tomorrow-val"><span class="date-part">--/--</span><span class="week-part">---</span></div>
+        <div id="today-val" class="val" style="grid-area: 2/1">--/-- ---</div>
+        <div id="clock-display" class="mini-clock" style="grid-area: 2/2">0:00:00<span class="ampm-part">AM</span></div>
+        <div id="tomorrow-val" class="val" style="grid-area: 2/3; text-align:right;">--/-- ---</div>
     </div>
 
     <div class="alarm-settings">
-        <div class="alarm-input-group">
+        <div class="alarm-input-group" id="input-wrapper">
             <input type="time" id="alarm-time" value="07:00">
-            <button id="sleep-btn" class="btn-ui" onclick="toggleSleepMode()">START MIXING</button>
         </div>
+        <button id="sleep-btn" class="btn-ui" onclick="handleButtonClick()">START POURING</button>
     </div>
 
-    <div class="glass-container">
-        <div id="liquid-fill" class="liquid">
-            <div class="ice-cube" style="bottom: 20%; left: 15%;"></div>
-            <div class="ice-cube" style="bottom: 50%; right: 10%; animation-delay: -2s;"></div>
-            <div id="bubble-container"></div>
+    <div class="stage" id="stage">
+        <div class="pour-mechanism"></div>
+        
+        <div class="glass-mask">
+            <div class="fluid-layer">
+                <div class="pour-stream" id="pour-stream"></div>
+                <div class="liquid-container">
+                    <div id="liquid-fill" class="liquid-base">
+                        <div class="surface-blob"></div>
+                        <div id="pulp-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="ice-1" class="ice-cube" style="bottom: 0px; left: 10px;"></div>
+            <div id="ice-2" class="ice-cube" style="bottom: 15px; right: 10px; transform: rotate(15deg);"></div>
         </div>
+
+        <div class="glass-outline"></div>
     </div>
 
-    <div id="status-text" class="status-msg">READY TO DRINK</div>
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display:none;">
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+            </filter>
+        </defs>
+    </svg>
+
+    <div id="status-text" class="status">SET ALARM AND START RELAXING</div>
 
     <script>
         const WEEKS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        let isSleepMode = false;
-        let sleepStartTime = null;
+        let isSleepMode = false, isAlarmRinging = false;
+        let targetTimeMs = null, sleepStartTimeMs = null;
+        let pulpInterval = null, wakeLock = null;
 
-        // 炭酸泡を生成する関数
-        function createBubble() {
-            if(!isSleepMode) return;
-            const b = document.createElement('div');
-            b.className = 'bubble';
-            const size = Math.random() * 3 + 1 + 'px';
-            b.style.width = size; b.style.height = size;
-            b.style.left = Math.random() * 100 + '%';
-            b.style.bottom = '0px';
-            b.style.animationDuration = Math.random() * 2 + 1 + 's';
-            document.getElementById('bubble-container').appendChild(b);
-            setTimeout(() => b.remove(), 3000);
+        async function reqWakeLock() {
+            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+        }
+
+        function createPulp() {
+            const p = document.createElement('div');
+            p.className = 'pulp';
+            const size = Math.random() * 4 + 2 + 'px';
+            p.style.cssText = `width:${size};height:${size};left:${Math.random()*100}%;bottom:-20px;`;
+            document.getElementById('pulp-container').appendChild(p);
+            setTimeout(() => p.remove(), 2500);
         }
 
         function update() {
             const now = new Date();
-            const fmt = (d) => ({ date: `${d.getMonth() + 1}/${d.getDate()}`, week: WEEKS[d.getDay()] });
-            const today = fmt(now);
-            document.querySelector('#today-val .date-part').innerText = today.date;
-            document.querySelector('#today-val .week-part').innerText = today.week;
-            const tomDate = new Date(now); tomDate.setDate(now.getDate() + 1);
-            const tomorrow = fmt(tomDate);
-            document.querySelector('#tomorrow-val .date-part').innerText = tomorrow.date;
-            document.querySelector('#tomorrow-val .week-part').innerText = tomorrow.week;
+            const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()} ${WEEKS[d.getDay()]}`;
+            document.getElementById('today-val').innerText = fmt(now);
+            const tom = new Date(now); tom.setDate(now.getDate() + 1);
+            document.getElementById('tomorrow-val').innerText = fmt(tom);
 
             let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('clock-display').innerHTML = `${h % 12 || 12}:${m}:${s}<span class="ampm-part">${h >= 12 ? 'PM' : 'AM'}</span>`;
 
-            if (isSleepMode && sleepStartTime) {
-                const alarmTimeStr = document.getElementById('alarm-time').value;
-                const [ah, am] = alarmTimeStr.split(':').map(Number);
-                let alarmDate = new Date(now);
-                alarmDate.setHours(ah, am, 0, 0);
-                if (alarmDate <= sleepStartTime) alarmDate.setDate(alarmDate.getDate() + 1);
-
-                const total = alarmDate - sleepStartTime;
-                const elapsed = now - sleepStartTime;
-                let progress = Math.min((elapsed / total) * 100, 100);
-                document.getElementById('liquid-fill').style.height = progress + "%";
+            if (isSleepMode && targetTimeMs) {
+                const total = targetTimeMs - sleepStartTimeMs;
+                const elapsed = now.getTime() - sleepStartTimeMs;
+                let progress = total > 0 ? Math.min((elapsed / total) * 100, 100) : 100;
                 
-                if (Math.random() < 0.3) createBubble(); // 炭酸感
+                const glassHeight = 312;
+                const liqHeightPx = (progress / 100) * glassHeight;
+
+                document.getElementById('liquid-fill').style.height = progress + "%";
+
+                // 🚩 物理補正：ノズル(top:0)から液面(liqHeightPx)まで隙間なく接続
+                // 全高 420px - 水位
+                const stream = document.getElementById('pour-stream');
+                stream.style.height = (420 - liqHeightPx + 10) + "px";
+
+                // 🚩 物理補正：氷の浮力計算（水中キープ）
+                let i1 = Math.min(Math.max(0, liqHeightPx - 50), glassHeight - 70);
+                let i2 = Math.min(Math.max(15, liqHeightPx - 40), glassHeight - 70);
+                document.getElementById('ice-1').style.bottom = i1 + "px";
+                document.getElementById('ice-2').style.bottom = i2 + "px";
 
                 if (progress >= 100) {
-                    document.getElementById('status-text').innerText = "CHEERS! YOUR DRINK IS READY";
-                    if (now.getSeconds() % 2 === 0 && navigator.vibrate) navigator.vibrate([500, 200, 500]);
+                    if (!isAlarmRinging) triggerAlarm();
                 } else {
-                    document.getElementById('status-text').innerText = "MIXING YOUR SLEEP DRINK... " + Math.floor(progress) + "%";
+                    document.getElementById('status-text').innerText = `POURING FRESH JUICE... ${Math.floor(progress)}%`;
                 }
             }
         }
 
-        function toggleSleepMode() {
+        function triggerAlarm() {
+            isAlarmRinging = true;
+            document.getElementById('stage').classList.remove('is-pouring');
+            document.getElementById('status-text').innerText = "WAKE UP! YOUR DRINK IS READY";
             const btn = document.getElementById('sleep-btn');
+            btn.innerText = "STOP ALARM"; btn.className = "btn-ui btn-alarm";
+            if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 1000]);
+        }
+
+        function handleButtonClick() {
+            if (isAlarmRinging) { location.reload(); return; }
+            const btn = document.getElementById('sleep-btn');
+            const timeInput = document.getElementById('alarm-time');
+
             isSleepMode = !isSleepMode;
             if (isSleepMode) {
-                sleepStartTime = new Date();
-                btn.innerText = "REFRESH"; btn.classList.add('btn-active');
-            } else {
-                sleepStartTime = null;
-                btn.innerText = "START MIXING"; btn.classList.remove('btn-active');
-                document.getElementById('liquid-fill').style.height = "0%";
-                document.getElementById('status-text').innerText = "READY TO DRINK";
-            }
+                const [ah, am] = timeInput.value.split(':').map(Number);
+                let alarmDate = new Date();
+                alarmDate.setHours(ah, am, 0, 0);
+                if (alarmDate <= new Date()) alarmDate.setDate(alarmDate.getDate() + 1);
+                targetTimeMs = alarmDate.getTime();
+                sleepStartTimeMs = new Date().getTime();
+
+                btn.innerText = "CANCEL"; btn.classList.add('btn-active');
+                document.getElementById('stage').classList.add('is-pouring');
+                timeInput.disabled = true;
+                reqWakeLock();
+                pulpInterval = setInterval(createPulp, 500);
+            } else { location.reload(); }
         }
 
         setInterval(update, 1000);
