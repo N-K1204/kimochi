@@ -3,186 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sleep Orange Cocktail - Professional Production</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;700&display=swap" rel="stylesheet">
+    <title>Sleep Orange Cocktail - Ultra Carbonation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --juice: #FF9800; --juice-dark: #e65100; --juice-light: #ffb74d; --bg: #050505; 
+            --juice-top: rgba(255, 193, 7, 0.75);
+            --juice-mid: rgba(255, 152, 0, 0.85);
+            --juice-bottom: rgba(230, 81, 0, 0.90);
+            --bg-center: #2a1400;
+            --bg-edge: #050505;
         }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a1a1a 0%, var(--bg) 100%); color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 60%, var(--bg-center) 0%, var(--bg-edge) 70%); color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
 
-        /* ヘッダーデザイン完全復元 */
+        /* --- ヘッダーUI --- */
         .top-bar { 
             position: fixed; top: 0; left: 0; width: 100%; padding: 30px 40px; box-sizing: border-box; 
-            display: grid; grid-template-columns: 1fr auto 1fr; grid-template-rows: auto auto; align-items: baseline; z-index: 1000;
+            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 1000;
         }
-        .item-label { font-size: 9px; opacity: 0.6; letter-spacing: 2.5px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
-        .val { font-weight: 400; font-size: 15px; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); }
-        .mini-clock { font-size: 32px; font-weight: 200; color: #fff; text-shadow: 0 0 15px rgba(255, 152, 0, 0.4); line-height: 1; }
-        .ampm-part { font-size: 10px; opacity: 0.5; margin-left: 8px; }
+        .header-left { text-align: left; }
+        .header-right { text-align: right; }
+        .label { font-size: 11px; opacity: 0.5; letter-spacing: 2px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .val { font-weight: 300; font-size: 18px; letter-spacing: 1px; }
+        .main-clock { font-size: 48px; font-weight: 100; text-shadow: 0 0 20px rgba(255, 152, 0, 0.3); letter-spacing: 2px; }
+        .ampm { font-size: 14px; opacity: 0.5; margin-left: 5px; font-weight: 300; }
 
-        /* 設定UI */
-        .alarm-settings { position: absolute; top: 110px; right: 40px; display: flex; align-items: center; gap: 10px; z-index: 1001; }
-        .alarm-input-group { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        input[type="time"] { background: transparent; border: none; color: white; font-size: 16px; outline: none; color-scheme: dark; }
+        /* --- サイドパネルUI --- */
+        .side-panel {
+            position: absolute; top: 120px; left: 40px; width: 220px;
+            display: flex; flex-direction: column; gap: 20px; z-index: 1001;
+        }
+        .panel-box {
+            background: rgba(20, 20, 20, 0.6); border: 1px solid rgba(255,152,0,0.2);
+            border-radius: 12px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .input-row label { font-size: 11px; font-weight: 600; letter-spacing: 1px; }
+        input[type="time"] { background: transparent; border: none; color: white; font-family: 'Inter'; font-size: 16px; outline: none; color-scheme: dark; font-weight: 300; }
+        
+        select { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,152,0,0.4); color: white; font-family: 'Inter'; font-size: 14px; outline: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
-        /* ステージ */
+        .btn { width: 100%; padding: 12px 0; border-radius: 6px; border: none; font-family: 'Inter'; font-weight: 600; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
+        .btn-orange { background: linear-gradient(to bottom, #ffb74d, #f57c00); color: #000; box-shadow: 0 4px 15px rgba(255,152,0,0.4); }
+        .btn-orange:active { transform: scale(0.98); }
+        .btn-red { background: transparent; color: #ff5252; border: 1px dashed #ff5252; }
+
+        /* --- リアル3Dステージ --- */
         .stage {
-            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -40%);
-            width: 240px; height: 480px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -45%);
+            width: 240px; height: 440px; 
         }
 
-        /* 🆕 メタリック・ノズル（注ぎ口） */
         .pour-mechanism {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
             width: 36px; height: 30px; 
-            background: linear-gradient(to right, #333, #777, #222);
+            background: linear-gradient(to right, #222, #666, #111);
             border-radius: 4px; z-index: 100;
-            border-bottom: 4px solid #111;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+            border-bottom: 5px solid #0a0a0a;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
         }
 
-        /* 🆕 物理封じ込め：グラス内壁（絶対にはみ出さない） */
-        .glass-mask {
-            position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
-            width: 174px; height: 420px; /* ノズルまで届く高さ */
-            border-radius: 0 0 40px 40px;
-            overflow: hidden; /* ★ これで全高をクリップ */
+        .glass-wrapper {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 200px; height: 260px;
+        }
+
+        .glass-back {
+            position: absolute; top: -5px; left: 0; width: 100%; height: 20px;
+            border-radius: 50%; border-top: 2px solid rgba(255,255,255,0.3);
             z-index: 10;
         }
 
-        /* 流体計算レイヤー */
-        .fluid-layer {
-            position: absolute; left: 0; top: 0; width: 100%; height: 100%;
-            filter: url('#goo'); 
-        }
-
-        /* 注がれる液体（ストリーム） */
-        .pour-stream {
-            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 15px; height: 0; /* JSで液面まで動的に接続 */
-            background: linear-gradient(to right, var(--juice-dark), var(--juice-light), var(--juice-dark));
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .is-pouring .pour-stream { opacity: 0.9; animation: wiggle 0.1s infinite; }
-        @keyframes wiggle { 0% { transform: translateX(-51%); width: 14px; } 100% { transform: translateX(-49%); width: 16px; } }
-
-        /* 液体本体コンテナ（底から312px） */
-        .liquid-container {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 312px;
-        }
-        .liquid-base {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
-            background: linear-gradient(to top, var(--juice-dark) 0%, var(--juice) 70%, var(--juice-light) 100%);
-            transition: height 1s linear;
-        }
-        .surface-blob {
-            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            width: 60px; height: 20px; background: var(--juice-light); border-radius: 50%;
-        }
-
-        /* 🆕 プロ仕様の氷：水中に沈み、浮力で上がる */
         .ice-cube {
-            position: absolute; width: 60px; height: 60px;
-            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 12px; backdrop-filter: blur(5px);
-            box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
-            z-index: 50; transition: bottom 1s linear;
+            position: absolute; width: 45px; height: 45px;
+            background: rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 10px;
+            box-shadow: inset 2px 2px 10px rgba(255,255,255,0.5), inset -2px -2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(2px);
+            z-index: 12; transition: bottom 1s ease-out;
+        }
+        #ice-1 { bottom: 10px; left: 55px; transform: rotate(10deg); }
+        #ice-2 { bottom: 15px; right: 60px; transform: rotate(-15deg); }
+
+        .straw {
+            position: absolute; bottom: 12px; left: 60px; 
+            width: 12px; height: 320px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.9) 20%, rgba(255,255,255,0.3) 80%, rgba(255,255,255,0.6) 100%);
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 6px;
+            transform: rotate(18deg); transform-origin: bottom center; 
+            z-index: 15; 
+            box-shadow: 2px 5px 10px rgba(0,0,0,0.2);
         }
 
-        /* 泡・果肉 */
+        .pour-stream {
+            position: absolute; top: -150px; left: 50%; transform: translateX(-50%);
+            width: 14px; height: 0; 
+            background: linear-gradient(90deg, var(--juice-bottom), var(--juice-top) 50%, var(--juice-bottom)); 
+            opacity: 0; transition: opacity 0.3s; z-index: 18;
+            box-shadow: 0 0 15px rgba(255,152,0,0.6);
+        }
+        .is-pouring .pour-stream { opacity: 1; animation: stream-flow 0.1s infinite; }
+        @keyframes stream-flow { 0% { width: 13px; transform: translateX(-51%); } 100% { width: 15px; transform: translateX(-49%); } }
+
+        .liquid-mask {
+            position: absolute; inset: 5px; 
+            border-radius: 10px 10px 80px 80px / 10px 10px 100px 100px;
+            overflow: hidden; z-index: 20;
+        }
+
+        .liquid-fill {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+            background: linear-gradient(to top, var(--juice-bottom) 0%, var(--juice-mid) 60%, var(--juice-top) 100%);
+            transition: height 1s linear;
+            /* overflowを外すことで、スプラッシュとフォームが追従できるようにする */
+        }
+
+        /* 🚩 【完全封印】泡専用のクリッピングレイヤー */
+        /* liquid-fillと同じ大きさを保ちつつ、ここから上の泡を切り捨てる */
+        .bubble-clip {
+            position: absolute; inset: 0; overflow: hidden; z-index: 5;
+        }
+
+        /* 🫧 強力なしゅわしゅわ炭酸アニメーション */
         .pulp {
-            position: absolute; background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%; animation: rise 2.5s infinite ease-in; z-index: 40;
+            position: absolute; 
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%; 
+            box-shadow: 0 0 2px rgba(255,255,255,0.6);
+            /* JSで変数（--duration, --sway）を受け取って動かす */
+            animation: rise var(--duration) ease-in forwards; 
         }
-        @keyframes rise { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 20% { opacity: 0.6; } 100% { transform: translateY(-300px) scale(1.1); opacity: 0; } }
-
-        /* グラス外枠（一番手前） */
-        .glass-outline {
-            position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
-            width: 180px; height: 320px;
-            border-left: 3px solid rgba(255,255,255,0.15); border-right: 3px solid rgba(255,255,255,0.15);
-            border-bottom: 10px solid rgba(255,255,255,0.25); border-radius: 0 0 45px 45px;
-            pointer-events: none; z-index: 110;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        @keyframes rise { 
+            0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 
+            10% { opacity: 1; } 
+            80% { opacity: 1; }
+            100% { transform: translate(var(--sway), -350px) scale(1.2); opacity: 0; } 
         }
 
-        .btn-ui { background: rgba(255, 152, 0, 0.2); border: 1px solid var(--juice); color: white; font-size: 11px; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: 700; letter-spacing: 1px; }
-        .btn-active { background: var(--juice); box-shadow: 0 0 20px var(--juice); }
-        .btn-alarm { background: #f44336; border-color: #f44336; box-shadow: 0 0 20px #f44336; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .splash {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 50px; height: 30px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg"><path d="M50 0 Q60 30 100 40 Q50 50 0 40 Q40 30 50 0 Z" fill="%23ffc107" opacity="0.8"/></svg>') no-repeat center/contain;
+            opacity: 0; transition: opacity 0.3s, transform 0.5s; z-index: 10;
+        }
+        .is-pouring .splash { opacity: 1; animation: splash-jump 0.15s infinite alternate; }
+        @keyframes splash-jump { from { transform: translateX(-50%) scale(0.9) translateY(2px); } to { transform: translateX(-50%) scale(1.1) translateY(-2px); } }
 
-        .status { position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); font-size: 11px; opacity: 0.5; letter-spacing: 2px; font-weight: 700; text-align: center; width: 100%; }
+        .foam {
+            position: absolute; top: -5px; left: -10%; width: 120%; height: 20px;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.8) 0%, var(--juice-top) 60%, transparent 100%); 
+            opacity: 0; transition: opacity 0.5s; border-radius: 50%; z-index: 8;
+        }
+        .is-pouring .foam, .is-full .foam { opacity: 1; }
+
+        .glass-front {
+            position: absolute; inset: 0;
+            border-radius: 10px 10px 80px 80px / 10px 10px 100px 100px;
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: inset 15px 0 20px rgba(255,255,255,0.15), inset -15px 0 20px rgba(255,255,255,0.1), inset 0 -20px 30px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.6);
+            background: linear-gradient(90deg, rgba(255,255,255,0.4) 0%, transparent 12%, transparent 88%, rgba(255,255,255,0.15) 100%);
+            pointer-events: none; z-index: 50;
+        }
+        .glass-front::after {
+            content: ''; position: absolute; top: 10%; left: 8%; width: 6%; height: 75%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.6), transparent);
+            border-radius: 50%; filter: blur(2px);
+        }
+
+        /* --- ボトムUI --- */
+        .bottom-ui {
+            position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
+            width: 320px; text-align: center; z-index: 1001;
+        }
+        .status-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; margin-bottom: 10px; }
+        .progress-wrapper {
+            position: relative; width: 100%; height: 24px;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px; overflow: hidden; margin-bottom: 8px;
+        }
+        .progress-bar {
+            position: absolute; top: 0; left: 0; height: 100%; width: 0%;
+            background: linear-gradient(90deg, #ff9800, #ffc107);
+            border-radius: 12px; transition: width 1s linear;
+        }
+        .progress-text { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px #000; }
+        .status-sub { font-size: 10px; opacity: 0.5; font-weight: 300; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <div class="item-label" style="grid-area: 1/1">TODAY</div>
-        <div class="item-label" style="grid-area: 1/2; text-align:center;">CURRENT TIME</div>
-        <div class="item-label" style="grid-area: 1/3; text-align:right;">TOMORROW</div>
-
-        <div id="today-val" class="val" style="grid-area: 2/1">--/-- ---</div>
-        <div id="clock-display" class="mini-clock" style="grid-area: 2/2">0:00:00<span class="ampm-part">AM</span></div>
-        <div id="tomorrow-val" class="val" style="grid-area: 2/3; text-align:right;">--/-- ---</div>
+        <div class="header-left"><div class="label">TODAY</div><div class="val" id="today-val">--/-- ---</div></div>
+        <div class="header-center"><div id="clock-display" class="main-clock">0:00:00<span class="ampm">AM</span></div></div>
+        <div class="header-right"><div class="label">TOMORROW</div><div class="val" id="tomorrow-val">--/-- ---</div></div>
     </div>
 
-    <div class="alarm-settings">
-        <div class="alarm-input-group" id="input-wrapper">
-            <input type="time" id="alarm-time" value="07:00">
+    <div class="side-panel">
+        <div class="panel-box">
+            <div class="input-row">
+                <label>SELECT DRINK</label>
+                <select id="drink-select">
+                    <option value="orange" selected>Orange Juice</option>
+                    <option value="apple">Apple Juice</option>
+                    <option value="grapefruit">Pink Grapefruit</option>
+                    <option value="cola">Cola</option>
+                    <option value="greentea">Green Tea</option>
+                    <option value="calpis">Calpis Soda</option>
+                    <option value="melonsoda">Melon Soda</option>
+                    <option value="bluehawaii">Blue Hawaii</option>
+                </select>
+            </div>
+            <div class="input-row"><label>WAKE UP TIME</label><input type="time" id="alarm-time" value="07:00"></div>
+            <button id="start-btn" class="btn btn-orange" onclick="handleStart()">START POURING</button>
         </div>
-        <button id="sleep-btn" class="btn-ui" onclick="handleButtonClick()">START POURING</button>
+        <div class="panel-box">
+            <button id="stop-btn" class="btn btn-red" onclick="handleStop()" style="display:none;">STOP ALARM</button>
+        </div>
     </div>
 
     <div class="stage" id="stage">
         <div class="pour-mechanism"></div>
         
-        <div class="glass-mask">
-            <div class="fluid-layer">
-                <div class="pour-stream" id="pour-stream"></div>
-                <div class="liquid-container">
-                    <div id="liquid-fill" class="liquid-base">
-                        <div class="surface-blob"></div>
+        <div class="glass-wrapper" id="glass-wrapper">
+            <div class="glass-back"></div>
+            
+            <div id="ice-1" class="ice-cube"></div>
+            <div id="ice-2" class="ice-cube"></div>
+            <div class="straw"></div>
+            <div class="pour-stream" id="pour-stream"></div>
+            
+            <div class="liquid-mask">
+                <div id="liquid-fill" class="liquid-fill">
+                    
+                    <div class="bubble-clip">
                         <div id="pulp-container"></div>
                     </div>
+                    
+                    <div class="splash" id="splash"></div>
+                    <div class="foam"></div>
                 </div>
             </div>
-            <div id="ice-1" class="ice-cube" style="bottom: 0px; left: 10px;"></div>
-            <div id="ice-2" class="ice-cube" style="bottom: 15px; right: 10px; transform: rotate(15deg);"></div>
+            
+            <div class="glass-front"></div>
         </div>
-
-        <div class="glass-outline"></div>
     </div>
 
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display:none;">
-        <defs>
-            <filter id="goo">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
-                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
-                <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
-            </filter>
-        </defs>
-    </svg>
-
-    <div id="status-text" class="status">SET ALARM AND START RELAXING</div>
+    <div class="bottom-ui">
+        <div class="status-title" id="status-title">SET ALARM</div>
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="progress-text">VOLUME <span id="progress-text-val">0%</span></div>
+        </div>
+        <div class="status-sub" id="status-sub">Waiting for input...</div>
+    </div>
 
     <script>
         const WEEKS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         let isSleepMode = false, isAlarmRinging = false;
-        let targetTimeMs = null, sleepStartTimeMs = null;
-        let pulpInterval = null, wakeLock = null;
+        let targetTimeMs = null, sleepStartTimeMs = null, pulpInterval = null, wakeLock = null;
 
-        async function reqWakeLock() {
-            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
-        }
+        const drinkColors = {
+            orange: { top: 'rgba(255, 193, 7, 0.75)', mid: 'rgba(255, 152, 0, 0.85)', bottom: 'rgba(230, 81, 0, 0.90)' },
+            apple: { top: 'rgba(230, 255, 200, 0.75)', mid: 'rgba(212, 237, 188, 0.85)', bottom: 'rgba(182, 215, 168, 0.90)' },
+            grapefruit: { top: 'rgba(255, 220, 220, 0.75)', mid: 'rgba(255, 180, 180, 0.85)', bottom: 'rgba(230, 150, 150, 0.90)' },
+            cola: { top: 'rgba(90, 45, 20, 0.85)', mid: 'rgba(50, 20, 10, 0.90)', bottom: 'rgba(20, 5, 0, 0.95)' },
+            greentea: { top: 'rgba(200, 230, 150, 0.70)', mid: 'rgba(160, 200, 100, 0.80)', bottom: 'rgba(120, 160, 50, 0.85)' },
+            calpis: { top: 'rgba(255, 255, 255, 0.80)', mid: 'rgba(240, 245, 255, 0.90)', bottom: 'rgba(220, 230, 240, 0.95)' },
+            melonsoda: { top: 'rgba(100, 255, 150, 0.75)', mid: 'rgba(40, 210, 90, 0.85)', bottom: 'rgba(10, 170, 50, 0.90)' },
+            bluehawaii: { top: 'rgba(120, 210, 255, 0.75)', mid: 'rgba(60, 160, 255, 0.85)', bottom: 'rgba(20, 100, 220, 0.90)' }
+        };
 
+        async function reqWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
+        
+        // 🚩 究極の炭酸シミュレーション
         function createPulp() {
-            const p = document.createElement('div');
-            p.className = 'pulp';
-            const size = Math.random() * 4 + 2 + 'px';
-            p.style.cssText = `width:${size};height:${size};left:${Math.random()*100}%;bottom:-20px;`;
-            document.getElementById('pulp-container').appendChild(p);
-            setTimeout(() => p.remove(), 2500);
+            const container = document.getElementById('pulp-container');
+            // 一度に発生する泡を2〜4個にして「しゅわしゅわ感」を倍増
+            const count = Math.floor(Math.random() * 3) + 2; 
+            
+            for(let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'pulp';
+                const size = Math.random() * 3 + 1 + 'px'; // 1〜4pxの細かい泡
+                const duration = Math.random() * 1.5 + 0.8 + 's'; // 上昇速度にばらつきを
+                const sway = (Math.random() - 0.5) * 30 + 'px'; // 左右への揺らぎ (-15px ~ +15px)
+                
+                // 常にグラスの底（bottom: -5px）から発生させる
+                p.style.cssText = `
+                    width: ${size}; height: ${size}; 
+                    left: ${Math.random() * 100}%; 
+                    bottom: -5px; 
+                    --duration: ${duration};
+                    --sway: ${sway};
+                `;
+                container.appendChild(p);
+                // 上まで登りきったら削除
+                setTimeout(() => p.remove(), 2500);
+            }
         }
 
         function update() {
@@ -193,70 +311,99 @@
             document.getElementById('tomorrow-val').innerText = fmt(tom);
 
             let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('clock-display').innerHTML = `${h % 12 || 12}:${m}:${s}<span class="ampm-part">${h >= 12 ? 'PM' : 'AM'}</span>`;
+            document.getElementById('clock-display').innerHTML = `${h % 12 || 12}:${m}:${s}<span class="ampm">${h >= 12 ? 'PM' : 'AM'}</span>`;
 
             if (isSleepMode && targetTimeMs) {
                 const total = targetTimeMs - sleepStartTimeMs;
                 const elapsed = now.getTime() - sleepStartTimeMs;
                 let progress = total > 0 ? Math.min((elapsed / total) * 100, 100) : 100;
                 
-                const glassHeight = 312;
-                const liqHeightPx = (progress / 100) * glassHeight;
+                const glassInnerH = 250; 
+                const liqPx = (progress / 100) * glassInnerH;
 
                 document.getElementById('liquid-fill').style.height = progress + "%";
+                document.getElementById('progress-bar').style.width = progress + "%";
+                document.getElementById('progress-text-val').innerText = Math.floor(progress) + "%";
 
-                // 🚩 物理補正：ノズル(top:0)から液面(liqHeightPx)まで隙間なく接続
-                // 全高 420px - 水位
                 const stream = document.getElementById('pour-stream');
-                stream.style.height = (420 - liqHeightPx + 10) + "px";
-
-                // 🚩 物理補正：氷の浮力計算（水中キープ）
-                let i1 = Math.min(Math.max(0, liqHeightPx - 50), glassHeight - 70);
-                let i2 = Math.min(Math.max(15, liqHeightPx - 40), glassHeight - 70);
-                document.getElementById('ice-1').style.bottom = i1 + "px";
-                document.getElementById('ice-2').style.bottom = i2 + "px";
+                const splash = document.getElementById('splash');
 
                 if (progress >= 100) {
+                    stream.style.opacity = "0";
+                    splash.style.transform = "translateX(-50%) scale(0)";
+                    splash.style.opacity = "0";
+                    document.getElementById('stage').classList.remove('is-pouring');
+                    document.getElementById('stage').classList.add('is-full');
                     if (!isAlarmRinging) triggerAlarm();
                 } else {
-                    document.getElementById('status-text').innerText = `POURING FRESH JUICE... ${Math.floor(progress)}%`;
+                    stream.style.height = (405 - liqPx) + "px"; 
+                    
+                    if (progress > 90) {
+                        let f = (100 - progress) / 10;
+                        splash.style.transform = `translateX(-50%) scale(${f})`;
+                        splash.style.opacity = f;
+                    } else {
+                        splash.style.transform = `translateX(-50%) scale(1)`;
+                    }
+
+                    let minsLeft = Math.ceil((targetTimeMs - now.getTime()) / 60000);
+                    document.getElementById('status-sub').innerText = `POURING IN PROGRESS (${minsLeft} min left)`;
                 }
+
+                let i1 = Math.max(10, liqPx - 30);
+                let i2 = Math.max(15, liqPx - 25);
+                i1 = Math.min(i1, glassInnerH - 50);
+                i2 = Math.min(i2, glassInnerH - 50);
+                document.getElementById('ice-1').style.bottom = i1 + "px";
+                document.getElementById('ice-2').style.bottom = i2 + "px";
             }
         }
 
         function triggerAlarm() {
             isAlarmRinging = true;
-            document.getElementById('stage').classList.remove('is-pouring');
-            document.getElementById('status-text').innerText = "WAKE UP! YOUR DRINK IS READY";
-            const btn = document.getElementById('sleep-btn');
-            btn.innerText = "STOP ALARM"; btn.className = "btn-ui btn-alarm";
+            document.getElementById('status-title').innerText = "READY TO DRINK";
+            document.getElementById('status-sub').innerText = "DRINK COMPLETE - ALARM VIBRATING";
+            document.getElementById('stop-btn').style.display = "block";
+            document.getElementById('start-btn').style.display = "none";
             if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 1000]);
         }
 
-        function handleButtonClick() {
-            if (isAlarmRinging) { location.reload(); return; }
-            const btn = document.getElementById('sleep-btn');
+        function handleStart() {
             const timeInput = document.getElementById('alarm-time');
+            const [ah, am] = timeInput.value.split(':').map(Number);
+            let alarmDate = new Date();
+            alarmDate.setHours(ah, am, 0, 0);
+            if (alarmDate <= new Date()) alarmDate.setDate(alarmDate.getDate() + 1);
+            
+            targetTimeMs = alarmDate.getTime();
+            sleepStartTimeMs = new Date().getTime();
+            isSleepMode = true;
 
-            isSleepMode = !isSleepMode;
-            if (isSleepMode) {
-                const [ah, am] = timeInput.value.split(':').map(Number);
-                let alarmDate = new Date();
-                alarmDate.setHours(ah, am, 0, 0);
-                if (alarmDate <= new Date()) alarmDate.setDate(alarmDate.getDate() + 1);
-                targetTimeMs = alarmDate.getTime();
-                sleepStartTimeMs = new Date().getTime();
+            const drinkSelect = document.getElementById('drink-select');
+            const selectedDrink = drinkSelect.value;
+            const colors = drinkColors[selectedDrink];
+            if (colors) {
+                const root = document.documentElement;
+                root.style.setProperty('--juice-top', colors.top);
+                root.style.setProperty('--juice-mid', colors.mid);
+                root.style.setProperty('--juice-bottom', colors.bottom);
+            }
+            drinkSelect.disabled = true; 
 
-                btn.innerText = "CANCEL"; btn.classList.add('btn-active');
-                document.getElementById('stage').classList.add('is-pouring');
-                timeInput.disabled = true;
-                reqWakeLock();
-                pulpInterval = setInterval(createPulp, 500);
-            } else { location.reload(); }
+            document.getElementById('stage').classList.add('is-pouring');
+            timeInput.disabled = true;
+            document.getElementById('start-btn').innerText = "CANCEL POURING";
+            document.getElementById('start-btn').setAttribute('onclick', 'location.reload()');
+            document.getElementById('status-title').innerText = "PREPARING DRINK";
+            
+            reqWakeLock();
+            // 発生間隔を早めて炭酸を演出（100msに1回発生）
+            pulpInterval = setInterval(createPulp, 100); 
         }
 
-        setInterval(update, 1000);
-        update();
+        function handleStop() { location.reload(); }
+
+        setInterval(update, 1000); update();
     </script>
 </body>
 </html>
