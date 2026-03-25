@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ごめんね えほん - 全10話</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wood-dark: #79553D;
+            --wood-light: #DEB887;
+            --paper: #FFFdf5;
+            --primary: #ff8bb0;
+            --blue: #7da6ff;
+            --text: #444;
+            --curtain: #c0392b;
+        }
+
+        * { box-sizing: border-box; touch-action: manipulation; user-select: none; }
+
+        body {
+            font-family: "M PLUS Rounded 1c", sans-serif;
+            background: #eef7e8;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; color: var(--text);
+        }
+
+        .container {
+            width: 100%; max-width: 600px;
+            padding: 10px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* --- ナビゲーションバー --- */
+        .top-bar {
+            width: 100%; display: flex; justify-content: flex-start; align-items: center;
+            padding: 5px 0 15px 0;
+        }
+        .nav-btn {
+            text-decoration: none; background: white; color: var(--wood-dark);
+            padding: 10px 15px; font-size: 14px; font-weight: 900;
+            border-radius: 20px; border: 3px solid var(--wood-dark);
+            box-shadow: 0 4px 0 var(--wood-dark); cursor: pointer; transition: 0.1s;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .nav-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--wood-dark); }
+
+        /* --- 紙芝居の舞台 --- */
+        .kamishibai-stage {
+            background: var(--wood-light);
+            border: 12px solid var(--wood-dark);
+            border-radius: 10px;
+            width: 100%; aspect-ratio: 4/3;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 0 15px rgba(0,0,0,0.3);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        /* 🎭 幕（カーテン） */
+        .curtain {
+            position: absolute; top: 0; width: 50%; height: 100%;
+            background: var(--curtain); z-index: 50;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 4px solid rgba(0,0,0,0.2);
+        }
+        .curtain.left { left: 0; transform-origin: left; }
+        .curtain.right { right: 0; transform-origin: right; border-right: none; border-left: 4px solid rgba(0,0,0,0.2); }
+        .curtain-open .curtain.left { transform: translateX(-100%); }
+        .curtain-open .curtain.right { transform: translateX(100%); }
+
+        /* 💖 なかよしゲージ */
+        .nakayoshi-meter {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(255,255,255,0.9); padding: 5px 10px;
+            border-radius: 15px; border: 3px solid var(--wood-dark);
+            font-size: 18px; font-weight: bold; color: var(--wood-dark);
+            z-index: 40; display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- 絵のエリア --- */
+        .picture-area {
+            flex: 1; background: var(--paper);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 80px; position: relative;
+            border-bottom: 4px solid var(--wood-dark);
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            cursor: pointer;
+        }
+        .tap-hint { animation: pulseHint 1.5s infinite; }
+        @keyframes pulseHint { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* 💭 こころの声（フキダシ） */
+        .thought-bubble {
+            position: absolute; top: 10%; left: 50%; transform: translateX(-50%) scale(0);
+            background: white; border: 4px solid var(--blue); border-radius: 20px;
+            padding: 10px 15px; font-size: 16px; font-weight: bold; color: #333;
+            opacity: 0; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 30; white-space: nowrap;
+        }
+        .thought-bubble::after {
+            content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+            border-width: 12px 12px 0; border-style: solid;
+            border-color: var(--blue) transparent transparent transparent;
+        }
+        .show-thought { transform: translateX(-50%) scale(1); opacity: 1; }
+
+        /* --- テキストエリア --- */
+        .text-area {
+            height: 35%; background: white;
+            padding: 15px; font-size: 17px; font-weight: 700;
+            line-height: 1.5; display: flex; align-items: center; justify-content: center;
+            text-align: center; color: #333;
+        }
+
+        /* --- コントロール（ボタン） --- */
+        .controls { width: 100%; display: flex; flex-direction: column; gap: 10px; padding: 0 10px; }
+
+        .btn {
+            background: white; color: var(--text); border: 4px solid #ddd;
+            padding: 12px 20px; font-size: 16px; font-weight: 900;
+            border-radius: 20px; cursor: pointer;
+            box-shadow: 0 6px 0 #ddd; transition: 0.1s; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn:active { transform: translateY(6px); box-shadow: 0 0 0 #ddd; }
+        
+        .btn-next { background: var(--primary); color: white; border-color: #d8688d; box-shadow: 0 6px 0 #d8688d; }
+        .btn-choice { background: #fff; border-color: var(--blue); color: var(--blue); }
+        .btn-bad { border-color: #ff5252; color: #ff5252; }
+
+        /* --- 画面管理 --- */
+        .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
+        .active { display: flex; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- タイトル画面 --- */
+        .title-box { text-align: center; margin-top: 10px; }
+        .title-box h1 { color: var(--wood-dark); font-size: 30px; margin-bottom: 5px; }
+        .title-box p { font-weight: bold; color: #666; margin-bottom: 15px; font-size: 14px;}
+
+        /* おはなしリスト（スクロール対応） */
+        .book-list {
+            width: 100%; max-width: 450px;
+            display: flex; flex-direction: column; gap: 10px;
+            max-height: 50vh; overflow-y: auto; padding: 10px;
+            border: 2px dashed #ccc; border-radius: 15px; background: rgba(255,255,255,0.5);
+        }
+
+        .book-btn {
+            background: white; border: 3px solid var(--wood-dark); border-radius: 12px;
+            padding: 12px; width: 100%; cursor: pointer;
+            display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 0 var(--wood-dark);
+            text-align: left; transition: 0.1s; flex-shrink: 0;
+        }
+        .book-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--wood-dark); }
+        .book-icon { font-size: 24px; width: 35px; text-align: center; }
+        .book-title { font-size: 15px; font-weight: bold; color: var(--wood-dark); }
+
+        /* --- やりなおし・クリア --- */
+        .feedback-overlay {
+            position: absolute; top:0; left:0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 100;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px;
+        }
+        .feedback-overlay h2 { font-size: 24px; margin-bottom: 10px; }
+        .feedback-overlay p { font-weight: bold; line-height: 1.5; color: #555; margin-bottom: 20px; }
+
+        #confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none; }
+        .confetti-piece { position: absolute; font-size: 30px; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+    </style>
+</head>
+<body>
+
+<div id="confetti"></div>
+
+<div class="container">
+
+    <div id="screen-title" class="screen active">
+        <div class="top-bar">
+            <a href="index.html" class="nav-btn">🏠 ホームへ</a>
+        </div>
+
+        <div class="title-box">
+            <div style="font-size: 50px;">📖</div>
+            <h1>ごめんね えほん</h1>
+            <p>どんなときに、なんて 言う？<br>えほん を めくって えらぼう！</p>
+        </div>
+
+        <div class="book-list">
+            <div class="book-btn" onclick="startStory('story1')">
+                <div class="book-icon">🚗</div><div class="book-title">第1話「おもちゃ とっちゃった」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story2')">
+                <div class="book-icon">💥</div><div class="book-title">第2話「ぶつかっちゃった」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story3')">
+                <div class="book-icon">🥛</div><div class="book-title">第3話「コップ を わった」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story4')">
+                <div class="book-icon">🧃</div><div class="book-title">第4話「ジュース こぼした」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story5')">
+                <div class="book-icon">🗯️</div><div class="book-title">第5話「きらい！って 言った」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story6')">
+                <div class="book-icon">⏰</div><div class="book-title">第6話「やくそく わすれた」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story7')">
+                <div class="book-icon">😂</div><div class="book-title">第7話「ころんだの わらった」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story8')">
+                <div class="book-icon">🧢</div><div class="book-title">第8話「ぼうし かくした」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story9')">
+                <div class="book-icon">🧸</div><div class="book-title">第9話「かして あげなかった」</div>
+            </div>
+            <div class="book-btn" onclick="startStory('story10')">
+                <div class="book-icon">🧱</div><div class="book-title">第10話「イライラして たたいた」</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div class="top-bar">
+            <button class="nav-btn" onclick="goHome()">🔙 ほんを とじる</button>
+        </div>
+
+        <div class="kamishibai-stage" id="stage">
+            <div class="curtain left"></div>
+            <div class="curtain right"></div>
+
+            <div class="nakayoshi-meter" id="meter">
+                絆：💛💛
+            </div>
+
+            <div class="picture-area tap-hint" id="picture-area" onclick="showThought()">
+                <div class="thought-bubble" id="thought">こころの声</div>
+                <span id="pic-emoji"></span>
+            </div>
+            
+            <div class="text-area" id="text-area"></div>
+
+            <div id="bad-end-overlay" class="feedback-overlay">
+                <h2>ざんねん...💦</h2>
+                <p id="bad-reason">りゆう</p>
+                <button class="btn btn-next" onclick="restartStory()">やりなおす</button>
+            </div>
+
+            <div id="happy-end-overlay" class="feedback-overlay">
+                <h2 style="color: #6ecb63;">なかよし！✨</h2>
+                <p>じょうずに 「ごめんね」が<br>言えたね！ えらい！</p>
+                <button class="btn btn-next" onclick="goHome()">えほん を とじる</button>
+            </div>
+        </div>
+
+        <div class="controls" id="controls"></div>
+    </div>
+
+</div>
+
+<script>
+    // 📖 紙芝居のストーリーデータ（全10話）
+    const STORIES = {
+        story1: {
+            1: { pic: "🐻🚗", text: "くまくん が、くるまの おもちゃ で あそんで います。", thought: "たのしいなぁ！", next: 2 },
+            2: { pic: "👦💨", text: "「かして！」\nあなたは、むりやり おもちゃ を とって しまいました。", thought: "あ！ ぼくの くるま！", next: 3 },
+            3: { pic: "🐻😭", text: "あっ！ くまくん が ないて しまいました。どうする？", thought: "かえしてよぅ", 
+                 choices: [
+                     { text: "あやまる", next: 4, type: "good" },
+                     { text: "にげる", next: "bad1", type: "bad" }
+                 ] 
+            },
+            bad1: { reason: "にげちゃ ダメ！ くまくんは ずっと かなしい まま だよ。勇気を出して あやまろう。" },
+            4: { pic: "👦💦", text: "あやまろうと した、そのとき！", thought: "ドキドキ…", next: 5 },
+            5: { pic: "👩⚡️", text: "「こら！ なに してるの！」\nおかあさん が とんできました。", thought: "いじわるしちゃ ダメでしょ！", next: 6 },
+            6: { pic: "👩🙇‍♀️", text: "「うちの子が ごめんなさいね。」\nおかあさん が かわりに あやまって います。どうする？", thought: "ちゃんと じぶんで 言えるかな？",
+                 choices: [
+                     { text: "おかあさんの うしろに かくれる", next: "bad2", type: "bad" },
+                     { text: "じぶん も いっしょに 「ごめんね」と 言う", next: 7, type: "good" }
+                 ]
+            },
+            bad2: { reason: "おかあさんが 謝ってくれたけど、あなたの「ごめんね」の 気持は くまくんに 伝わっていないよ。" },
+            7: { pic: "👦🙇‍♂️", text: "「とって ごめんね。」\nじぶんの 口 で しっかり 言えました！", thought: "ごめんなさい…", next: 8 },
+            8: { pic: "🐻😊", text: "「いいよ！ つぎ は かして あげるね」", thought: "あやまってくれて うれしいな", next: "clear" }
+        },
+
+        story2: {
+            1: { pic: "👦💨", text: "はしって いたら、うさぎちゃん に ドドン！ ぶつかっちゃった！", thought: "わっ！ あぶない！", next: 2 },
+            2: { pic: "🐰😭", text: "うさぎちゃん は ころんで ないて います。どうする？", thought: "いたかったよぉ…",
+                 choices: [
+                     { text: "「だいじょうぶ？」と きく", next: 3, type: "good" },
+                     { text: "「あっち いけ！」と おこる", next: "bad1", type: "bad" }
+                 ]
+            },
+            bad1: { reason: "おこったら もっと ケンカ に なっちゃうよ。ぶつかったら まずは 謝ろう。" },
+            3: { pic: "👦💦", text: "あやまろうと した、そのとき！", thought: "けが してないかな…？", next: 4 },
+            4: { pic: "🦊👈", text: "きつねくん が きて「うさぎちゃん が わるいんだよ！」と 言ってきました。", thought: "うさぎちゃんが ジャマだったんだよ", next: 5 },
+            5: { pic: "🦊😈", text: "きつねくん が 邪魔(じゃま)を してきます。どうする？", thought: "いっしょに わるぐち 言おうぜ！",
+                 choices: [
+                     { text: "きつねくん と いっしょに 悪口 を 言う", next: "bad2", type: "bad" },
+                     { text: "きつねくん を むし して、うさぎちゃん に あやまる", next: 6, type: "good" }
+                 ]
+            },
+            bad2: { reason: "まわりの 子 に つられて 悪口を 言ったら、うさぎちゃんは もっと 傷つくよ。" },
+            6: { pic: "👦🤝🐰", text: "「ぶつかって ごめんね。けが は ない？」\nちゃんと 言えました！", thought: "やさしく してくれて ありがとう", next: 7 },
+            7: { pic: "🐰✨", text: "「だいじょうぶ だよ。ありがとう！」", thought: "もう いたくないよ！", next: "clear" }
+        },
+
+        story3: {
+            1: { pic: "👦🥛", text: "おかあさん の たいせつな コップ を さわって います。", thought: "きれいな コップだな〜", next: 2 },
+            2: { pic: "💥💦", text: "ガシャン！！\nあっ！ て が すべって わって しまいました！", thought: "やばい！！ どうしよう！！", next: 3 },
+            3: { pic: "👩❓", text: "「なんの おと？」\nおかあさん が やって きました。どうする？", thought: "なにか われた かしら？",
+                 choices: [
+                     { text: "「しらない！」と ウソ を つく", next: "bad1", type: "bad" },
+                     { text: "「ごめんなさい、わっちゃった」と 言う", next: 4, type: "good" }
+                 ]
+            },
+            bad1: { reason: "ウソを ついても いつかは バレるし、かくしごとは もっと おこられちゃうよ。" },
+            4: { pic: "👦🙇‍♂️", text: "「ごめんなさい。さわってたら、おとしちゃったの…」\nしょうじき に 言えました！", thought: "ほんとうの ことを 言えたよ", next: 5 },
+            5: { pic: "👩✨", text: "「ホントの ことを 言ってくれて ありがとう。けが は ない？」", thought: "かくさずに 言ってくれて えらいわ", next: "clear" }
+        },
+
+        story4: {
+            1: { pic: "👦🧃", text: "きつねくん の となりで、ジュース を のんで います。", thought: "おいしいなぁ", next: 2 },
+            2: { pic: "💦🦊", text: "あっ！ て が ぶつかって、きつねくん の おえかき に ジュースを こぼしちゃった！", thought: "わっ！ ぼくの え が！", next: 3 },
+            3: { pic: "🦊😭", text: "きつねくん が ないて います。どうする？", thought: "いっしょうけんめい かいたのに…",
+                 choices: [
+                     { text: "「ごめんね！ ふくよ！」と あやまる", next: 4, type: "good" },
+                     { text: "しらない ふり を する", next: "bad1", type: "bad" }
+                 ]
+            },
+            bad1: { reason: "こぼしたまま に したら、え が どんどん よごれちゃう！ すぐに あやまって ふこう。" },
+            4: { pic: "👦🧻", text: "「ごめんね、すぐ ふくからね！」\nいっしょうけんめい ふきました。", thought: "はやく きれいに しなきゃ！", next: 5 },
+            5: { pic: "🦊😊", text: "「きれいに なったから いいよ。」\nきつねくん も わらって くれました。", thought: "ふいてくれて ありがとう", next: "clear" }
+        },
+
+        story5: {
+            1: { pic: "👦⚡️🐱", text: "ねこちゃん と ケンカ を して います。", thought: "プンプン！ もう しらない！", next: 2 },
+            2: { pic: "👦🗯️", text: "「ねこちゃん なんて きらい！」\nあなたは ひどい ことば を 言って しまいました。", thought: "いじわる 言ってやる！", next: 3 },
+            3: { pic: "🐱😢", text: "ねこちゃん は かなしい かお を して います。どうする？", thought: "きらいって 言われて かなしい…",
+                 choices: [
+                     { text: "「まだ きらい だもん！」と 言う", next: "bad1", type: "bad" },
+                     { text: "「きらい って 言って ごめんね」", next: 4, type: "good" }
+                 ]
+            },
+            bad1: { reason: "おこっていても「きらい」は 相手の 心を 深く きずつけるよ。素直（すなお）に あやまろう。" },
+            4: { pic: "👦🙇‍♂️", text: "「ほんとう は きらい じゃないよ。ごめんね。」\nすなお に あやまれました。", thought: "おこって ごめんね", next: 5 },
+            5: { pic: "🐱✨", text: "「わたし も ごめんね。なかよく しようね！」", thought: "よかった、きらわれて なかった", next: "clear" }
+        },
+
+        story6: {
+            1: { pic: "👦💤", text: "パンダくん と あそぶ やくそく なのに、おひるね を して しまいました。", thought: "むにゃむにゃ…", next: 2 },
+            2: { pic: "🐼⏰", text: "パンダくん は ずっと まって います。", thought: "まだ かなぁ…", next: 3 },
+            3: { pic: "🐼😠", text: "パンダくん が おこって います。どうする？", thought: "やくそく わすれた でしょ！",
+                 choices: [
+                     { text: "「わすれて ごめんね」と あやまる", next: 4, type: "good" },
+                     { text: "「とけい が わるい！」と 言いわけ", next: "bad1", type: "bad" }
+                 ]
+            },
+            bad1: { reason: "とけい の せい に しても、パンダくんは ずっと 待っていたんだよ。まずは 謝ろう。" },
+            4: { pic: "👦🙇‍♂️", text: "「わすれちゃって ごめんなさい。つぎ は ぜったい あそぼう！」", thought: "まっててくれて ありがとう", next: 5 },
+            5: { pic: "🐼😊", text: "「わかった！ つぎ は あそぼうね！」", thought: "ちゃんと あやまってくれたから いいよ", next: "clear" }
+        },
+
+        story7: {
+            1: { pic: "🐶💦", text: "いぬくん が ドテッ！ と ころんで しまいました。", thought: "いたたた…！", next: 2 },
+            2: { pic: "👦😂", text: "「アハハハ！」\nあなたは それ を 見て わらって しまいました。", thought: "おもしろい ころびかた！", next: 3 },
+            3: { pic: "🐶😭", text: "いぬくん が ないて います。どうする？", thought: "いたいの に、わらわないでよ…",
+                 choices: [
+                     { text: "「だって おかしかった もん！」と 言う", next: "bad1", type: "bad" },
+                     { text: "「わらって ごめん。だいじょうぶ？」", next: 4, type: "good" }
+                 ]
+            },
+            bad1: { reason: "痛いときに 笑われると、もっと 悲しくなっちゃうよ。相手の 気持ちに なって 考えよう。" },
+            4: { pic: "👦🤝", text: "「わらって ごめんね。て を つなごう。」\nやさしく こえ を かけました。", thought: "いたかった よね、ごめんね", next: 5 },
+            5: { pic: "🐶✨", text: "「ちょっと いたかった んだよ。ありがとう。」", thought: "たすけて くれて うれしいな", next: "clear" }
+        },
+
+        story8: {
+            1: { pic: "👦🧢", text: "うさぎちゃん の ぼうし を、こっそり かくして あそんで います。", thought: "イタズラしちゃおっと", next: 2 },
+            2: { pic: "🐰🔍", text: "うさぎちゃん は ぼうし が なくて、さがして います。", thought: "どこに いったの？", next: 3 },
+            3: { pic: "🐰😭", text: "うさぎちゃん は こまって ないて しまいました。どうする？", thought: "ぼうし が なーい！",
+                 choices: [
+                     { text: "ぼうし を だして 「ごめんね」", next: 4, type: "good" },
+                     { text: "しらない ふり を する", next: "bad1", type: "bad" }
+                 ]
+            },
+            bad1: { reason: "イタズラも、相手が 泣くほど 困っていたら やりすぎだよ。すぐに 返して あやまろう。" },
+            4: { pic: "👦🙇‍♂️", text: "「ここ に あるよ。かくして ごめんなさい。」", thought: "かなしませて ごめんね", next: 5 },
+            5: { pic: "🐰😊", text: "「みつかって よかった。もう かくさないでね。」", thought: "ぼうし あった！", next: "clear" }
+        },
+
+        story9: {
+            1: { pic: "👦🧸", text: "あたらしい おもちゃ で、ひとり で あそんで います。", thought: "ぼくの だもん！", next: 2 },
+            2: { pic: "🐭🥺", text: "ねずみくん が「かして」と きましたが、あなたは「ダメ！」と 言いました。", thought: "すこしだけ あそびたいな…", next: 3 },
+            3: { pic: "🐭😢", text: "ねずみくん は かなしく なって どこかへ 行きました。ひとり は つまらないな… どうする？", thought: "いっしょに あそびたかったな",
+                 choices: [
+                     { text: "「ダメって 言って ごめん。いっしょに あそぼう」", next: 4, type: "good" },
+                     { text: "そのまま ひとり で あそぶ", next: "bad1", type: "bad" }
+                 ]
+            },
+            bad1: { reason: "ひとりでも 遊べるけど、お友達と 一緒に遊ぶと もっと 楽しいよ！ 勇気を出して 誘ってみよう。" },
+            4: { pic: "👦🤝🐭", text: "「いじわる 言って ごめんね。いっしょ に あそぼう！」", thought: "ふたり の ほうが たのしいや！", next: 5 },
+            5: { pic: "🐭✨", text: "「うん！ いっしょに あそぼう！」", thought: "わーい！", next: "clear" }
+        },
+
+        story10: {
+            1: { pic: "👦🧱", text: "つみき が うまく できなくて、イライラ して います。", thought: "もう！ できない！", next: 2 },
+            2: { pic: "🐵❓", text: "おさるさん が「どうしたの？」と ききましたが、あなたは イライラして おさるさん を たたいて しまいました。", thought: "てつがおう かな？", next: 3 },
+            3: { pic: "🐵😭", text: "おさるさん が ないて います。どうする？", thought: "なにも してないのに いたいよぅ",
+                 choices: [
+                     { text: "「たたいて ごめん。つみき が できないの」", next: 4, type: "good" },
+                     { text: "にげて かくれる", next: "bad1", type: "bad" }
+                 ]
+            },
+            bad1: { reason: "イライラして 手を出してしまうのは ぜったいに ダメ！ 叩いたことを 謝って、どうして イライラしたか 言葉で 伝えよう。" },
+            4: { pic: "👦🙇‍♂️", text: "「たたいて ごめんなさい。つみき が できなくて イライラ してたの…」", thought: "やつあたり して ごめんね", next: 5 },
+            5: { pic: "🐵😊", text: "「そう だったんだね。いっしょに つくって あげるよ！」", thought: "そういう こと だったんだね", next: "clear" }
+        }
+    };
+
+    let currentStoryData = null;
+    let currentStoryId = "";
+    let currentPageId = 1;
+    let heartCount = 2; // なかよし度
+
+    function updateMeter() {
+        let hearts = "絆：";
+        for(let i=0; i<3; i++) hearts += (i < heartCount) ? "💛" : "🖤";
+        document.getElementById('meter').innerText = hearts;
+    }
+
+    function startStory(storyId) {
+        currentStoryId = storyId;
+        currentStoryData = STORIES[storyId];
+        currentPageId = 1;
+        heartCount = 2; 
+        
+        document.getElementById('screen-title').classList.remove('active');
+        document.getElementById('screen-game').classList.add('active');
+        document.getElementById('bad-end-overlay').style.display = "none";
+        document.getElementById('happy-end-overlay').style.display = "none";
+        
+        const stage = document.getElementById('stage');
+        stage.classList.remove('curtain-open');
+        updateMeter();
+
+        setTimeout(() => {
+            stage.classList.add('curtain-open');
+            renderPage();
+        }, 500);
+    }
+
+    function renderPage() {
+        const page = currentStoryData[currentPageId];
+        
+        document.getElementById('thought').classList.remove('show-thought');
+        if(page.thought) document.getElementById('thought').innerText = page.thought;
+
+        const picArea = document.getElementById('picture-area');
+        picArea.style.opacity = 0;
+        picArea.style.transform = "translateX(20px)";
+        
+        setTimeout(() => {
+            document.getElementById('pic-emoji').innerText = page.pic;
+            document.getElementById('text-area').innerText = page.text;
+            picArea.style.opacity = 1;
+            picArea.style.transform = "translateX(0)";
+        }, 200);
+
+        const controls = document.getElementById('controls');
+        controls.innerHTML = "";
+
+        if (page.choices) {
+            picArea.classList.add('tap-hint');
+            page.choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = c.type === "good" ? "btn btn-choice" : "btn btn-choice btn-bad";
+                btn.innerText = c.text;
+                btn.onclick = () => {
+                    if(c.type === "good") { heartCount = 3; updateMeter(); }
+                    else { heartCount = 1; updateMeter(); }
+                    goToNext(c.next);
+                };
+                controls.appendChild(btn);
+            });
+        } else {
+            picArea.classList.remove('tap-hint');
+            const btn = document.createElement('button');
+            btn.className = "btn btn-next";
+            btn.innerText = "つぎへ ➡";
+            btn.onclick = () => goToNext(page.next);
+            controls.appendChild(btn);
+        }
+    }
+
+    function showThought() {
+        const thought = document.getElementById('thought');
+        thought.classList.add('show-thought');
+        setTimeout(() => { thought.classList.remove('show-thought'); }, 2500);
+    }
+
+    function goToNext(nextId) {
+        if (nextId === "clear") {
+            showClear();
+        } else if (String(nextId).startsWith("bad")) {
+            showBadEnd(currentStoryData[nextId].reason);
+        } else {
+            currentPageId = nextId;
+            renderPage();
+        }
+    }
+
+    function showBadEnd(reasonText) {
+        document.getElementById('bad-reason').innerText = reasonText;
+        document.getElementById('bad-end-overlay').style.display = "flex";
+        document.getElementById('controls').innerHTML = "";
+    }
+
+    function restartStory() {
+        document.getElementById('bad-end-overlay').style.display = "none";
+        heartCount = 2; updateMeter();
+        currentPageId = 1;
+        renderPage();
+    }
+
+    function showClear() {
+        document.getElementById('happy-end-overlay').style.display = "flex";
+        document.getElementById('controls').innerHTML = "";
+        fireConfetti();
+    }
+
+    function goHome() {
+        document.getElementById('confetti').style.display = "none";
+        document.getElementById('confetti').innerHTML = "";
+        document.getElementById('screen-game').classList.remove('active');
+        document.getElementById('screen-title').classList.add('active');
+    }
+
+    function fireConfetti() {
+        const container = document.getElementById('confetti');
+        container.style.display = "block";
+        const emojis = ["🎉", "✨", "🌸", "🌟", "💖"];
+        for (let i = 0; i < 40; i++) {
+            const conf = document.createElement('div');
+            conf.className = 'confetti-piece';
+            conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            conf.style.left = Math.random() * 100 + 'vw';
+            conf.style.top = -50 + 'px';
+            conf.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            conf.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            conf.style.animationDelay = (Math.random() * 0.5) + 's';
+            container.appendChild(conf);
+        }
+    }
+</script>
+
+</body>
+</html>
